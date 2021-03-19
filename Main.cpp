@@ -1,3 +1,5 @@
+extern "C"
+{
 #include "AppHardwareApi.h"
 #include "dbg.h"
 #include "dbg_uart.h"
@@ -6,6 +8,7 @@
 #include "portmacro.h"
 #include "pwrm.h"
 #include "PDM.h"
+}
 
 #define BOARD_LED_BIT               (17)
 #define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
@@ -118,7 +121,7 @@ PUBLIC void buttonScanFunc(void *pvParam)
 	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 }
 
-PUBLIC void vISR_SystemController(void)
+extern "C" PUBLIC void vISR_SystemController(void)
 {
     // clear pending DIO changed bits by reading register
     uint32 u32IOStatus = u32AHI_DioInterruptStatus();
@@ -139,7 +142,7 @@ PUBLIC void wakeCallBack(void)
 }
 
 
-PUBLIC void vAppMain(void)
+extern "C" PUBLIC void vAppMain(void)
 {
 	// Initialize the hardware
         TARGET_INITIALISE();
@@ -233,7 +236,7 @@ PWRM_CALLBACK(Wakeup)
         ZTIMER_vWake();
 }
 
-void vAppRegisterPWRMCallbacks(void)
+extern "C" void vAppRegisterPWRMCallbacks(void)
 {
     PWRM_vRegisterPreSleepCallback(PreSleep);
     PWRM_vRegisterWakeupCallback(Wakeup);	
