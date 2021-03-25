@@ -172,6 +172,7 @@ TARGET_LINK_LIBRARIES(XiaomiSwitch
         -Wl,--end-group
 )
 
-STM32_PRINT_SIZE_OF_TARGETS(XiaomiSwitch)
-STM32_ADD_HEX_BIN_TARGETS(XiaomiSwitch)
-STM32_ADD_DUMP_TARGET(XiaomiSwitch)
+PRINT_SIZE_OF_TARGETS(XiaomiSwitch)
+ADD_HEX_BIN_TARGETS(XiaomiSwitch)
+ADD_DUMP_TARGET(XiaomiSwitch)
+FLASH_FIRMWARE_TARGET(XiaomiSwitch)
