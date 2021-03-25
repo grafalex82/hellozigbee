@@ -1,11 +1,6 @@
 #ifndef BUTTONS_H
 #define BUTTONS_H
 
-
-class Buttons
-{
-public:
-    Buttons();
-};
+void initButtons();
 
 #endif // BUTTONS_H

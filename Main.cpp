@@ -1,13 +1,26 @@
 extern "C"
 {
-#include "AppHardwareApi.h"
-#include "dbg.h"
-#include "dbg_uart.h"
-#include "ZTimer.h"
-#include "ZQueue.h"
-#include "portmacro.h"
-#include "pwrm.h"
-#include "PDM.h"
+    #include "AppHardwareApi.h"
+    #include "dbg.h"
+    #include "dbg_uart.h"
+    #include "ZTimer.h"
+    #include "ZQueue.h"
+    #include "portmacro.h"
+    #include "pwrm.h"
+    #include "PDM.h"
+
+    // Local configuration and generated files
+    #include "pdum_gen.h"
+    #include "zps_gen.h"
+
+    // ZigBee includes
+    //#include "MiniMac.h"
+    #include "zcl.h"
+    #include "zps_apl.h"
+    #include "zps_apl_af.h"
+
+    // Zigbee cluster includes
+    #include "on_off_light_switch.h"
 }
 
 #define BOARD_LED_BIT               (17)
@@ -21,6 +34,8 @@ extern "C"
 #define BLINK_MODE_FAST		    1
 
 uint8 blinkMode = BLINK_MODE_SLOW;
+
+tsZLO_OnOffLightSwitchDevice sSwitch;
 
 void storeBlinkMode(uint8 mode)
 {
@@ -142,54 +157,154 @@ PUBLIC void wakeCallBack(void)
 }
 
 
+PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
+{
+
+    switch (psEvent->eEventType)
+    {
+
+        case E_ZCL_CBET_UNHANDLED_EVENT:
+            DBG_vPrintf(TRACE_ZCL, "EVT: Unhandled Event\r\n");
+            break;
+
+        case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
+            DBG_vPrintf(TRACE_ZCL, "EVT: Read attributes response\r\n");
+            break;
+
+        case E_ZCL_CBET_READ_REQUEST:
+            DBG_vPrintf(TRACE_ZCL, "EVT: Read request\r\n");
+            break;
+
+        case E_ZCL_CBET_DEFAULT_RESPONSE:
+            DBG_vPrintf(TRACE_ZCL, "EVT: Default response\r\n");
+            break;
+
+        case E_ZCL_CBET_ERROR:
+            DBG_vPrintf(TRACE_ZCL, "EVT: Error\r\n");
+            break;
+
+        case E_ZCL_CBET_TIMER:
+            break;
+
+        case E_ZCL_CBET_ZIGBEE_EVENT:
+            DBG_vPrintf(TRACE_ZCL, "EVT: ZigBee\r\n");
+            break;
+
+        case E_ZCL_CBET_CLUSTER_CUSTOM:
+            DBG_vPrintf(TRACE_ZCL, "EP EVT: Custom\r\n");
+            break;
+
+        default:
+            DBG_vPrintf(TRACE_ZCL, "Invalid event type (%d) in APP_ZCL_cbGeneralCallback\r\n", psEvent->eEventType);
+            break;
+    }
+}
+
+PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
+{
+    switch (psEvent->eEventType)
+    {
+        case E_ZCL_CBET_UNHANDLED_EVENT:
+
+        case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
+
+        case E_ZCL_CBET_READ_REQUEST:
+
+        case E_ZCL_CBET_DEFAULT_RESPONSE:
+
+        case E_ZCL_CBET_ERROR:
+
+        case E_ZCL_CBET_TIMER:
+
+        case E_ZCL_CBET_ZIGBEE_EVENT:
+            DBG_vPrintf(TRACE_ZCL, "EP EVT:No action (evt type %d)\r\n", psEvent->eEventType);
+            break;
+
+        case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
+            DBG_vPrintf(TRACE_ZCL, " Read Attrib Rsp %d %02x\n", psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
+                *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
+            break;
+
+        case E_ZCL_CBET_CLUSTER_CUSTOM:
+            DBG_vPrintf(TRACE_ZCL, "EP EVT: Custom %04x\r\n", psEvent->uMessage.sClusterCustomMessage.u16ClusterId);
+            break;
+
+        default:
+            DBG_vPrintf(TRACE_ZCL, "EP EVT: Invalid event type (%d) in APP_ZCL_cbEndpointCallback\r\n", psEvent->eEventType);
+            break;
+    }
+}
+
+
+void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
+{
+    DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
+}
+
 extern "C" PUBLIC void vAppMain(void)
 {
-	// Initialize the hardware
-        TARGET_INITIALISE();
-        SET_IPL(0);
-        portENABLE_INTERRUPTS();
+    // Initialize the hardware
+    TARGET_INITIALISE();
+    SET_IPL(0);
+    portENABLE_INTERRUPTS();
 
-	// Initialize UART
-	DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
+    // Initialize UART
+    DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
 
-	DBG_vPrintf(TRUE, "vAppMain()\n");
+    DBG_vPrintf(TRUE, "vAppMain()\n");
 
-	// Restore blink mode from EEPROM
-	PDM_eInitialise(0);
-	restoreBlinkMode();
+    // Restore blink mode from EEPROM
+    PDM_eInitialise(0);
+    restoreBlinkMode();
 
-	// Initialize hardware
-	vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
-	vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
-	vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
-	vAHI_DioInterruptEnable(BOARD_BTN_PIN, 0);
+    // Initialize hardware
+    vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
+    vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
+    vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
+    vAHI_DioInterruptEnable(BOARD_BTN_PIN, 0);
 
-	// Init and start timers
-	ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
-	ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-	ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
-	ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+    // Init and start timers
+    ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
+    ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
+    ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
+    ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
+    ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 
-	// Initialize queue
-	ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);
+    // Initialize queue
+    ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);
 
-	// Let the device go to sleep if there is nothing to do
-	PWRM_vInit(E_AHI_SLEEP_DEEP);
+    // Let the device go to sleep if there is nothing to do
+    PWRM_vInit(E_AHI_SLEEP_DEEP);
 
-	while(1)
-	{
-		ZTIMER_vTask();
+    // PDU Manager initialization
+    PDUM_vInit();
 
-		vAHI_WatchdogRestart();
+    ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
 
-		if(enabled == FALSE)
-		{
-			DBG_vPrintf(TRUE, "Scheduling sleep\n");
-			PWRM_vManagePower();
-		}
+    // Initialise ZBPro stack
+    ZPS_teStatus status = ZPS_eAplAfInit();
+    DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
+    status = eZCL_Initialise(&APP_ZCL_cbGeneralCallback, apduZCL);
+    DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
+    status = eZLO_RegisterOnOffLightSwitchEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
+    DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
+    DBG_vPrintf(TRACE_ZCL, "Chan Mask %08x\n", ZPS_psAplAibGetAib()->pau32ApsChannelMask[0]);
 
-	}
+    //vAPP_ZCL_DeviceSpecific_Init();
+
+
+    while(1)
+    {
+        ZTIMER_vTask();
+
+        vAHI_WatchdogRestart();
+
+        if(enabled == FALSE)
+        {
+            DBG_vPrintf(TRUE, "Scheduling sleep\n");
+            PWRM_vManagePower();
+        }
+    }
 }
 
 static PWRM_DECLARE_CALLBACK_DESCRIPTOR(PreSleep);
@@ -215,25 +330,25 @@ PWRM_CALLBACK(PreSleep)
 
 PWRM_CALLBACK(Wakeup)
 {
-    	// Stabilise the oscillator
-        while (bAHI_GetClkSource() == TRUE);
+    // Stabilise the oscillator
+    while (bAHI_GetClkSource() == TRUE);
 
-        // Now we are running on the XTAL, optimise the flash memory wait states
-        vAHI_OptimiseWaitStates();
+    // Now we are running on the XTAL, optimise the flash memory wait states
+    vAHI_OptimiseWaitStates();
 
-	// Re-initialize Debug UART
-	DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
+    // Re-initialize Debug UART
+    DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
 
-        DBG_vPrintf(TRUE, "\nWaking..\n");
-	DBG_vUartFlush();
+    DBG_vPrintf(TRUE, "\nWaking..\n");
+    DBG_vUartFlush();
 
-	// Re-initialize hardware and interrupts
-        TARGET_INITIALISE();
-        SET_IPL(0);
-        portENABLE_INTERRUPTS();
+    // Re-initialize hardware and interrupts
+    TARGET_INITIALISE();
+    SET_IPL(0);
+    portENABLE_INTERRUPTS();
 
-	// Wake the timers
-        ZTIMER_vWake();
+    // Wake the timers
+    ZTIMER_vWake();
 }
 
 extern "C" void vAppRegisterPWRMCallbacks(void)
