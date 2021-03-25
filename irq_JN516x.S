@@ -51,8 +51,7 @@ PIC_SwVectTable:
     .word vUnclaimedInterrupt               # 4
     .word vUnclaimedInterrupt               # 5
     .word vUnclaimedInterrupt               # 6
-#    .word zps_isrMAC                        # 7
-    .word vUnclaimedInterrupt               # 7
+    .word zps_isrMAC                        # 7
     .word vUnclaimedInterrupt               # 8
     .word vUnclaimedInterrupt               # 9
     .word vUnclaimedInterrupt               # 10

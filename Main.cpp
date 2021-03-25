@@ -159,6 +159,7 @@ PUBLIC void wakeCallBack(void)
 
 PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
 {
+    DBG_vPrintf(TRUE, "APP_ZCL_cbGeneralCallback(): Processing event %d\n", psEvent->eEventType);
 
     switch (psEvent->eEventType)
     {
@@ -202,6 +203,8 @@ PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
 
 PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
 {
+    DBG_vPrintf(TRUE, "APP_ZCL_cbEndpointCallback(): Processing event %d\n", psEvent->eEventType);
+
     switch (psEvent->eEventType)
     {
         case E_ZCL_CBET_UNHANDLED_EVENT:
@@ -251,19 +254,21 @@ extern "C" PUBLIC void vAppMain(void)
     // Initialize UART
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
 
-    DBG_vPrintf(TRUE, "vAppMain()\n");
 
     // Restore blink mode from EEPROM
+    DBG_vPrintf(TRUE, "vAppMain(): init PDM...\n");
     PDM_eInitialise(0);
     restoreBlinkMode();
 
     // Initialize hardware
+    DBG_vPrintf(TRUE, "vAppMain(): init GPIO...\n");
     vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
     vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
     vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
     vAHI_DioInterruptEnable(BOARD_BTN_PIN, 0);
 
     // Init and start timers
+    DBG_vPrintf(TRUE, "vAppMain(): init software timers...\n");
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
     ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
     ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
@@ -271,28 +276,38 @@ extern "C" PUBLIC void vAppMain(void)
     ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 
     // Initialize queue
+    DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
     ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);
 
     // Let the device go to sleep if there is nothing to do
+    DBG_vPrintf(TRUE, "vAppMain(): init PWRM...\n");
     PWRM_vInit(E_AHI_SLEEP_DEEP);
 
     // PDU Manager initialization
+    DBG_vPrintf(TRUE, "vAppMain(): init PDUM...\n");
     PDUM_vInit();
 
+    // PDU Manager initialization
+    DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
 
     // Initialise ZBPro stack
+    DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)...\n");
     ZPS_teStatus status = ZPS_eAplAfInit();
     DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
+
+    DBG_vPrintf(TRUE, "vAppMain(): init Zigbee Class Library (ZCL)...\n");
     status = eZCL_Initialise(&APP_ZCL_cbGeneralCallback, apduZCL);
     DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
+
+    DBG_vPrintf(TRUE, "vAppMain(): register On/Off endpoint...\n");
     status = eZLO_RegisterOnOffLightSwitchEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
     DBG_vPrintf(TRACE_ZCL, "Chan Mask %08x\n", ZPS_psAplAibGetAib()->pau32ApsChannelMask[0]);
 
     //vAPP_ZCL_DeviceSpecific_Init();
 
-
+    DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
     {
         ZTIMER_vTask();
