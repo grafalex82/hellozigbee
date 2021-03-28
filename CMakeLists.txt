@@ -26,6 +26,8 @@ ADD_DEFINITIONS(
         -DJENNIC_MAC_MiniMacShim
 
 	-DTRACE_ZCL=TRUE
+
+        -DBDB_SUPPORT_NWK_STEERING
 )
 
 
@@ -34,6 +36,7 @@ ADD_DEFINITIONS(
 
 SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/app_zps_link_keys.c
+        ${SDK_PREFIX}/Components/ZigbeeCommon/Source/appZdpExtraction.c
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/appZpsBeaconHandler.c
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZTimer.c
 	${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZQueue.c
@@ -74,16 +77,21 @@ SET(ZIGBEE_SRC
 
         ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Source/on_off_light_switch.c
 
-
+        ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_fr.c
+        ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_start.c
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_state_machine.c
+        ${SDK_PREFIX}/Components/BDB/Source/NwkSteering/bdb_ns.c
 )
 ADD_LIBRARY(ZigBee STATIC ${ZIGBEE_SRC})
 TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
         ${SDK_PREFIX}/Components/BDB/Include
+        ${SDK_PREFIX}/Components/BDB/Source/Common
+        ${SDK_PREFIX}/Components/BDB/Source/NwkSteering
         ${SDK_PREFIX}/Components/PWRM/Include
 	${SDK_PREFIX}/Components/MicroSpecific/Include
 
         ${SDK_PREFIX}/Components/ZCIF/Source
+
 
         # Zigbee sources reference zcl_options.h
         ${PROJECT_SOURCE_DIR}
@@ -98,17 +106,19 @@ INCLUDE_DIRECTORIES(
     ${SDK_PREFIX}/Components/AES_SW/Include
     ${SDK_PREFIX}/Components/AppApi/Include
 
+    ${SDK_PREFIX}/Components/BDB/Include
 
     ${SDK_PREFIX}/Components/Common/Include
     ${SDK_PREFIX}/Components/Dbg/Include
     ${SDK_PREFIX}/Components/HardwareAPI/Include
+    ${SDK_PREFIX}/Components/MAC/Include
     ${SDK_PREFIX}/Components/MicroSpecific/Include
     ${SDK_PREFIX}/Components/MiniMAC/Include
     ${SDK_PREFIX}/Components/MMAC/Include
     ${SDK_PREFIX}/Components/PDM/Include
     ${SDK_PREFIX}/Components/PDUM/Include
     ${SDK_PREFIX}/Components/PWRM/Include
-    ${SDK_PREFIX}/Components/MAC/Include
+    ${SDK_PREFIX}/Components/Random/Include
 
     ${SDK_PREFIX}/Components/TimerServer/Include
 

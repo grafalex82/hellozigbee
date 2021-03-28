@@ -14,14 +14,26 @@ extern "C"
     #include "zps_gen.h"
 
     // ZigBee includes
-    //#include "MiniMac.h"
     #include "zcl.h"
     #include "zps_apl.h"
     #include "zps_apl_af.h"
+    #include "bdb_api.h"
+
+    // work around of a bug in appZpsBeaconHandler.h that does not have a closing } for its extern "C" statement
+    }
 
     // Zigbee cluster includes
     #include "on_off_light_switch.h"
 }
+
+// Hidden funcctions (exported from the library, but not mentioned in header files)
+extern "C"
+{
+    PUBLIC uint8 u8PDM_CalculateFileSystemCapacity(void);
+    PUBLIC uint8 u8PDM_GetFileSystemOccupancy(void);
+    extern void zps_taskZPS(void);
+}
+
 
 #define BOARD_LED_BIT               (17)
 #define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
@@ -36,6 +48,11 @@ extern "C"
 uint8 blinkMode = BLINK_MODE_SLOW;
 
 tsZLO_OnOffLightSwitchDevice sSwitch;
+
+
+
+
+
 
 void storeBlinkMode(uint8 mode)
 {
@@ -53,8 +70,7 @@ void restoreBlinkMode()
 }
 
 
-
-ZTIMER_tsTimer timers[2];
+ZTIMER_tsTimer timers[2 + BDB_ZTIMER_STORAGE];
 uint8 blinkTimerHandle;
 uint8 buttonScanTimerHandle;
 
@@ -66,6 +82,27 @@ typedef enum
 
 ButtonPressType queue[3];
 tszQueue queueHandle;
+
+#define BDB_QUEUE_SIZE              3
+#define MLME_QUEUE_SIZE             10
+#define MCPS_QUEUE_SIZE             24
+#define TIMER_QUEUE_SIZE            8
+#define MCPS_DCFM_QUEUE_SIZE        5
+
+extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
+extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
+extern PUBLIC tszQueue zps_TimeEvents;
+extern PUBLIC tszQueue zps_msgMcpsDcfm;
+
+PRIVATE MAC_tsMlmeVsDcfmInd asMacMlmeVsDcfmInd[MLME_QUEUE_SIZE];
+PRIVATE MAC_tsMcpsVsDcfmInd asMacMcpsDcfmInd[MCPS_QUEUE_SIZE];
+PRIVATE MAC_tsMcpsVsCfmData asMacMcpsDcfm[MCPS_DCFM_QUEUE_SIZE];
+PRIVATE zps_tsTimeEvent asTimeEvent[TIMER_QUEUE_SIZE];
+PRIVATE BDB_tsZpsAfEvent asBdbEvent[BDB_QUEUE_SIZE];
+
+PRIVATE tszQueue APP_msgBdbEvents;
+
+
 
 uint8 enabled = TRUE;
 
@@ -146,8 +183,8 @@ extern "C" PUBLIC void vISR_SystemController(void)
     if(u32IOStatus & BOARD_BTN_PIN)
     {
         DBG_vPrintf(TRUE, "Button interrupt\n");
-	enabled = TRUE;
-	PWRM_vWakeInterruptCallback();
+        enabled = TRUE;
+        PWRM_vWakeInterruptCallback();
     }
 }
 
@@ -244,6 +281,21 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
 
+PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
+{
+    switch(psBdbEvent->eEventType)
+    {
+        case BDB_EVENT_INIT_SUCCESS:
+            DBG_vPrintf(TRUE, "BDB event callback: : BdbInitSuccessful\n");
+            break;
+
+        default:
+            DBG_vPrintf(1, "BDB event callback: evt %d\n", psBdbEvent->eEventType);
+            break;
+    }
+}
+
+
 extern "C" PUBLIC void vAppMain(void)
 {
     // Initialize the hardware
@@ -254,11 +306,14 @@ extern "C" PUBLIC void vAppMain(void)
     // Initialize UART
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
 
-
     // Restore blink mode from EEPROM
     DBG_vPrintf(TRUE, "vAppMain(): init PDM...\n");
     PDM_eInitialise(0);
     restoreBlinkMode();
+    DBG_vPrintf(TRUE, "vAppMain(): PDM Capacity %d Occupancy %d\n",
+            u8PDM_CalculateFileSystemCapacity(),
+            u8PDM_GetFileSystemOccupancy() );
+
 
     // Initialize hardware
     DBG_vPrintf(TRUE, "vAppMain(): init GPIO...\n");
@@ -266,6 +321,14 @@ extern "C" PUBLIC void vAppMain(void)
     vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
     vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
     vAHI_DioInterruptEnable(BOARD_BTN_PIN, 0);
+
+    // Initialize power manager and sleep mode
+    DBG_vPrintf(TRUE, "vAppMain(): init PWRM...\n");
+    PWRM_vInit(E_AHI_SLEEP_DEEP);
+
+    // PDU Manager initialization
+    DBG_vPrintf(TRUE, "vAppMain(): init PDUM...\n");
+    PDUM_vInit();
 
     // Init and start timers
     DBG_vPrintf(TRUE, "vAppMain(): init software timers...\n");
@@ -275,50 +338,59 @@ extern "C" PUBLIC void vAppMain(void)
     ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
     ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 
-    // Initialize queue
+    // Initialize queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
     ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);
 
-    // Let the device go to sleep if there is nothing to do
-    DBG_vPrintf(TRUE, "vAppMain(): init PWRM...\n");
-    PWRM_vInit(E_AHI_SLEEP_DEEP);
+    // Initialize ZigBee stack queues
+    ZQ_vQueueCreate(&zps_msgMlmeDcfmInd, MLME_QUEUE_SIZE, sizeof(MAC_tsMlmeVsDcfmInd), (uint8*)asMacMlmeVsDcfmInd);
+    ZQ_vQueueCreate(&zps_msgMcpsDcfmInd, MCPS_QUEUE_SIZE, sizeof(MAC_tsMcpsVsDcfmInd), (uint8*)asMacMcpsDcfmInd);
+    ZQ_vQueueCreate(&zps_TimeEvents, TIMER_QUEUE_SIZE, sizeof(zps_tsTimeEvent), (uint8*)asTimeEvent);
+    ZQ_vQueueCreate(&zps_msgMcpsDcfm, MCPS_DCFM_QUEUE_SIZE,	sizeof(MAC_tsMcpsVsCfmData), (uint8*)asMacMcpsDcfm);
+    ZQ_vQueueCreate(&APP_msgBdbEvents, BDB_QUEUE_SIZE, sizeof(BDB_tsZpsAfEvent), (uint8*)asBdbEvent);
 
-    // PDU Manager initialization
-    DBG_vPrintf(TRUE, "vAppMain(): init PDUM...\n");
-    PDUM_vInit();
 
-    // PDU Manager initialization
+    // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
 
-    // Initialise ZBPro stack
-    DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)...\n");
-    ZPS_teStatus status = ZPS_eAplAfInit();
-    DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
-
-    DBG_vPrintf(TRUE, "vAppMain(): init Zigbee Class Library (ZCL)...\n");
-    status = eZCL_Initialise(&APP_ZCL_cbGeneralCallback, apduZCL);
+    DBG_vPrintf(TRUE, "vAppMain(): init Zigbee Class Library (ZCL)...  ");
+    ZPS_teStatus status = eZCL_Initialise(&APP_ZCL_cbGeneralCallback, apduZCL);
     DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
 
-    DBG_vPrintf(TRUE, "vAppMain(): register On/Off endpoint...\n");
+    DBG_vPrintf(TRUE, "vAppMain(): register On/Off endpoint...  ");
     status = eZLO_RegisterOnOffLightSwitchEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
-    DBG_vPrintf(TRACE_ZCL, "Chan Mask %08x\n", ZPS_psAplAibGetAib()->pau32ApsChannelMask[0]);
+
+    // Initialise Application Framework stack
+    DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
+    status = ZPS_eAplAfInit();
+    DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
+
+    // Initialize Base Class Behavior
+    DBG_vPrintf(TRUE, "vAppMain(): initialize base device behavior...\n");
+    BDB_tsInitArgs sInitArgs;
+    sInitArgs.hBdbEventsMsgQ = &APP_msgBdbEvents;
+    BDB_vInit(&sInitArgs);
 
     //vAPP_ZCL_DeviceSpecific_Init();
+
+    DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
+    BDB_vStart();
+
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
     {
+        zps_taskZPS();
+
+        bdb_taskBDB();
+
         ZTIMER_vTask();
 
-        vAHI_WatchdogRestart();
+        //APP_taskSwitch();
 
-        if(enabled == FALSE)
-        {
-            DBG_vPrintf(TRUE, "Scheduling sleep\n");
-            PWRM_vManagePower();
-        }
+        vAHI_WatchdogRestart();
     }
 }
 
@@ -327,20 +399,20 @@ static PWRM_DECLARE_CALLBACK_DESCRIPTOR(Wakeup);
 
 PWRM_CALLBACK(PreSleep)
 {
-	DBG_vPrintf(TRUE, "Going to sleep..\n\n");
-        DBG_vUartFlush();
+    DBG_vPrintf(TRUE, "Going to sleep..\n\n");
+    DBG_vUartFlush();
 
-	ZTIMER_vSleep();
+    ZTIMER_vSleep();
 
-        // Disable UART (if enabled)
-        vAHI_UartDisable(E_AHI_UART_0);
+    // Disable UART (if enabled)
+    vAHI_UartDisable(E_AHI_UART_0);
 
-	// clear interrupts
-        u32AHI_DioWakeStatus();                         
+    // clear interrupts
+    u32AHI_DioWakeStatus();
 
-	// Set the wake condition on falling edge of the button pin
-        vAHI_DioWakeEdge(0, BOARD_BTN_PIN);
-        vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
+    // Set the wake condition on falling edge of the button pin
+    vAHI_DioWakeEdge(0, BOARD_BTN_PIN);
+    vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
 }
 
 PWRM_CALLBACK(Wakeup)
