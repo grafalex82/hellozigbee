@@ -281,12 +281,161 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
 
+PRIVATE void vHandleDiscoveryComplete(ZPS_tsAfNwkDiscoveryEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "Network Discovery Complete: status %d\n", pEvent->eStatus);
+    DBG_vPrintf(TRUE, "    Network count: %d\n", pEvent->u8NetworkCount);
+    DBG_vPrintf(TRUE, "    Selected network: %d\n", pEvent->u8SelectedNetwork);
+    DBG_vPrintf(TRUE, "    Unscanned channels: %4x\n", pEvent->u32UnscannedChannels);
+
+    for(uint8 i = 0; i < pEvent->u8NetworkCount; i++)
+    {
+        DBG_vPrintf(TRUE, "    Network %d\n", i);
+
+        ZPS_tsNwkNetworkDescr * pNetwork = pEvent->psNwkDescriptors + i;
+
+        DBG_vPrintf(TRUE, "        Extended PAN ID : %08x%08x\n", (uint32)((pNetwork->u64ExtPanId >> 32)&0xffffffff), (uint32)(pNetwork->u64ExtPanId & 0xffffffff));
+        DBG_vPrintf(TRUE, "        Logical channel : %d\n", pNetwork->u8LogicalChan);
+        DBG_vPrintf(TRUE, "        Stack Profile: %d\n", pNetwork->u8StackProfile);
+        DBG_vPrintf(TRUE, "        ZigBee version: %d\n", pNetwork->u8ZigBeeVersion);
+        DBG_vPrintf(TRUE, "        Permit Joining: %d\n", pNetwork->u8PermitJoining);
+        DBG_vPrintf(TRUE, "        Router capacity: %d\n", pNetwork->u8RouterCapacity);
+        DBG_vPrintf(TRUE, "        End device capacity: %d\n", pNetwork->u8EndDeviceCapacity);
+    }
+
+
+    // Check if there is a suitable network to join
+    if(pEvent->u8SelectedNetwork == 0xff)
+    {
+        DBG_vPrintf(TRUE, "    No good network to join\n");
+        return;
+    }
+
+    // Join the network
+    ZPS_tsNwkNetworkDescr * pNetwork = pEvent->psNwkDescriptors + pEvent->u8SelectedNetwork;
+    DBG_vPrintf(TRUE, "Network Discovery Complete: Joining network %08x%08x\n", (uint32)((pNetwork->u64ExtPanId >> 32)&0xffffffff), (uint32)(pNetwork->u64ExtPanId & 0xffffffff));
+    ZPS_teStatus status = ZPS_eAplZdoJoinNetwork(pNetwork);
+    DBG_vPrintf(TRUE, "Network Discovery Complete: ZPS_eAplZdoJoinNetwork() status %d\n", status);
+}
+
+PRIVATE void vHandleDataConfirm(ZPS_tsAfDataConfEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "    ZPS_EVENT_APS_DATA_CONFIRM: SrcEP=%d DstEP=%d Status=%d\n",
+            pEvent->u8SrcEndpoint,
+            pEvent->u8DstEndpoint,
+            pEvent->u8Status);
+}
+
+PRIVATE void vHandleDataAck(ZPS_tsAfDataAckEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "    ZPS_EVENT_APS_DATA_ACK: SrcEP=%d DrcEP=%d Profile=%04x Cluster=%04x\n",
+                pEvent->u8SrcEndpoint,
+                pEvent->u8DstEndpoint,
+                pEvent->u16ProfileId,
+                pEvent->u16ClusterId);
+}
+
+PRIVATE void vHandleJoinedAsRouter(ZPS_tsAfNwkJoinedEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "    ZPS_EVENT_NWK_JOINED_AS_ROUTER: Addr=%04x, rejoin=%d, secured rejoin=%d\n",
+                pEvent->u16Addr,
+                pEvent->bRejoin,
+                pEvent->bSecuredRejoin);
+}
+
+PRIVATE void vHandleNwkStatusIndication(ZPS_tsAfNwkStatusIndEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "    ZPS_EVENT_NWK_STATUS_INDICATION: Addr:%04x Status:%02x\v",
+        pEvent->u16NwkAddr,
+        pEvent->u8Status);
+}
+
+PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
+{
+    DBG_vPrintf(TRUE, "Handle ZDO event: event type %d\n", psStackEvent->eType);
+
+    switch(psStackEvent->eType)
+    {
+        case ZPS_EVENT_APS_DATA_CONFIRM:
+            vHandleDataConfirm(&psStackEvent->uEvent.sApsDataConfirmEvent);
+            break;
+
+        case ZPS_EVENT_APS_DATA_ACK:
+            vHandleDataAck(&psStackEvent->uEvent.sApsDataAckEvent);
+            break;
+
+        case ZPS_EVENT_NWK_JOINED_AS_ROUTER:
+            vHandleJoinedAsRouter(&psStackEvent->uEvent.sNwkJoinedEvent);
+            break;
+
+        case ZPS_EVENT_NWK_STATUS_INDICATION:
+            vHandleNwkStatusIndication(&psStackEvent->uEvent.sNwkStatusIndicationEvent);
+            break;
+
+        case ZPS_EVENT_NWK_DISCOVERY_COMPLETE:
+            vHandleDiscoveryComplete(&psStackEvent->uEvent.sNwkDiscoveryEvent);
+            break;
+
+        default:
+            break;
+    }
+}
+
+PRIVATE void vAppHandleZdoEvents(BDB_tsZpsAfEvent *psZpsAfEvent)
+{
+    // Handle events depending on node state
+    // if(sDeviceDesc.eNodeState == E_RUNNING)
+        vHandleRunningStackEvent(&psZpsAfEvent->sStackEvent);
+}
+
+
+PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
+{
+    DBG_vPrintf(TRUE, "AF event callback: endpoint %d, event %d\n", psZpsAfEvent->u8EndPoint, psZpsAfEvent->sStackEvent.eType);
+
+//    if(psZpsAfEvent->u8EndPoint == app_u8GetDeviceEndpoint())
+//    {
+//        if((psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION) ||
+//           (psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_INTERPAN_DATA_INDICATION))
+//        {
+//            DBG_vPrintf(TRACE_SWITCH_NODE, "Pass to ZCL\n");
+//            APP_ZCL_vEventHandler(&psZpsAfEvent->sStackEvent);
+//        }
+//    }
+//    else
+    if(psZpsAfEvent->u8EndPoint == HELLOZIGBEE_ZDO_ENDPOINT)
+    {
+        // events for ep 0
+        vAppHandleZdoEvents(psZpsAfEvent);
+    }
+
+    // Ensure Freeing of Apdus
+    if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
+    {
+        DBG_vPrintf(TRUE, "AF event callback: freeing up data event APDU\n");
+        PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsDataIndEvent.hAPduInst);
+    }
+    else if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_INTERPAN_DATA_INDICATION)
+    {
+        DBG_vPrintf(TRUE, "AF event callback: freeing up inter-PAN data event APDU\n");
+        PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsInterPanDataIndEvent.hAPduInst);
+    }
+}
+
 PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 {
     switch(psBdbEvent->eEventType)
     {
+        case BDB_EVENT_ZPSAF:
+            vAppHandleAfEvent(&psBdbEvent->uEventData.sZpsAfEvent);
+            break;
+
         case BDB_EVENT_INIT_SUCCESS:
-            DBG_vPrintf(TRUE, "BDB event callback: : BdbInitSuccessful\n");
+            DBG_vPrintf(TRUE, "BDB event callback: BDB Init Successful\n");
+            break;
+
+        case BDB_EVENT_REJOIN_SUCCESS:
+            DBG_vPrintf(TRUE, "BDB event callback: Network Join Successful\n");
             break;
 
         default:
@@ -377,6 +526,13 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
     BDB_vStart();
+
+
+    // Start ZigBee stack
+    DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
+    ZPS_vDefaultStack();
+    status = ZPS_eAplZdoStartStack();
+    DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
 
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
