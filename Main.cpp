@@ -320,24 +320,26 @@ PRIVATE void vHandleDiscoveryComplete(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 
 PRIVATE void vHandleDataConfirm(ZPS_tsAfDataConfEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "    ZPS_EVENT_APS_DATA_CONFIRM: SrcEP=%d DstEP=%d Status=%d\n",
+    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_CONFIRM: SrcEP=%d DstEP=%d DstAddr=%04x Status=%d\n",
             pEvent->u8SrcEndpoint,
             pEvent->u8DstEndpoint,
+            pEvent->uDstAddr.u16Addr,
             pEvent->u8Status);
 }
 
 PRIVATE void vHandleDataAck(ZPS_tsAfDataAckEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "    ZPS_EVENT_APS_DATA_ACK: SrcEP=%d DrcEP=%d Profile=%04x Cluster=%04x\n",
+    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_ACK: SrcEP=%d DrcEP=%d DstAddr=%04x Profile=%04x Cluster=%04x\n",
                 pEvent->u8SrcEndpoint,
                 pEvent->u8DstEndpoint,
+                pEvent->u16DstAddr,
                 pEvent->u16ProfileId,
                 pEvent->u16ClusterId);
 }
 
 PRIVATE void vHandleJoinedAsRouter(ZPS_tsAfNwkJoinedEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "    ZPS_EVENT_NWK_JOINED_AS_ROUTER: Addr=%04x, rejoin=%d, secured rejoin=%d\n",
+    DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_JOINED_AS_ROUTER: Addr=%04x, rejoin=%d, secured rejoin=%d\n",
                 pEvent->u16Addr,
                 pEvent->bRejoin,
                 pEvent->bSecuredRejoin);
@@ -345,15 +347,13 @@ PRIVATE void vHandleJoinedAsRouter(ZPS_tsAfNwkJoinedEvent * pEvent)
 
 PRIVATE void vHandleNwkStatusIndication(ZPS_tsAfNwkStatusIndEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "    ZPS_EVENT_NWK_STATUS_INDICATION: Addr:%04x Status:%02x\v",
+    DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_STATUS_INDICATION: Addr:%04x Status:%02x\n",
         pEvent->u16NwkAddr,
         pEvent->u8Status);
 }
 
 PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
 {
-    DBG_vPrintf(TRUE, "Handle ZDO event: event type %d\n", psStackEvent->eType);
-
     switch(psStackEvent->eType)
     {
         case ZPS_EVENT_APS_DATA_CONFIRM:
@@ -377,6 +377,7 @@ PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
             break;
 
         default:
+            DBG_vPrintf(TRUE, "Handle ZDO event: event type %d\n", psStackEvent->eType);
             break;
     }
 }
@@ -391,8 +392,6 @@ PRIVATE void vAppHandleZdoEvents(BDB_tsZpsAfEvent *psZpsAfEvent)
 
 PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
 {
-    DBG_vPrintf(TRUE, "AF event callback: endpoint %d, event %d\n", psZpsAfEvent->u8EndPoint, psZpsAfEvent->sStackEvent.eType);
-
 //    if(psZpsAfEvent->u8EndPoint == app_u8GetDeviceEndpoint())
 //    {
 //        if((psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION) ||
@@ -408,6 +407,8 @@ PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
         // events for ep 0
         vAppHandleZdoEvents(psZpsAfEvent);
     }
+    else
+        DBG_vPrintf(TRUE, "AF event callback: endpoint %d, event %d\n", psZpsAfEvent->u8EndPoint, psZpsAfEvent->sStackEvent.eType);
 
     // Ensure Freeing of Apdus
     if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
@@ -527,10 +528,13 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
     BDB_vStart();
 
+    // Reset Zigbee stack to a very default state
+    ZPS_vDefaultStack();
+    ZPS_vSetKeys();
+    ZPS_eAplAibSetApsUseExtendedPanId(0);
 
     // Start ZigBee stack
     DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
-    ZPS_vDefaultStack();
     status = ZPS_eAplZdoStartStack();
     DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
 
