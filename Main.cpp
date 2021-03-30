@@ -352,6 +352,13 @@ PRIVATE void vHandleNwkStatusIndication(ZPS_tsAfNwkStatusIndEvent * pEvent)
         pEvent->u8Status);
 }
 
+PRIVATE void vHandleNwkFailedToJoin(ZPS_tsAfNwkJoinFailedEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_FAILED_TO_JOIN: Status: %02x Rejoin:%02x\n",
+        pEvent->u8Status,
+        pEvent->bRejoin);
+}
+
 PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
@@ -370,6 +377,10 @@ PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_NWK_STATUS_INDICATION:
             vHandleNwkStatusIndication(&psStackEvent->uEvent.sNwkStatusIndicationEvent);
+            break;
+
+        case ZPS_EVENT_NWK_FAILED_TO_JOIN:
+            vHandleNwkFailedToJoin(&psStackEvent->uEvent.sNwkJoinFailedEvent);
             break;
 
         case ZPS_EVENT_NWK_DISCOVERY_COMPLETE:
@@ -437,6 +448,14 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_REJOIN_SUCCESS:
             DBG_vPrintf(TRUE, "BDB event callback: Network Join Successful\n");
+            break;
+
+        case BDB_EVENT_REJOIN_FAILURE:
+            DBG_vPrintf(TRUE, "BDB event callback: Failed to rejoin\n");
+            break;
+
+        case BDB_EVENT_FAILURE_RECOVERY_FOR_REJOIN:
+            DBG_vPrintf(TRUE, "BDB event callback: Failure recovery for rejoin\n");
             break;
 
         default:
