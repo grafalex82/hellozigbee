@@ -76,6 +76,7 @@
 
 #define CLD_ONOFF
 #define ONOFF_CLIENT
+#define ONOFF_SERVER
 
 /****************************************************************************/
 /*             Basic Cluster - Optional Attributes                          */

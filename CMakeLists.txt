@@ -74,6 +74,7 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyServerCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOff.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Scenes.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/ScenesCommandHandler.c

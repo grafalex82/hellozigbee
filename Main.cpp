@@ -318,6 +318,17 @@ PRIVATE void vHandleDiscoveryComplete(ZPS_tsAfNwkDiscoveryEvent * pEvent)
     DBG_vPrintf(TRUE, "Network Discovery Complete: ZPS_eAplZdoJoinNetwork() status %d\n", status);
 }
 
+PRIVATE void vHandleDataIndication(ZPS_tsAfDataIndEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_INDICATION: SrcEP=%d DstEP=%d SrcAddr=%04x Cluster=%04x Status=%d\n",
+            pEvent->u8SrcEndpoint,
+            pEvent->u8DstEndpoint,
+            pEvent->uSrcAddress.u16Addr,
+            pEvent->u16ClusterId,
+            pEvent->eStatus);
+}
+
+
 PRIVATE void vHandleDataConfirm(ZPS_tsAfDataConfEvent * pEvent)
 {
     DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_CONFIRM: SrcEP=%d DstEP=%d DstAddr=%04x Status=%d\n",
@@ -363,6 +374,10 @@ PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
     {
+        case ZPS_EVENT_APS_DATA_INDICATION:
+            vHandleDataIndication(&psStackEvent->uEvent.sApsDataIndEvent);
+            break;
+
         case ZPS_EVENT_APS_DATA_CONFIRM:
             vHandleDataConfirm(&psStackEvent->uEvent.sApsDataConfirmEvent);
             break;
@@ -452,6 +467,10 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_REJOIN_FAILURE:
             DBG_vPrintf(TRUE, "BDB event callback: Failed to rejoin\n");
+            break;
+
+        case BDB_EVENT_NWK_STEERING_SUCCESS:
+            DBG_vPrintf(TRUE, "BDB event callback: Network steering success\n");
             break;
 
         case BDB_EVENT_FAILURE_RECOVERY_FOR_REJOIN:
@@ -556,7 +575,6 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
     status = ZPS_eAplZdoStartStack();
     DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
-
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)

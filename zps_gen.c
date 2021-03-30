@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Thu Mar 25 17:26:45 2021
+ * DATE:           Tue Mar 30 20:35:42 2021
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -674,7 +674,7 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[2] = {
     },
     {
         {
-            0x0000,
+            0x0104,
             0,
             0,
             1,
