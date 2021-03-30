@@ -26,9 +26,9 @@ ADD_DEFINITIONS(
         -DJENNIC_MAC_MiniMacShim
 
 	-DTRACE_ZCL=TRUE
-        -DDEBUG_BDB
+#        -DDEBUG_BDB
         -DDEBUG_CLD_ONOFF
-        -DDEBUG_ZQUEUE
+#        -DDEBUG_ZQUEUE
 
         -DBDB_SUPPORT_NWK_STEERING
 )
