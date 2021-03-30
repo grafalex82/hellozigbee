@@ -420,7 +420,7 @@ PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
             break;
 
         default:
-            DBG_vPrintf(TRUE, "Handle ZDO event: event type %d\n", psStackEvent->eType);
+            //DBG_vPrintf(TRUE, "Handle ZDO event: event type %d\n", psStackEvent->eType);
             break;
     }
 }
@@ -449,8 +449,11 @@ PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
     {
         vAppHandleZclEvents(&psZpsAfEvent->sStackEvent);
     }
-    else
+    else if (psZpsAfEvent->sStackEvent.eType != ZPS_EVENT_APS_DATA_CONFIRM &&
+             psZpsAfEvent->sStackEvent.eType != ZPS_EVENT_APS_DATA_ACK)
+    {
         DBG_vPrintf(TRUE, "AF event callback: endpoint %d, event %d\n", psZpsAfEvent->u8EndPoint, psZpsAfEvent->sStackEvent.eType);
+    }
 
     // Ensure Freeing of APDUs
     if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
