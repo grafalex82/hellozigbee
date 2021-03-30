@@ -370,7 +370,7 @@ PRIVATE void vHandleNwkFailedToJoin(ZPS_tsAfNwkJoinFailedEvent * pEvent)
         pEvent->bRejoin);
 }
 
-PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
+PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
     {
@@ -408,45 +408,35 @@ PRIVATE void vHandleRunningStackEvent(ZPS_tsAfEvent* psStackEvent)
     }
 }
 
-PRIVATE void vAppHandleZdoEvents(BDB_tsZpsAfEvent *psZpsAfEvent)
+PRIVATE void vAppHandleZclEvents(ZPS_tsAfEvent* psStackEvent)
 {
-    // Handle events depending on node state
-    // if(sDeviceDesc.eNodeState == E_RUNNING)
-        vHandleRunningStackEvent(&psZpsAfEvent->sStackEvent);
+    tsZCL_CallBackEvent sCallBackEvent;
+    sCallBackEvent.pZPSevent = psStackEvent;
+    sCallBackEvent.eEventType = E_ZCL_CBET_ZIGBEE_EVENT;
+    vZCL_EventHandler(&sCallBackEvent);
 }
-
 
 PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
 {
-//    if(psZpsAfEvent->u8EndPoint == app_u8GetDeviceEndpoint())
-//    {
-//        if((psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION) ||
-//           (psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_INTERPAN_DATA_INDICATION))
-//        {
-//            DBG_vPrintf(TRACE_SWITCH_NODE, "Pass to ZCL\n");
-//            APP_ZCL_vEventHandler(&psZpsAfEvent->sStackEvent);
-//        }
-//    }
-//    else
+
+
     if(psZpsAfEvent->u8EndPoint == HELLOZIGBEE_ZDO_ENDPOINT)
     {
         // events for ep 0
-        vAppHandleZdoEvents(psZpsAfEvent);
+        vAppHandleZdoEvents(&psZpsAfEvent->sStackEvent);
+    }
+    else if(psZpsAfEvent->u8EndPoint == HELLOZIGBEE_SWITCH_ENDPOINT &&
+            psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
+    {
+        vHandleDataIndication(&psZpsAfEvent->sStackEvent.uEvent.sApsDataIndEvent);
+        vAppHandleZclEvents(&psZpsAfEvent->sStackEvent);
     }
     else
         DBG_vPrintf(TRUE, "AF event callback: endpoint %d, event %d\n", psZpsAfEvent->u8EndPoint, psZpsAfEvent->sStackEvent.eType);
 
-    // Ensure Freeing of Apdus
+    // Ensure Freeing of APDUs
     if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
-    {
-        DBG_vPrintf(TRUE, "AF event callback: freeing up data event APDU\n");
         PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsDataIndEvent.hAPduInst);
-    }
-    else if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_INTERPAN_DATA_INDICATION)
-    {
-        DBG_vPrintf(TRUE, "AF event callback: freeing up inter-PAN data event APDU\n");
-        PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsInterPanDataIndEvent.hAPduInst);
-    }
 }
 
 PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)

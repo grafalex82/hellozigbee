@@ -60,10 +60,13 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_library_options.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_PDUbufferReadWrite.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_PDUbufferReadWriteString.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_readAttributesRequestHandle.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_readAttributesResponseHandle.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportManager.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_search.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_timer.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_transmit.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_WriteAttributesRequestHandle.c
 
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Alarms.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Basic.c
