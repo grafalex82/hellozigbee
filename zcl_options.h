@@ -93,19 +93,15 @@
 #define   CLD_BAS_ATTR_SW_BUILD_ID
 #define   CLD_BAS_ATTR_GENERIC_DEVICE_CLASS
 #define   CLD_BAS_ATTR_GENERIC_DEVICE_TYPE
-#define   CLD_BAS_ATTR_PRODUCT_CODE
-#define   CLD_BAS_ATTR_PRODUCT_URL
 
 #define CLD_BAS_APP_VERSION         (1)
 #define CLD_BAS_STACK_VERSION       (2)
 #define CLD_BAS_HARDWARE_VERSION    (1)
 #define CLD_BAS_MANUF_NAME_SIZE     (3)
-#define CLD_BAS_MODEL_ID_SIZE       (16)
+#define CLD_BAS_MODEL_ID_SIZE       (19)
 #define CLD_BAS_DATE_SIZE           (8)
-#define CLD_BAS_POWER_SOURCE        E_CLD_BAS_PS_BATTERY
-#define CLD_BAS_SW_BUILD_SIZE       (9)
-#define CLD_BAS_URL_SIZE            (12)
-#define CLD_BAS_PCODE_SIZE          (4)
+#define CLD_BAS_POWER_SOURCE        E_CLD_BAS_PS_SINGLE_PHASE_MAINS
+#define CLD_BAS_SW_BUILD_SIZE       (4)
 #define CLD_BAS_DEVICE_CLASS        (0)
 
 

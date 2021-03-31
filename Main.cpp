@@ -583,6 +583,13 @@ extern "C" PUBLIC void vAppMain(void)
     status = eZLO_RegisterOnOffLightSwitchEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
 
+    //Fill Basic cluster attributes
+    memcpy(sSwitch.sBasicServerCluster.au8ManufacturerName, "NXP", CLD_BAS_MANUF_NAME_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8ModelIdentifier, "Hello Zigbee Switch", CLD_BAS_MODEL_ID_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8DateCode, "20210331", CLD_BAS_DATE_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, "v0.1", CLD_BAS_SW_BUILD_SIZE);
+    sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
+
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
     status = ZPS_eAplAfInit();
@@ -593,8 +600,6 @@ extern "C" PUBLIC void vAppMain(void)
     BDB_tsInitArgs sInitArgs;
     sInitArgs.hBdbEventsMsgQ = &APP_msgBdbEvents;
     BDB_vInit(&sInitArgs);
-
-    //vAPP_ZCL_DeviceSpecific_Init();
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
     BDB_vStart();
