@@ -196,59 +196,81 @@ PUBLIC void wakeCallBack(void)
 
 PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "APP_ZCL_cbGeneralCallback(): Processing event %d\n", psEvent->eEventType);
+    DBG_vPrintf(TRUE, "ZCL General Callback: Processing event %d\n", psEvent->eEventType);
 
     switch (psEvent->eEventType)
     {
 
         case E_ZCL_CBET_UNHANDLED_EVENT:
-            DBG_vPrintf(TRACE_ZCL, "EVT: Unhandled Event\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: Unhandled Event\n");
             break;
 
         case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
-            DBG_vPrintf(TRACE_ZCL, "EVT: Read attributes response\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: Read attributes response\n");
             break;
 
         case E_ZCL_CBET_READ_REQUEST:
-            DBG_vPrintf(TRACE_ZCL, "EVT: Read request\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: Read request\n");
             break;
 
         case E_ZCL_CBET_DEFAULT_RESPONSE:
-            DBG_vPrintf(TRACE_ZCL, "EVT: Default response\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: Default response\n");
             break;
 
         case E_ZCL_CBET_ERROR:
-            DBG_vPrintf(TRACE_ZCL, "EVT: Error\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: Error\n");
             break;
 
         case E_ZCL_CBET_TIMER:
             break;
 
         case E_ZCL_CBET_ZIGBEE_EVENT:
-            DBG_vPrintf(TRACE_ZCL, "EVT: ZigBee\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: ZigBee\n");
             break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:
-            DBG_vPrintf(TRACE_ZCL, "EP EVT: Custom\r\n");
+            DBG_vPrintf(TRUE, "ZCL General Callback: Custom\n");
             break;
 
         default:
-            DBG_vPrintf(TRACE_ZCL, "Invalid event type (%d) in APP_ZCL_cbGeneralCallback\r\n", psEvent->eEventType);
+            DBG_vPrintf(TRUE, "ZCL General Callback: Invalid event type (%d) in APP_ZCL_cbGeneralCallback\n", psEvent->eEventType);
             break;
     }
 }
 
+PRIVATE void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
+{
+    // Read command header
+    tsZCL_HeaderParams headerParams;
+    uint16 inputOffset = u16ZCL_ReadCommandHeader(psEvent->pZPSevent->uEvent.sApsDataIndEvent.hAPduInst,
+                                              &headerParams);
+
+    // read input attribute Id
+    uint16 attributeId;
+    inputOffset += u16ZCL_APduInstanceReadNBO(psEvent->pZPSevent->uEvent.sApsDataIndEvent.hAPduInst,
+                                              inputOffset,
+                                              E_ZCL_ATTRIBUTE_ID,
+                                              &attributeId);
+
+
+    DBG_vPrintf(TRUE, "ZCL Read Attribute: EP=%d Cluster=%04x Command=%02x Attr=%04x\n",
+                psEvent->u8EndPoint,
+                psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId,
+                headerParams.u8CommandIdentifier,
+                attributeId);
+}
+
 PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "APP_ZCL_cbEndpointCallback(): Processing event %d\n", psEvent->eEventType);
-
     switch (psEvent->eEventType)
     {
+        case E_ZCL_CBET_READ_REQUEST:
+            vDumpZclReadRequest(psEvent);
+            break;
+
         case E_ZCL_CBET_UNHANDLED_EVENT:
 
         case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
-
-        case E_ZCL_CBET_READ_REQUEST:
 
         case E_ZCL_CBET_DEFAULT_RESPONSE:
 
@@ -257,20 +279,20 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         case E_ZCL_CBET_TIMER:
 
         case E_ZCL_CBET_ZIGBEE_EVENT:
-            DBG_vPrintf(TRACE_ZCL, "EP EVT:No action (evt type %d)\r\n", psEvent->eEventType);
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: No action (event type %d)\n", psEvent->eEventType);
             break;
 
         case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
-            DBG_vPrintf(TRACE_ZCL, " Read Attrib Rsp %d %02x\n", psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Read Attrib Rsp %d %02x\n", psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
                 *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
             break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:
-            DBG_vPrintf(TRACE_ZCL, "EP EVT: Custom %04x\r\n", psEvent->uMessage.sClusterCustomMessage.u16ClusterId);
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Custom %04x\r\n", psEvent->uMessage.sClusterCustomMessage.u16ClusterId);
             break;
 
         default:
-            DBG_vPrintf(TRACE_ZCL, "EP EVT: Invalid event type (%d) in APP_ZCL_cbEndpointCallback\r\n", psEvent->eEventType);
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Invalid event type (%d) in APP_ZCL_cbEndpointCallback\r\n", psEvent->eEventType);
             break;
     }
 }
