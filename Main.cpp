@@ -139,38 +139,38 @@ PUBLIC void blinkFunc(void *pvParam)
 
 PUBLIC void buttonScanFunc(void *pvParam)
 {
-	static int duration = 0;
+    static int duration = 0;
 
-	uint32 input = u32AHI_DioReadInput();
-	bool btnState = (input & BOARD_BTN_PIN) == 0;
+    uint32 input = u32AHI_DioReadInput();
+    bool btnState = (input & BOARD_BTN_PIN) == 0;
 
-	if(btnState)
-	{
-		duration++;
-		DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", duration);
-	}
-	else
-	{
-		// detect long press
-		if(duration > 200)
-		{
-			DBG_vPrintf(TRUE, "Button released. Long press detected\n");
-			ButtonPressType value = BUTTON_LONG_PRESS;
-			ZQ_bQueueSend(&queueHandle, (uint8*)&value);
-		}
+    if(btnState)
+    {
+        duration++;
+        DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", duration);
+    }
+    else
+    {
+        // detect long press
+        if(duration > 200)
+        {
+            DBG_vPrintf(TRUE, "Button released. Long press detected\n");
+            ButtonPressType value = BUTTON_LONG_PRESS;
+            ZQ_bQueueSend(&queueHandle, (uint8*)&value);
+        }
 
-		// detect short press
-		else if(duration > 5)
-		{
-			DBG_vPrintf(TRUE, "Button released. Short press detected\n");
-			ButtonPressType value = BUTTON_SHORT_PRESS;
-			ZQ_bQueueSend(&queueHandle, &value);
-		}
+        // detect short press
+        else if(duration > 5)
+        {
+            DBG_vPrintf(TRUE, "Button released. Short press detected\n");
+            ButtonPressType value = BUTTON_SHORT_PRESS;
+            ZQ_bQueueSend(&queueHandle, &value);
+        }
 
-		duration = 0;
-	}
+        duration = 0;
+    }
 
-	ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+    ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 }
 
 extern "C" PUBLIC void vISR_SystemController(void)
@@ -584,10 +584,10 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
 
     //Fill Basic cluster attributes
-    memcpy(sSwitch.sBasicServerCluster.au8ManufacturerName, "NXP", CLD_BAS_MANUF_NAME_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8ModelIdentifier, "Hello Zigbee Switch", CLD_BAS_MODEL_ID_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8DateCode, "20210331", CLD_BAS_DATE_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, "v0.1", CLD_BAS_SW_BUILD_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8ManufacturerName, CLD_BAS_MANUF_NAME_STR, CLD_BAS_MANUF_NAME_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8ModelIdentifier, CLD_BAS_MODEL_ID_STR, CLD_BAS_MODEL_ID_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
+    memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
 
     // Initialise Application Framework stack
