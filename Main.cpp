@@ -272,6 +272,8 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
         case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
 
         case E_ZCL_CBET_DEFAULT_RESPONSE:
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: DEFAULT_RESPONSE received. No action\n");
+            break;
 
         case E_ZCL_CBET_ERROR:
 
@@ -610,12 +612,13 @@ PRIVATE void APP_vTaskSwitch()
             addr.uAddress.u16DestinationAddress = 0x0000;
             addr.eAddressMode = E_ZCL_AM_SHORT;
 
-            DBG_vPrintf(TRUE, "Reporing attributes... ", value);
-            teZCL_Status status = eZCL_ReportAllAttributes(&addr,
-                                                           GENERAL_CLUSTER_ID_ONOFF,
-                                                           HELLOZIGBEE_SWITCH_ENDPOINT,
-                                                           1,
-                                                           myPDUM_thAPduInstance);
+            DBG_vPrintf(TRUE, "Reporing attribute... ", value);
+            teZCL_Status status = eZCL_ReportAttribute(&addr,
+                                                       GENERAL_CLUSTER_ID_ONOFF,
+                                                       E_CLD_ONOFF_ATTR_ID_ONOFF,
+                                                       HELLOZIGBEE_SWITCH_ENDPOINT,
+                                                       1,
+                                                       myPDUM_thAPduInstance);
             DBG_vPrintf(TRUE, "status: %02x\n", status);
 
             PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
