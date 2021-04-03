@@ -36,23 +36,6 @@ extern "C"
 }
 
 
-
-tsZCL_AttributeReportingConfigurationRecord switchReports[ZCL_NUMBER_OF_REPORTS] =
-{
-    {
-        0,                                          // Direction: Server to Client
-        E_ZCL_BOOL,                                 // Attribute type
-        E_CLD_ONOFF_ATTR_ID_ONOFF,                  // Attribute ID
-        ZLO_MIN_REPORT_INTERVAL,                    // Min reporting interval
-        ZLO_MAX_REPORT_INTERVAL,                    // Max reporting interval
-        REPORTS_OF_ATTRIBUTE_NOT_SUBJECT_TO_TIMEOUT,   // Attribute value does not expire
-        {
-            0                                       // Minimum reportable change
-        }
-    }
-};
-
-
 #define BOARD_LED_BIT               (17)
 #define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
 
@@ -631,32 +614,6 @@ PRIVATE void APP_vTaskSwitch()
     }
 }
 
-PRIVATE void vRegisterEndPointAttributes(void)
-{
-    DBG_vPrintf(TRUE, "Register endpoint attributes:\n");
-
-    for(uint8 i=0; i<ZCL_NUMBER_OF_REPORTS; i++)
-    {
-        teZCL_Status status = eZCL_CreateLocalReport( HELLOZIGBEE_SWITCH_ENDPOINT,      // Endpoint ID
-                                                        GENERAL_CLUSTER_ID_ONOFF,       // Cluster ID
-                                                        FALSE,                          // Manufacturer specific
-                                                        TRUE,                           // Is server attribute?
-                                                        switchReports + i);             // report record
-        DBG_vPrintf(TRUE, "    Register attribute %04x status %02x\n", switchReports[i].u16AttributeEnum, status);
-
-
-        status = eZCL_SetReportableFlag(HELLOZIGBEE_SWITCH_ENDPOINT,    // Endpoint ID
-                                        GENERAL_CLUSTER_ID_ONOFF,       // Cluster ID
-                                        TRUE,                           // Is server attribute?
-                                        FALSE,                          // Manufacturer specific
-                                        switchReports[i].u16AttributeEnum   // Attribute ID
-                                        );
-
-        DBG_vPrintf(TRUE, "    Attribute reportable flag set %02x\n", status);
-    }
-
-}
-
 extern "C" PUBLIC void vAppMain(void)
 {
     // Initialize the hardware
@@ -729,9 +686,6 @@ extern "C" PUBLIC void vAppMain(void)
     memcpy(sSwitch.sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
     memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
-
-    // Register attributes
-    vRegisterEndPointAttributes();
 
     // Set the initial value
     restoreBlinkMode();
