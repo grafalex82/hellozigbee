@@ -55,6 +55,11 @@
 #define ZCL_ATTRIBUTE_READ_CLIENT_SUPPORTED
 #define ZCL_ATTRIBUTE_WRITE_SERVER_SUPPORTED
 
+
+#define ZCL_NUMBER_OF_REPORTS     1
+#define ZLO_MIN_REPORT_INTERVAL   1
+#define ZLO_MAX_REPORT_INTERVAL   15
+
 /* Enable wild card profile */
 #define ZCL_ALLOW_WILD_CARD_PROFILE
 /****************************************************************************/

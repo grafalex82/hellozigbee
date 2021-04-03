@@ -23,7 +23,8 @@ extern "C"
     }
 
     // Zigbee cluster includes
-    #include "on_off_light_switch.h"
+    #include "on_off_light.h"
+    #include "OnOff.h"
 }
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
@@ -35,6 +36,23 @@ extern "C"
 }
 
 
+
+tsZCL_AttributeReportingConfigurationRecord switchReports[ZCL_NUMBER_OF_REPORTS] =
+{
+    {
+        0,                                          // Direction: Server to Client
+        E_ZCL_BOOL,                                 // Attribute type
+        E_CLD_ONOFF_ATTR_ID_ONOFF,                  // Attribute ID
+        ZLO_MIN_REPORT_INTERVAL,                    // Min reporting interval
+        ZLO_MAX_REPORT_INTERVAL,                    // Max reporting interval
+        REPORTS_OF_ATTRIBUTE_NOT_SUBJECT_TO_TIMEOUT,   // Attribute value does not expire
+        {
+            0                                       // Minimum reportable change
+        }
+    }
+};
+
+
 #define BOARD_LED_BIT               (17)
 #define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
 
@@ -42,28 +60,24 @@ extern "C"
 #define BOARD_BTN_PIN               (1UL << BOARD_BTN_BIT)
 
 #define PDM_ID_BLINK_MODE   	    0x2
-#define BLINK_MODE_SLOW		    0
-#define BLINK_MODE_FAST		    1
 
-uint8 blinkMode = BLINK_MODE_SLOW;
-
-tsZLO_OnOffLightSwitchDevice sSwitch;
+tsZLO_OnOffLightDevice sSwitch;
 
 
-
-void storeBlinkMode(uint8 mode)
+void storeBlinkMode(bool_t blinkMode)
 {
-	blinkMode = mode;
-	PDM_teStatus status = PDM_eSaveRecordData(PDM_ID_BLINK_MODE, &blinkMode, sizeof(blinkMode));
-	DBG_vPrintf(TRUE, "Storing blink mode. Status %d, value %d\n", status, blinkMode);	
+    PDM_teStatus status = PDM_eSaveRecordData(PDM_ID_BLINK_MODE, &blinkMode, sizeof(blinkMode));
+    DBG_vPrintf(TRUE, "Storing blink mode. Status %d, value %d\n", status, blinkMode);
 }
 
 void restoreBlinkMode()
 {
 	uint16 readBytes;
-	PDM_teStatus status = PDM_eReadDataFromRecord(PDM_ID_BLINK_MODE, &blinkMode, sizeof(blinkMode), &readBytes);
-
-	DBG_vPrintf(TRUE, "Reading blink mode. Status %d, size %d, value %d\n", status, readBytes, blinkMode);	
+    PDM_teStatus status1 = PDM_eReadDataFromRecord(PDM_ID_BLINK_MODE,
+                                                   &sSwitch.sOnOffServerCluster.bOnOff,
+                                                   sizeof(zbool),
+                                                   &readBytes);
+    DBG_vPrintf(TRUE, "Reading blink mode. Status %d, size %d, value %d\n", status1, readBytes, sSwitch.sOnOffServerCluster.bOnOff);
 }
 
 
@@ -78,8 +92,8 @@ typedef enum
 	BUTTON_LONG_PRESS
 } ButtonPressType;
 
-ButtonPressType queue[3];
-tszQueue queueHandle;
+ButtonPressType buttonQueue[3];
+tszQueue buttonQueueHandle;
 
 
 #define RUN_LATER_QUEUE_SIZE 20
@@ -133,36 +147,9 @@ PRIVATE tszQueue APP_msgBdbEvents;
 
 
 
-uint8 enabled = TRUE;
-
 PUBLIC void blinkFunc(void *pvParam)
 {
-	ButtonPressType value;	
-	if(ZQ_bQueueReceive(&queueHandle, (uint8*)&value))
-	{
-		DBG_vPrintf(TRUE, "Processing message in blink task\n");
-
-		if(value == BUTTON_SHORT_PRESS)
-		{
-			blinkMode = (blinkMode == BLINK_MODE_FAST) ? BLINK_MODE_SLOW : BLINK_MODE_FAST;
-			storeBlinkMode(blinkMode);
-		}
-
-		if(value == BUTTON_LONG_PRESS)
-		{
-			DBG_vPrintf(TRUE, "Stop Blinking\n");
-			vAHI_DioSetOutput(BOARD_LED_PIN, 0);
-			enabled = FALSE;
-		}
-	}
-
-	if(enabled)
-	{
-		uint32 currentState = u32AHI_DioReadInput();
-		vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
-	}
-
-	ZTIMER_eStart(blinkTimerHandle, (blinkMode == BLINK_MODE_FAST) ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
+    ZTIMER_eStart(blinkTimerHandle, sSwitch.sOnOffServerCluster.bOnOff ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
 }
 
 
@@ -185,7 +172,7 @@ PUBLIC void buttonScanFunc(void *pvParam)
         {
             DBG_vPrintf(TRUE, "Button released. Long press detected\n");
             ButtonPressType value = BUTTON_LONG_PRESS;
-            ZQ_bQueueSend(&queueHandle, (uint8*)&value);
+            ZQ_bQueueSend(&buttonQueueHandle, (uint8*)&value);
         }
 
         // detect short press
@@ -193,7 +180,7 @@ PUBLIC void buttonScanFunc(void *pvParam)
         {
             DBG_vPrintf(TRUE, "Button released. Short press detected\n");
             ButtonPressType value = BUTTON_SHORT_PRESS;
-            ZQ_bQueueSend(&queueHandle, &value);
+            ZQ_bQueueSend(&buttonQueueHandle, &value);
         }
 
         duration = 0;
@@ -204,24 +191,7 @@ PUBLIC void buttonScanFunc(void *pvParam)
 
 extern "C" PUBLIC void vISR_SystemController(void)
 {
-    // clear pending DIO changed bits by reading register
-    uint32 u32IOStatus = u32AHI_DioInterruptStatus();
-
-    DBG_vPrintf(TRUE, "In vISR_SystemController\n");
-
-    if(u32IOStatus & BOARD_BTN_PIN)
-    {
-        DBG_vPrintf(TRUE, "Button interrupt\n");
-        enabled = TRUE;
-        PWRM_vWakeInterruptCallback();
-    }
 }
-
-PUBLIC void wakeCallBack(void)
-{
-    DBG_vPrintf(TRUE, "wakeCallBack()\n");
-}
-
 
 PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
 {
@@ -332,6 +302,7 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
 
+#if 0
 PRIVATE void vGetCoordinatorEndpoints(uint8)
 {
     PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
@@ -354,7 +325,7 @@ PRIVATE void vGetCoordinatorEndpoints(uint8)
 
     DBG_vPrintf(TRUE, "Sent Active endpoints request to coordinator %d\n", status);
 }
-
+#endif
 
 PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
 {
@@ -391,7 +362,7 @@ PRIVATE void vHandleDiscoveryComplete(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 
     // Join the network
     ZPS_tsNwkNetworkDescr * pNetwork = pEvent->psNwkDescriptors + pEvent->u8SelectedNetwork;
-    DBG_vPrintf(TRUE, "Network Discovery Complete: Joining network %08x%08x\n", (uint32)((pNetwork->u64ExtPanId >> 32)&0xffffffff), (uint32)(pNetwork->u64ExtPanId & 0xffffffff));
+    DBG_vPrintf(TRUE, "Network Discovery Complete: Joining network %016llx\n", pNetwork->u64ExtPanId);
     ZPS_teStatus status = ZPS_eAplZdoJoinNetwork(pNetwork);
     DBG_vPrintf(TRUE, "Network Discovery Complete: ZPS_eAplZdoJoinNetwork() status %d\n", status);
 }
@@ -409,7 +380,7 @@ PRIVATE void vDumpDiscoveryCompleteEvent(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 
         ZPS_tsNwkNetworkDescr * pNetwork = pEvent->psNwkDescriptors + i;
 
-        DBG_vPrintf(TRUE, "        Extended PAN ID : %08x%08x\n", (uint32)((pNetwork->u64ExtPanId >> 32)&0xffffffff), (uint32)(pNetwork->u64ExtPanId & 0xffffffff));
+        DBG_vPrintf(TRUE, "        Extended PAN ID : %016llx\n", pNetwork->u64ExtPanId);
         DBG_vPrintf(TRUE, "        Logical channel : %d\n", pNetwork->u8LogicalChan);
         DBG_vPrintf(TRUE, "        Stack Profile: %d\n", pNetwork->u8StackProfile);
         DBG_vPrintf(TRUE, "        ZigBee version: %d\n", pNetwork->u8ZigBeeVersion);
@@ -623,6 +594,65 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
     }
 }
 
+PRIVATE void APP_vTaskSwitch()
+{
+    ButtonPressType value;
+    if(ZQ_bQueueReceive(&buttonQueueHandle, (uint8*)&value))
+    {
+        DBG_vPrintf(TRUE, "Processing button message %d\n", value);
+
+        if(value == BUTTON_SHORT_PRESS)
+        {
+            PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
+
+            // Destination address - 0x0000 (coordinator)
+            tsZCL_Address addr;
+            addr.uAddress.u16DestinationAddress = 0x0000;
+            addr.eAddressMode = E_ZCL_AM_SHORT;
+
+            DBG_vPrintf(TRUE, "Reporing attributes... ", value);
+            teZCL_Status status = eZCL_ReportAllAttributes(&addr,
+                                                           GENERAL_CLUSTER_ID_ONOFF,
+                                                           HELLOZIGBEE_SWITCH_ENDPOINT,
+                                                           1,
+                                                           myPDUM_thAPduInstance);
+            DBG_vPrintf(TRUE, "status: %02x\n", status);
+
+            PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
+        }
+
+        if(value == BUTTON_LONG_PRESS)
+        {
+            // TODO: add network join here
+        }
+    }
+}
+
+PRIVATE void vRegisterEndPointAttributes(void)
+{
+    DBG_vPrintf(TRUE, "Register endpoint attributes:\n");
+
+    for(uint8 i=0; i<ZCL_NUMBER_OF_REPORTS; i++)
+    {
+        teZCL_Status status = eZCL_CreateLocalReport( HELLOZIGBEE_SWITCH_ENDPOINT,      // Endpoint ID
+                                                        GENERAL_CLUSTER_ID_ONOFF,       // Cluster ID
+                                                        FALSE,                          // Manufacturer specific
+                                                        TRUE,                           // Is server attribute?
+                                                        switchReports + i);             // report record
+        DBG_vPrintf(TRUE, "    Register attribute %04x status %02x\n", switchReports[i].u16AttributeEnum, status);
+
+
+        status = eZCL_SetReportableFlag(HELLOZIGBEE_SWITCH_ENDPOINT,    // Endpoint ID
+                                        GENERAL_CLUSTER_ID_ONOFF,       // Cluster ID
+                                        TRUE,                           // Is server attribute?
+                                        FALSE,                          // Manufacturer specific
+                                        switchReports[i].u16AttributeEnum   // Attribute ID
+                                        );
+
+        DBG_vPrintf(TRUE, "    Attribute reportable flag set %02x\n", status);
+    }
+
+}
 
 extern "C" PUBLIC void vAppMain(void)
 {
@@ -637,7 +667,6 @@ extern "C" PUBLIC void vAppMain(void)
     // Restore blink mode from EEPROM
     DBG_vPrintf(TRUE, "vAppMain(): init PDM...\n");
     PDM_eInitialise(0);
-    restoreBlinkMode();
     DBG_vPrintf(TRUE, "vAppMain(): PDM Capacity %d Occupancy %d\n",
             u8PDM_CalculateFileSystemCapacity(),
             u8PDM_GetFileSystemOccupancy() );
@@ -647,8 +676,6 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): init GPIO...\n");
     vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
     vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
-    vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
-    vAHI_DioInterruptEnable(BOARD_BTN_PIN, 0);
 
     // Initialize power manager and sleep mode
     DBG_vPrintf(TRUE, "vAppMain(): init PWRM...\n");
@@ -669,7 +696,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
-    ZQ_vQueueCreate(&queueHandle, 3, sizeof(ButtonPressType), (uint8*)queue);
+    ZQ_vQueueCreate(&buttonQueueHandle, 3, sizeof(ButtonPressType), (uint8*)buttonQueue);
 
     // Initialize ZigBee stack queues
     ZQ_vQueueCreate(&zps_msgMlmeDcfmInd, MLME_QUEUE_SIZE, sizeof(MAC_tsMlmeVsDcfmInd), (uint8*)asMacMlmeVsDcfmInd);
@@ -690,7 +717,7 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
 
     DBG_vPrintf(TRUE, "vAppMain(): register On/Off endpoint...  ");
-    status = eZLO_RegisterOnOffLightSwitchEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
+    status = eZLO_RegisterOnOffLightEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
 
     //Fill Basic cluster attributes
@@ -699,6 +726,12 @@ extern "C" PUBLIC void vAppMain(void)
     memcpy(sSwitch.sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
     memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
+
+    // Register attributes
+    vRegisterEndPointAttributes();
+
+    // Set the initial value
+    restoreBlinkMode();
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
@@ -733,7 +766,6 @@ extern "C" PUBLIC void vAppMain(void)
 
         ZTIMER_vTask();
 
-        //APP_taskSwitch();
         uint32 runLaterDelay;
         if(ZTIMER_eGetState(runLaterTimerHandle) != E_ZTIMER_STATE_RUNNING &&
            ZQ_bQueueReceive(&runLaterDelayQueueHandle, (uint8*)&runLaterDelay))
@@ -743,6 +775,7 @@ extern "C" PUBLIC void vAppMain(void)
             ZTIMER_eStart(runLaterTimerHandle, runLaterDelay);
         }
 
+        APP_vTaskSwitch();
 
         vAHI_WatchdogRestart();
     }

@@ -63,6 +63,9 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_readAttributesRequestHandle.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_readAttributesResponseHandle.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportManager.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportMaths.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportStringHandling.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportStructure.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_search.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_timer.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_transmit.c
@@ -82,7 +85,7 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Scenes.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/ScenesCommandHandler.c
 
-        ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Source/on_off_light_switch.c
+        ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Source/on_off_light.c
 
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_fr.c
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_start.c
@@ -131,6 +134,7 @@ INCLUDE_DIRECTORIES(
 
     ${SDK_PREFIX}/Components/ZCIF/Include
     ${SDK_PREFIX}/Components/ZCL/Clusters/General/Include
+    ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Include
     ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Include
     ${SDK_PREFIX}/Components/ZigbeeCommon/Include
     ${SDK_PREFIX}/Components/ZPSAPL/Include
