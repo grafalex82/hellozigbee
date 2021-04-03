@@ -51,9 +51,6 @@ tsZLO_OnOffLightSwitchDevice sSwitch;
 
 
 
-
-
-
 void storeBlinkMode(uint8 mode)
 {
 	blinkMode = mode;
@@ -70,9 +67,10 @@ void restoreBlinkMode()
 }
 
 
-ZTIMER_tsTimer timers[2 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[3 + BDB_ZTIMER_STORAGE];
 uint8 blinkTimerHandle;
 uint8 buttonScanTimerHandle;
+uint8 runLaterTimerHandle;
 
 typedef enum
 {
@@ -82,6 +80,37 @@ typedef enum
 
 ButtonPressType queue[3];
 tszQueue queueHandle;
+
+
+#define RUN_LATER_QUEUE_SIZE 20
+typedef void (*runLaterCallback)(uint8);
+uint32 runLaterDelayQueue[RUN_LATER_QUEUE_SIZE];
+uint8 runLaterParamsQueue[RUN_LATER_QUEUE_SIZE];
+runLaterCallback runLaterCallbackQueue[RUN_LATER_QUEUE_SIZE];
+
+PRIVATE tszQueue runLaterDelayQueueHandle;
+PRIVATE tszQueue runLaterCallbacksQueueHandle;
+PRIVATE tszQueue runLaterParamsQueueHandle;
+
+
+void runLater(uint32 delay, runLaterCallback cb, uint8 param)
+{
+    ZQ_bQueueSend(&runLaterDelayQueueHandle, (uint8*)&delay);
+    ZQ_bQueueSend(&runLaterCallbacksQueueHandle, (uint8*)&cb);
+    ZQ_bQueueSend(&runLaterParamsQueueHandle, (uint8*)&param);
+}
+
+PUBLIC void runLaterFunc(void *pvParam)
+{
+    DBG_vPrintf(TRUE, "runLaterFunc()\n");
+
+    runLaterCallback cb;
+    ZQ_bQueueReceive(&runLaterCallbacksQueueHandle, (uint8*)&cb);
+    uint8 param;
+    ZQ_bQueueReceive(&runLaterParamsQueueHandle, (uint8*)&param);
+    (*cb)(param);
+}
+
 
 #define BDB_QUEUE_SIZE              3
 #define MLME_QUEUE_SIZE             10
@@ -303,6 +332,54 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
 
+PRIVATE void vGetCoordinatorEndpoints(uint8)
+{
+    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
+
+    // Destination address - 0x0000 (Coordinator)
+    ZPS_tuAddress uDstAddr;
+    uDstAddr.u16Addr = 0;
+
+    // Active Endpoints request
+    ZPS_tsAplZdpActiveEpReq sNodeDescReq;
+    sNodeDescReq.u16NwkAddrOfInterest = uDstAddr.u16Addr;
+
+    // Send the request
+    uint8 u8SeqNumber;
+    ZPS_teStatus status = ZPS_eAplZdpActiveEpRequest(hAPduInst,
+                                                     uDstAddr,
+                                                     FALSE,       // bExtAddr
+                                                     &u8SeqNumber,
+                                                     &sNodeDescReq);
+
+    DBG_vPrintf(TRUE, "Sent Active endpoints request to coordinator %d\n", status);
+}
+
+
+PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
+{
+    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
+
+    // Destination address - 0x0000 (Coordinator)
+    ZPS_tuAddress uDstAddr;
+    uDstAddr.u16Addr = 0;
+
+    // Simple Descriptor request
+    ZPS_tsAplZdpSimpleDescReq sSimpleDescReq;
+    sSimpleDescReq.u16NwkAddrOfInterest = uDstAddr.u16Addr;
+    sSimpleDescReq.u8EndPoint = ep;
+
+    // Send the request
+    uint8 u8SeqNumber;
+    ZPS_teStatus status = ZPS_eAplZdpSimpleDescRequest(hAPduInst,
+                                                     uDstAddr,
+                                                     FALSE,       // bExtAddr
+                                                     &u8SeqNumber,
+                                                     &sSimpleDescReq);
+
+    DBG_vPrintf(TRUE, "Sent Simple Descriptor request to coordinator for EP %d (status %d)\n", ep, status);
+}
+
 PRIVATE void vHandleDiscoveryComplete(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 {
     // Check if there is a suitable network to join
@@ -433,12 +510,38 @@ PRIVATE void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
     }
 }
 
+PRIVATE void vHandleZdoDataIndication(ZPS_tsAfEvent * pEvent)
+{
+    ZPS_tsAfZdpEvent zdpEvent;
+
+    switch(pEvent->uEvent.sApsDataIndEvent.u16ClusterId)
+    {
+        case ZPS_ZDP_ACTIVE_EP_RSP_CLUSTER_ID:
+        {
+            bool res = zps_bAplZdpUnpackActiveEpResponse(pEvent, &zdpEvent);
+            DBG_vPrintf(TRUE, "Unpacking Active Endpoint Response: Status: %02x res:%02x\n", zdpEvent.uZdpData.sActiveEpRsp.u8Status, res);
+            for(uint8 i=0; i<zdpEvent.uZdpData.sActiveEpRsp.u8ActiveEpCount; i++)
+            {
+                uint8 ep = zdpEvent.uLists.au8Data[i];
+                DBG_vPrintf(TRUE, "Scheduling simple descriptor request for EP %d\n", ep);
+
+                runLater(1000, vSendSimpleDescriptorReq, ep);
+            }
+        }
+    }
+}
+
+
 PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
     {
         case ZPS_EVENT_NWK_DISCOVERY_COMPLETE:
             vHandleDiscoveryComplete(&psStackEvent->uEvent.sNwkDiscoveryEvent);
+            break;
+
+        case ZPS_EVENT_APS_DATA_INDICATION:
+            vHandleZdoDataIndication(psStackEvent);
             break;
 
         default:
@@ -482,6 +585,7 @@ PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
         PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsDataIndEvent.hAPduInst);
 }
 
+
 PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 {
     switch(psBdbEvent->eEventType)
@@ -496,6 +600,9 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_REJOIN_SUCCESS:
             DBG_vPrintf(TRUE, "BDB event callback: Network Join Successful\n");
+
+            runLater(15000, vGetCoordinatorEndpoints, 0);
+
             break;
 
         case BDB_EVENT_REJOIN_FAILURE:
@@ -558,6 +665,7 @@ extern "C" PUBLIC void vAppMain(void)
     ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
     ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
     ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+    ZTIMER_eOpen(&runLaterTimerHandle, runLaterFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
 
     // Initialize queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
@@ -569,7 +677,9 @@ extern "C" PUBLIC void vAppMain(void)
     ZQ_vQueueCreate(&zps_TimeEvents, TIMER_QUEUE_SIZE, sizeof(zps_tsTimeEvent), (uint8*)asTimeEvent);
     ZQ_vQueueCreate(&zps_msgMcpsDcfm, MCPS_DCFM_QUEUE_SIZE,	sizeof(MAC_tsMcpsVsCfmData), (uint8*)asMacMcpsDcfm);
     ZQ_vQueueCreate(&APP_msgBdbEvents, BDB_QUEUE_SIZE, sizeof(BDB_tsZpsAfEvent), (uint8*)asBdbEvent);
-
+    ZQ_vQueueCreate(&runLaterDelayQueueHandle, RUN_LATER_QUEUE_SIZE, sizeof(uint32), (uint8*)runLaterDelayQueue);
+    ZQ_vQueueCreate(&runLaterCallbacksQueueHandle, RUN_LATER_QUEUE_SIZE, sizeof(uint32), (uint8*)runLaterCallbackQueue);
+    ZQ_vQueueCreate(&runLaterParamsQueueHandle, RUN_LATER_QUEUE_SIZE, sizeof(uint8), (uint8*)runLaterParamsQueue);
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
@@ -624,6 +734,15 @@ extern "C" PUBLIC void vAppMain(void)
         ZTIMER_vTask();
 
         //APP_taskSwitch();
+        uint32 runLaterDelay;
+        if(ZTIMER_eGetState(runLaterTimerHandle) != E_ZTIMER_STATE_RUNNING &&
+           ZQ_bQueueReceive(&runLaterDelayQueueHandle, (uint8*)&runLaterDelay))
+        {
+            DBG_vPrintf(TRUE, "Scheduing next runLater call in %d ms\n", runLaterDelay);
+            ZTIMER_eStop(runLaterTimerHandle);
+            ZTIMER_eStart(runLaterTimerHandle, runLaterDelay);
+        }
+
 
         vAHI_WatchdogRestart();
     }
