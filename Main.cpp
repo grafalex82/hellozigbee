@@ -601,7 +601,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
         case BDB_EVENT_REJOIN_SUCCESS:
             DBG_vPrintf(TRUE, "BDB event callback: Network Join Successful\n");
 
-            runLater(15000, vGetCoordinatorEndpoints, 0);
+            //runLater(15000, vGetCoordinatorEndpoints, 0);
 
             break;
 
