@@ -47,23 +47,6 @@ extern "C"
 tsZLO_OnOffLightDevice sSwitch;
 
 
-void storeBlinkMode(bool_t blinkMode)
-{
-    PDM_teStatus status = PDM_eSaveRecordData(PDM_ID_BLINK_MODE, &blinkMode, sizeof(blinkMode));
-    DBG_vPrintf(TRUE, "Storing blink mode. Status %d, value %d\n", status, blinkMode);
-}
-
-void restoreBlinkMode()
-{
-	uint16 readBytes;
-    PDM_teStatus status1 = PDM_eReadDataFromRecord(PDM_ID_BLINK_MODE,
-                                                   &sSwitch.sOnOffServerCluster.bOnOff,
-                                                   sizeof(zbool),
-                                                   &readBytes);
-    DBG_vPrintf(TRUE, "Reading blink mode. Status %d, size %d, value %d\n", status1, readBytes, sSwitch.sOnOffServerCluster.bOnOff);
-}
-
-
 ZTIMER_tsTimer timers[3 + BDB_ZTIMER_STORAGE];
 uint8 blinkTimerHandle;
 uint8 buttonScanTimerHandle;
@@ -132,6 +115,8 @@ PRIVATE tszQueue APP_msgBdbEvents;
 
 PUBLIC void blinkFunc(void *pvParam)
 {
+    uint32 currentState = u32AHI_DioReadInput();
+    vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
     ZTIMER_eStart(blinkTimerHandle, sSwitch.sOnOffServerCluster.bOnOff ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
 }
 
@@ -242,6 +227,25 @@ PRIVATE void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
                 attributeId);
 }
 
+PRIVATE void vHandleCustomClusterMessage(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
+    tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    uint8 u8CommandId = msg->u8CommandId;
+
+    DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Custom cluster message EP=%d ClusterID=%04x Cmd=%02x\n", psEvent->u8EndPoint, u16ClusterId, u8CommandId);
+}
+
+PRIVATE void vHandleClusterUpdateMessage(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
+    tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    uint8 u8CommandId = msg->u8CommandId;
+
+    DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Cluster update message EP=%d ClusterID=%04x Cmd=%02x\n", psEvent->u8EndPoint, u16ClusterId, u8CommandId);
+}
+
+
 PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
 {
     switch (psEvent->eEventType)
@@ -272,7 +276,11 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
             break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Custom %04x\r\n", psEvent->uMessage.sClusterCustomMessage.u16ClusterId);
+            vHandleCustomClusterMessage(psEvent);
+            break;
+
+        case E_ZCL_CBET_CLUSTER_UPDATE:
+            vHandleClusterUpdateMessage(psEvent);
             break;
 
         default:
@@ -588,7 +596,8 @@ PRIVATE void APP_vTaskSwitch()
 
         if(value == BUTTON_SHORT_PRESS)
         {
-            PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
+            // Toggle the value
+            sSwitch.sOnOffServerCluster.bOnOff = sSwitch.sOnOffServerCluster.bOnOff ? FALSE : TRUE;
 
             // Destination address - 0x0000 (coordinator)
             tsZCL_Address addr;
@@ -596,15 +605,15 @@ PRIVATE void APP_vTaskSwitch()
             addr.eAddressMode = E_ZCL_AM_SHORT;
 
             DBG_vPrintf(TRUE, "Reporing attribute... ", value);
+            PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
             teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                        GENERAL_CLUSTER_ID_ONOFF,
                                                        E_CLD_ONOFF_ATTR_ID_ONOFF,
                                                        HELLOZIGBEE_SWITCH_ENDPOINT,
                                                        1,
                                                        myPDUM_thAPduInstance);
-            DBG_vPrintf(TRUE, "status: %02x\n", status);
-
             PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
+            DBG_vPrintf(TRUE, "status: %02x\n", status);
         }
 
         if(value == BUTTON_LONG_PRESS)
@@ -645,13 +654,11 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): init PDUM...\n");
     PDUM_vInit();
 
-    // Init and start timers
+    // Init timers
     DBG_vPrintf(TRUE, "vAppMain(): init software timers...\n");
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
     ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-    ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
     ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-    ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
     ZTIMER_eOpen(&runLaterTimerHandle, runLaterFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
 
     // Initialize queues
@@ -687,9 +694,6 @@ extern "C" PUBLIC void vAppMain(void)
     memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
 
-    // Set the initial value
-    restoreBlinkMode();
-
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
     status = ZPS_eAplAfInit();
@@ -713,6 +717,10 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
     status = ZPS_eAplZdoStartStack();
     DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
+
+    // Start application timers
+    ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
+    ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
