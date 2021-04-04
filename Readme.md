@@ -32,7 +32,9 @@ Flash instructions
 - Go to Device->Program Device
 - Select the built HelloWorld.bin file
 - Click `Program` button
+
 or
+
 - Put the device in the programming mode (drive SPI_MISO low while reset or power up)
 - mingw32-make HelloZigbee.flash
 
