@@ -66,7 +66,6 @@ typedef enum
 Queue<ButtonPressType, 3> buttonsQueue;
 
 
-#define BDB_QUEUE_SIZE              3
 #define MLME_QUEUE_SIZE             10
 #define MCPS_QUEUE_SIZE             24
 #define TIMER_QUEUE_SIZE            8
@@ -81,9 +80,7 @@ PRIVATE MAC_tsMlmeVsDcfmInd asMacMlmeVsDcfmInd[MLME_QUEUE_SIZE];
 PRIVATE MAC_tsMcpsVsDcfmInd asMacMcpsDcfmInd[MCPS_QUEUE_SIZE];
 PRIVATE MAC_tsMcpsVsCfmData asMacMcpsDcfm[MCPS_DCFM_QUEUE_SIZE];
 PRIVATE zps_tsTimeEvent asTimeEvent[TIMER_QUEUE_SIZE];
-PRIVATE BDB_tsZpsAfEvent asBdbEvent[BDB_QUEUE_SIZE];
 
-PRIVATE tszQueue APP_msgBdbEvents;
 
 
 
@@ -642,7 +639,6 @@ extern "C" PUBLIC void vAppMain(void)
     ZQ_vQueueCreate(&zps_msgMcpsDcfmInd, MCPS_QUEUE_SIZE, sizeof(MAC_tsMcpsVsDcfmInd), (uint8*)asMacMcpsDcfmInd);
     ZQ_vQueueCreate(&zps_TimeEvents, TIMER_QUEUE_SIZE, sizeof(zps_tsTimeEvent), (uint8*)asTimeEvent);
     ZQ_vQueueCreate(&zps_msgMcpsDcfm, MCPS_DCFM_QUEUE_SIZE,	sizeof(MAC_tsMcpsVsCfmData), (uint8*)asMacMcpsDcfm);
-    ZQ_vQueueCreate(&APP_msgBdbEvents, BDB_QUEUE_SIZE, sizeof(BDB_tsZpsAfEvent), (uint8*)asBdbEvent);
 
     // Initialize deferred executor
     DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
@@ -674,8 +670,11 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize Base Class Behavior
     DBG_vPrintf(TRUE, "vAppMain(): initialize base device behavior...\n");
+    Queue<BDB_tsZpsAfEvent, 3> bdbEventQueue;
+    bdbEventQueue.init();
+
     BDB_tsInitArgs sInitArgs;
-    sInitArgs.hBdbEventsMsgQ = &APP_msgBdbEvents;
+    sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getQueueHandle();
     BDB_vInit(&sInitArgs);
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
