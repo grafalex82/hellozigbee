@@ -4,6 +4,7 @@
 extern "C"
 {
     #include "ZQueue.h"
+    #include "dbg.h"
 }
 
 template<class T, uint32 size>

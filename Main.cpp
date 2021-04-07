@@ -28,6 +28,10 @@ extern "C"
 }
 
 #include "Queue.h"
+#include "DeferredExecutor.h"
+
+
+DeferredExecutor deferredExecutor;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
 extern "C"
@@ -52,7 +56,6 @@ tsZLO_OnOffLightDevice sSwitch;
 ZTIMER_tsTimer timers[3 + BDB_ZTIMER_STORAGE];
 uint8 blinkTimerHandle;
 uint8 buttonScanTimerHandle;
-uint8 runLaterTimerHandle;
 
 typedef enum
 {
@@ -61,35 +64,6 @@ typedef enum
 } ButtonPressType;
 
 Queue<ButtonPressType, 3> buttonsQueue;
-
-#define RUN_LATER_QUEUE_SIZE 20
-typedef void (*runLaterCallback)(uint8);
-uint32 runLaterDelayQueue[RUN_LATER_QUEUE_SIZE];
-uint8 runLaterParamsQueue[RUN_LATER_QUEUE_SIZE];
-runLaterCallback runLaterCallbackQueue[RUN_LATER_QUEUE_SIZE];
-
-PRIVATE tszQueue runLaterDelayQueueHandle;
-PRIVATE tszQueue runLaterCallbacksQueueHandle;
-PRIVATE tszQueue runLaterParamsQueueHandle;
-
-
-void runLater(uint32 delay, runLaterCallback cb, uint8 param)
-{
-    ZQ_bQueueSend(&runLaterDelayQueueHandle, (uint8*)&delay);
-    ZQ_bQueueSend(&runLaterCallbacksQueueHandle, (uint8*)&cb);
-    ZQ_bQueueSend(&runLaterParamsQueueHandle, (uint8*)&param);
-}
-
-PUBLIC void runLaterFunc(void *pvParam)
-{
-    DBG_vPrintf(TRUE, "runLaterFunc()\n");
-
-    runLaterCallback cb;
-    ZQ_bQueueReceive(&runLaterCallbacksQueueHandle, (uint8*)&cb);
-    uint8 param;
-    ZQ_bQueueReceive(&runLaterParamsQueueHandle, (uint8*)&param);
-    (*cb)(param);
-}
 
 
 #define BDB_QUEUE_SIZE              3
@@ -293,7 +267,7 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
 
-#if 0
+
 PRIVATE void vGetCoordinatorEndpoints(uint8)
 {
     PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
@@ -316,7 +290,6 @@ PRIVATE void vGetCoordinatorEndpoints(uint8)
 
     DBG_vPrintf(TRUE, "Sent Active endpoints request to coordinator %d\n", status);
 }
-#endif
 
 PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
 {
@@ -452,6 +425,8 @@ PRIVATE void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_NWK_JOINED_AS_ROUTER:
             vDumpJoinedAsRouterEvent(&psStackEvent->uEvent.sNwkJoinedEvent);
+
+            deferredExecutor.runLater(15000, vGetCoordinatorEndpoints, 0);
             break;
 
         case ZPS_EVENT_NWK_STATUS_INDICATION:
@@ -487,7 +462,7 @@ PRIVATE void vHandleZdoDataIndication(ZPS_tsAfEvent * pEvent)
                 uint8 ep = zdpEvent.uLists.au8Data[i];
                 DBG_vPrintf(TRUE, "Scheduling simple descriptor request for EP %d\n", ep);
 
-                runLater(1000, vSendSimpleDescriptorReq, ep);
+                deferredExecutor.runLater(1000, vSendSimpleDescriptorReq, ep);
             }
         }
     }
@@ -656,7 +631,6 @@ extern "C" PUBLIC void vAppMain(void)
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
     ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
     ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-    ZTIMER_eOpen(&runLaterTimerHandle, runLaterFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
 
     // Initialize queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
@@ -669,9 +643,10 @@ extern "C" PUBLIC void vAppMain(void)
     ZQ_vQueueCreate(&zps_TimeEvents, TIMER_QUEUE_SIZE, sizeof(zps_tsTimeEvent), (uint8*)asTimeEvent);
     ZQ_vQueueCreate(&zps_msgMcpsDcfm, MCPS_DCFM_QUEUE_SIZE,	sizeof(MAC_tsMcpsVsCfmData), (uint8*)asMacMcpsDcfm);
     ZQ_vQueueCreate(&APP_msgBdbEvents, BDB_QUEUE_SIZE, sizeof(BDB_tsZpsAfEvent), (uint8*)asBdbEvent);
-    ZQ_vQueueCreate(&runLaterDelayQueueHandle, RUN_LATER_QUEUE_SIZE, sizeof(uint32), (uint8*)runLaterDelayQueue);
-    ZQ_vQueueCreate(&runLaterCallbacksQueueHandle, RUN_LATER_QUEUE_SIZE, sizeof(uint32), (uint8*)runLaterCallbackQueue);
-    ZQ_vQueueCreate(&runLaterParamsQueueHandle, RUN_LATER_QUEUE_SIZE, sizeof(uint8), (uint8*)runLaterParamsQueue);
+
+    // Initialize deferred executor
+    DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
+    deferredExecutor.init();
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
@@ -728,15 +703,6 @@ extern "C" PUBLIC void vAppMain(void)
         bdb_taskBDB();
 
         ZTIMER_vTask();
-
-        uint32 runLaterDelay;
-        if(ZTIMER_eGetState(runLaterTimerHandle) != E_ZTIMER_STATE_RUNNING &&
-           ZQ_bQueueReceive(&runLaterDelayQueueHandle, (uint8*)&runLaterDelay))
-        {
-            DBG_vPrintf(TRUE, "Scheduing next runLater call in %d ms\n", runLaterDelay);
-            ZTIMER_eStop(runLaterTimerHandle);
-            ZTIMER_eStart(runLaterTimerHandle, runLaterDelay);
-        }
 
         APP_vTaskSwitch();
 

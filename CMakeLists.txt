@@ -161,6 +161,7 @@ SET(SOURCES
         pdum_apdu.S
         zps_gen.c
         Queue.h
+        DeferredExecutor.cpp
 )
 
 ADD_EXECUTABLE(HelloZigbee ${SOURCES})
