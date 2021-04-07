@@ -27,6 +27,8 @@ extern "C"
     #include "OnOff.h"
 }
 
+#include "Queue.h"
+
 // Hidden funcctions (exported from the library, but not mentioned in header files)
 extern "C"
 {
@@ -58,9 +60,7 @@ typedef enum
 	BUTTON_LONG_PRESS
 } ButtonPressType;
 
-ButtonPressType buttonQueue[3];
-tszQueue buttonQueueHandle;
-
+Queue<ButtonPressType, 3> buttonsQueue;
 
 #define RUN_LATER_QUEUE_SIZE 20
 typedef void (*runLaterCallback)(uint8);
@@ -139,16 +139,14 @@ PUBLIC void buttonScanFunc(void *pvParam)
         if(duration > 200)
         {
             DBG_vPrintf(TRUE, "Button released. Long press detected\n");
-            ButtonPressType value = BUTTON_LONG_PRESS;
-            ZQ_bQueueSend(&buttonQueueHandle, (uint8*)&value);
+            buttonsQueue.send(BUTTON_LONG_PRESS);
         }
 
         // detect short press
         else if(duration > 5)
         {
             DBG_vPrintf(TRUE, "Button released. Short press detected\n");
-            ButtonPressType value = BUTTON_SHORT_PRESS;
-            ZQ_bQueueSend(&buttonQueueHandle, &value);
+            buttonsQueue.send(BUTTON_SHORT_PRESS);
         }
 
         duration = 0;
@@ -590,7 +588,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 PRIVATE void APP_vTaskSwitch()
 {
     ButtonPressType value;
-    if(ZQ_bQueueReceive(&buttonQueueHandle, (uint8*)&value))
+    if(buttonsQueue.receive(&value))
     {
         DBG_vPrintf(TRUE, "Processing button message %d\n", value);
 
@@ -640,7 +638,6 @@ extern "C" PUBLIC void vAppMain(void)
             u8PDM_CalculateFileSystemCapacity(),
             u8PDM_GetFileSystemOccupancy() );
 
-
     // Initialize hardware
     DBG_vPrintf(TRUE, "vAppMain(): init GPIO...\n");
     vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
@@ -663,7 +660,8 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
-    ZQ_vQueueCreate(&buttonQueueHandle, 3, sizeof(ButtonPressType), (uint8*)buttonQueue);
+    buttonsQueue.init();
+
 
     // Initialize ZigBee stack queues
     ZQ_vQueueCreate(&zps_msgMlmeDcfmInd, MLME_QUEUE_SIZE, sizeof(MAC_tsMlmeVsDcfmInd), (uint8*)asMacMlmeVsDcfmInd);

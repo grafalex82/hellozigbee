@@ -160,6 +160,7 @@ SET(SOURCES
         pdum_gen.c
         pdum_apdu.S
         zps_gen.c
+        Queue.h
 )
 
 ADD_EXECUTABLE(HelloZigbee ${SOURCES})
