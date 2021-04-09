@@ -28,6 +28,7 @@ extern "C"
 }
 
 #include "Queue.h"
+#include "Timer.h"
 #include "DeferredExecutor.h"
 
 
@@ -54,8 +55,8 @@ tsZLO_OnOffLightDevice sSwitch;
 
 
 ZTIMER_tsTimer timers[3 + BDB_ZTIMER_STORAGE];
-uint8 blinkTimerHandle;
-uint8 buttonScanTimerHandle;
+Timer blinkTimer;
+Timer buttonScanTimer;
 
 typedef enum
 {
@@ -80,7 +81,8 @@ PUBLIC void blinkFunc(void *pvParam)
 {
     uint32 currentState = u32AHI_DioReadInput();
     vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
-    ZTIMER_eStart(blinkTimerHandle, sSwitch.sOnOffServerCluster.bOnOff ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
+
+    blinkTimer.start(sSwitch.sOnOffServerCluster.bOnOff ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
 }
 
 
@@ -115,7 +117,7 @@ PUBLIC void buttonScanFunc(void *pvParam)
         duration = 0;
     }
 
-    ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+    buttonScanTimer.start(10);
 }
 
 extern "C" PUBLIC void vISR_SystemController(void)
@@ -618,8 +620,8 @@ extern "C" PUBLIC void vAppMain(void)
     // Init timers
     DBG_vPrintf(TRUE, "vAppMain(): init software timers...\n");
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
-    ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
-    ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
+    blinkTimer.init(blinkFunc, NULL);
+    buttonScanTimer.init(buttonScanFunc, NULL);
 
     // Initialize ZigBee stack and application queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
@@ -680,8 +682,8 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
 
     // Start application timers
-    ZTIMER_eStart(blinkTimerHandle, ZTIMER_TIME_MSEC(1000));
-    ZTIMER_eStart(buttonScanTimerHandle, ZTIMER_TIME_MSEC(10));
+    blinkTimer.start(1000);
+    buttonScanTimer.start(10);
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
