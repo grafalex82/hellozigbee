@@ -65,23 +65,15 @@ typedef enum
 
 Queue<ButtonPressType, 3> buttonsQueue;
 
-
-#define MLME_QUEUE_SIZE             10
-#define MCPS_QUEUE_SIZE             24
-#define TIMER_QUEUE_SIZE            8
-#define MCPS_DCFM_QUEUE_SIZE        5
-
 extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
 extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
 extern PUBLIC tszQueue zps_TimeEvents;
 extern PUBLIC tszQueue zps_msgMcpsDcfm;
 
-PRIVATE MAC_tsMlmeVsDcfmInd asMacMlmeVsDcfmInd[MLME_QUEUE_SIZE];
-PRIVATE MAC_tsMcpsVsDcfmInd asMacMcpsDcfmInd[MCPS_QUEUE_SIZE];
-PRIVATE MAC_tsMcpsVsCfmData asMacMcpsDcfm[MCPS_DCFM_QUEUE_SIZE];
-PRIVATE zps_tsTimeEvent asTimeEvent[TIMER_QUEUE_SIZE];
-
-
+QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
+QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
+QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
+QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
 
 
 PUBLIC void blinkFunc(void *pvParam)
@@ -629,16 +621,13 @@ extern "C" PUBLIC void vAppMain(void)
     ZTIMER_eOpen(&blinkTimerHandle, blinkFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
     ZTIMER_eOpen(&buttonScanTimerHandle, buttonScanFunc, NULL, ZTIMER_FLAG_ALLOW_SLEEP);
 
-    // Initialize queues
+    // Initialize ZigBee stack and application queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
     buttonsQueue.init();
-
-
-    // Initialize ZigBee stack queues
-    ZQ_vQueueCreate(&zps_msgMlmeDcfmInd, MLME_QUEUE_SIZE, sizeof(MAC_tsMlmeVsDcfmInd), (uint8*)asMacMlmeVsDcfmInd);
-    ZQ_vQueueCreate(&zps_msgMcpsDcfmInd, MCPS_QUEUE_SIZE, sizeof(MAC_tsMcpsVsDcfmInd), (uint8*)asMacMcpsDcfmInd);
-    ZQ_vQueueCreate(&zps_TimeEvents, TIMER_QUEUE_SIZE, sizeof(zps_tsTimeEvent), (uint8*)asTimeEvent);
-    ZQ_vQueueCreate(&zps_msgMcpsDcfm, MCPS_DCFM_QUEUE_SIZE,	sizeof(MAC_tsMcpsVsCfmData), (uint8*)asMacMcpsDcfm);
+    msgMlmeDcfmIndQueue.init();
+    msgMcpsDcfmIndQueue.init();
+    msgMcpsDcfmQueue.init();
+    timeEventQueue.init();
 
     // Initialize deferred executor
     DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
@@ -674,7 +663,7 @@ extern "C" PUBLIC void vAppMain(void)
     bdbEventQueue.init();
 
     BDB_tsInitArgs sInitArgs;
-    sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getQueueHandle();
+    sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
     BDB_vInit(&sInitArgs);
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
