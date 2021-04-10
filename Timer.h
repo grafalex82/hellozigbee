@@ -3,6 +3,7 @@
 
 extern "C"
 {
+#include "jendefs.h"
 #include "ZTimer.h"
 }
 
@@ -11,8 +12,6 @@ class Timer
     uint8 timerHandle;
 
 public:
-    Timer();
-
     void init(ZTIMER_tpfCallback cb, void * param, bool preventSleep = false)
     {
         ZTIMER_eOpen(&timerHandle, cb, param, preventSleep ? ZTIMER_FLAG_PREVENT_SLEEP : ZTIMER_FLAG_ALLOW_SLEEP);

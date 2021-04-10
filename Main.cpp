@@ -30,7 +30,7 @@ extern "C"
 #include "Queue.h"
 #include "Timer.h"
 #include "DeferredExecutor.h"
-
+#include "BlinkTask.h"
 
 DeferredExecutor deferredExecutor;
 
@@ -41,10 +41,6 @@ extern "C"
     PUBLIC uint8 u8PDM_GetFileSystemOccupancy(void);
     extern void zps_taskZPS(void);
 }
-
-
-#define BOARD_LED_BIT               (17)
-#define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
 
 #define BOARD_BTN_BIT               (1)
 #define BOARD_BTN_PIN               (1UL << BOARD_BTN_BIT)
@@ -75,16 +71,6 @@ QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
 QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
-
-
-PUBLIC void blinkFunc(void *pvParam)
-{
-    uint32 currentState = u32AHI_DioReadInput();
-    vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
-
-    blinkTimer.start(sSwitch.sOnOffServerCluster.bOnOff ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
-}
-
 
 PUBLIC void buttonScanFunc(void *pvParam)
 {
@@ -606,7 +592,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize hardware
     DBG_vPrintf(TRUE, "vAppMain(): init GPIO...\n");
-    vAHI_DioSetDirection(BOARD_BTN_PIN, BOARD_LED_PIN);
+    vAHI_DioSetDirection(BOARD_BTN_PIN, 0);
     vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
 
     // Initialize power manager and sleep mode
@@ -620,8 +606,11 @@ extern "C" PUBLIC void vAppMain(void)
     // Init timers
     DBG_vPrintf(TRUE, "vAppMain(): init software timers...\n");
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
-    blinkTimer.init(blinkFunc, NULL);
     buttonScanTimer.init(buttonScanFunc, NULL);
+
+    // Init tasks
+    DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
+    BlinkTask blinkTask(&sSwitch.sOnOffServerCluster.bOnOff);
 
     // Initialize ZigBee stack and application queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");

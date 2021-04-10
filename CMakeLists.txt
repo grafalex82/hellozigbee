@@ -162,6 +162,8 @@ SET(SOURCES
         zps_gen.c
         Queue.h
         Timer.h
+        PeriodicTask.h
+        BlinkTask.cpp
         DeferredExecutor.cpp
 )
 
