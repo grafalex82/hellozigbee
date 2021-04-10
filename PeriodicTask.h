@@ -11,7 +11,6 @@ extern "C"
 
 class PeriodicTask
 {
-protected:
     Timer timer;
 
 public:
@@ -20,7 +19,7 @@ public:
         timer.init(timerFunc, this);
     }
 
-    void start(uint32 delay)
+    void startTimer(uint32 delay)
     {
         timer.start(delay);
     }

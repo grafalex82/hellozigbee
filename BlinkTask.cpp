@@ -18,7 +18,7 @@ BlinkTask::BlinkTask(bool_t * modeVarPtr)
     vAHI_DioSetDirection(0, BOARD_LED_PIN);
 
     PeriodicTask::init();
-    timer.start(1000);
+    startTimer(1000);
 }
 
 void BlinkTask::timerCallback()
@@ -28,5 +28,5 @@ void BlinkTask::timerCallback()
     vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
 
     //Restart the timer
-    timer.start(*blinkMode ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
+    startTimer(*blinkMode ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
 }

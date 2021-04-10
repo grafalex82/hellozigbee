@@ -31,6 +31,8 @@ extern "C"
 #include "Timer.h"
 #include "DeferredExecutor.h"
 #include "BlinkTask.h"
+#include "ButtonsTask.h"
+#include "AppQueue.h"
 
 DeferredExecutor deferredExecutor;
 
@@ -42,8 +44,6 @@ extern "C"
     extern void zps_taskZPS(void);
 }
 
-#define BOARD_BTN_BIT               (1)
-#define BOARD_BTN_PIN               (1UL << BOARD_BTN_BIT)
 
 #define PDM_ID_BLINK_MODE   	    0x2
 
@@ -51,16 +51,9 @@ tsZLO_OnOffLightDevice sSwitch;
 
 
 ZTIMER_tsTimer timers[3 + BDB_ZTIMER_STORAGE];
-Timer blinkTimer;
-Timer buttonScanTimer;
 
-typedef enum
-{
-	BUTTON_SHORT_PRESS,
-	BUTTON_LONG_PRESS
-} ButtonPressType;
 
-Queue<ButtonPressType, 3> buttonsQueue;
+
 
 extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
 extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
@@ -71,40 +64,6 @@ QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
 QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
-
-PUBLIC void buttonScanFunc(void *pvParam)
-{
-    static int duration = 0;
-
-    uint32 input = u32AHI_DioReadInput();
-    bool btnState = (input & BOARD_BTN_PIN) == 0;
-
-    if(btnState)
-    {
-        duration++;
-        DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", duration);
-    }
-    else
-    {
-        // detect long press
-        if(duration > 200)
-        {
-            DBG_vPrintf(TRUE, "Button released. Long press detected\n");
-            buttonsQueue.send(BUTTON_LONG_PRESS);
-        }
-
-        // detect short press
-        else if(duration > 5)
-        {
-            DBG_vPrintf(TRUE, "Button released. Short press detected\n");
-            buttonsQueue.send(BUTTON_SHORT_PRESS);
-        }
-
-        duration = 0;
-    }
-
-    buttonScanTimer.start(10);
-}
 
 extern "C" PUBLIC void vISR_SystemController(void)
 {
@@ -539,8 +498,8 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
 PRIVATE void APP_vTaskSwitch()
 {
-    ButtonPressType value;
-    if(buttonsQueue.receive(&value))
+    ApplicationEvent value;
+    if(appEventQueue.receive(&value))
     {
         DBG_vPrintf(TRUE, "Processing button message %d\n", value);
 
@@ -590,11 +549,6 @@ extern "C" PUBLIC void vAppMain(void)
             u8PDM_CalculateFileSystemCapacity(),
             u8PDM_GetFileSystemOccupancy() );
 
-    // Initialize hardware
-    DBG_vPrintf(TRUE, "vAppMain(): init GPIO...\n");
-    vAHI_DioSetDirection(BOARD_BTN_PIN, 0);
-    vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
-
     // Initialize power manager and sleep mode
     DBG_vPrintf(TRUE, "vAppMain(): init PWRM...\n");
     PWRM_vInit(E_AHI_SLEEP_DEEP);
@@ -606,19 +560,19 @@ extern "C" PUBLIC void vAppMain(void)
     // Init timers
     DBG_vPrintf(TRUE, "vAppMain(): init software timers...\n");
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
-    buttonScanTimer.init(buttonScanFunc, NULL);
 
     // Init tasks
     DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
     BlinkTask blinkTask(&sSwitch.sOnOffServerCluster.bOnOff);
+    ButtonsTask buttonsTask;
 
     // Initialize ZigBee stack and application queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
-    buttonsQueue.init();
     msgMlmeDcfmIndQueue.init();
     msgMcpsDcfmIndQueue.init();
     msgMcpsDcfmQueue.init();
     timeEventQueue.init();
+    appEventQueue.init();
 
     // Initialize deferred executor
     DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
@@ -670,10 +624,6 @@ extern "C" PUBLIC void vAppMain(void)
     status = ZPS_eAplZdoStartStack();
     DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
 
-    // Start application timers
-    blinkTimer.start(1000);
-    buttonScanTimer.start(10);
-
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
     {
@@ -704,10 +654,6 @@ PWRM_CALLBACK(PreSleep)
 
     // clear interrupts
     u32AHI_DioWakeStatus();
-
-    // Set the wake condition on falling edge of the button pin
-    vAHI_DioWakeEdge(0, BOARD_BTN_PIN);
-    vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
 }
 
 PWRM_CALLBACK(Wakeup)

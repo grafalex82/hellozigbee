@@ -5,7 +5,7 @@
 
 extern "C"
 {
-#include "AppHardwareApi.h"
+#include "jendefs.h"
 }
 
 class BlinkTask : public PeriodicTask
@@ -15,6 +15,7 @@ class BlinkTask : public PeriodicTask
 public:
     BlinkTask(bool_t * modeVarPtr);
 
+protected:
     virtual void timerCallback();
 };
 
