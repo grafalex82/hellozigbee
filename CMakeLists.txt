@@ -166,6 +166,7 @@ SET(SOURCES
         BlinkTask.cpp
         ButtonsTask.cpp
         DeferredExecutor.cpp
+        DumpFunctions.cpp
         Main.cpp
 )
 
