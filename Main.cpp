@@ -34,8 +34,10 @@ extern "C"
 #include "ButtonsTask.h"
 #include "AppQueue.h"
 #include "DumpFunctions.h"
+#include "ConnectionState.h"
 
 DeferredExecutor deferredExecutor;
+PersistedValue<JoinStateEnum, PWM_ID_NODE_STATE> connectionState;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
 extern "C"
@@ -132,6 +134,55 @@ PRIVATE void vHandleClusterUpdateMessage(tsZCL_CallBackEvent *psEvent)
     DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Cluster update message EP=%d ClusterID=%04x Cmd=%02x\n", psEvent->u8EndPoint, u16ClusterId, u8CommandId);
 }
 
+PRIVATE void vJoinNetwork()
+{
+    DBG_vPrintf(TRUE, "== Joining the network\n");
+    connectionState = JOINING;
+
+    // Clear ZigBee stack internals
+    ZPS_eAplAibSetApsUseExtendedPanId (0);
+    ZPS_vDefaultStack();
+    ZPS_vSetKeys();
+    ZPS_vSaveAllZpsRecords();
+
+    // Connect to a network
+    BDB_eNsStartNwkSteering();
+}
+
+PRIVATE void vHandleNetworkJoinAndRejoin()
+{
+    DBG_vPrintf(TRUE, "== Device now is on the network\n");
+    connectionState = JOINED;
+    ZPS_vSaveAllZpsRecords();
+}
+
+PRIVATE void vHandleLeaveNetwork()
+{
+    DBG_vPrintf(TRUE, "== The device has left the network\n");
+
+    connectionState = NOT_JOINED;
+
+    // Clear ZigBee stack internals
+    ZPS_eAplAibSetApsUseExtendedPanId (0);
+    ZPS_vDefaultStack();
+    ZPS_vSetKeys();
+    ZPS_vSaveAllZpsRecords();
+}
+
+
+PRIVATE void vLeaveNetwork()
+{
+    DBG_vPrintf(TRUE, "== Leaving the network\n");
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE;
+    connectionState = NOT_JOINED;
+
+    if (ZPS_E_SUCCESS !=  ZPS_eAplZdoLeaveNetwork(0, FALSE, FALSE))
+    {
+        // Leave failed, probably lost parent, so just reset everything
+        DBG_vPrintf(TRUE, "== Failed to properly leave the network. Force leaving the network\n");
+        vHandleLeaveNetwork();
+     }
+}
 
 PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
 {
@@ -230,22 +281,6 @@ PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
 }
 
 
-PRIVATE void vHandleDiscoveryComplete(ZPS_tsAfNwkDiscoveryEvent * pEvent)
-{
-    // Check if there is a suitable network to join
-    if(pEvent->u8SelectedNetwork == 0xff)
-    {
-        DBG_vPrintf(TRUE, "Network Discovery Complete: No good network to join\n");
-        return;
-    }
-
-    // Join the network
-    ZPS_tsNwkNetworkDescr * pNetwork = pEvent->psNwkDescriptors + pEvent->u8SelectedNetwork;
-    DBG_vPrintf(TRUE, "Network Discovery Complete: Joining network %016llx\n", pNetwork->u64ExtPanId);
-    ZPS_teStatus status = ZPS_eAplZdoJoinNetwork(pNetwork);
-    DBG_vPrintf(TRUE, "Network Discovery Complete: ZPS_eAplZdoJoinNetwork() status %d\n", status);
-}
-
 PRIVATE void vHandleZdoDataIndication(ZPS_tsAfEvent * pEvent)
 {
     ZPS_tsAfZdpEvent zdpEvent;
@@ -270,14 +305,20 @@ PRIVATE void vHandleZdoDataIndication(ZPS_tsAfEvent * pEvent)
 
 PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 {
+    if(connectionState != JOINED)
+    {
+        DBG_vPrintf(TRUE, "Handle ZDO event: Not joined yet. Discarding event %d\n", psStackEvent->eType);
+        return;
+    }
+
     switch(psStackEvent->eType)
     {
-        case ZPS_EVENT_NWK_DISCOVERY_COMPLETE:
-            vHandleDiscoveryComplete(&psStackEvent->uEvent.sNwkDiscoveryEvent);
-            break;
-
         case ZPS_EVENT_APS_DATA_INDICATION:
             vHandleZdoDataIndication(psStackEvent);
+            break;
+
+        case ZPS_EVENT_NWK_LEAVE_CONFIRM:
+            vHandleLeaveNetwork();
             break;
 
         default:
@@ -336,9 +377,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_REJOIN_SUCCESS:
             DBG_vPrintf(TRUE, "BDB event callback: Network Join Successful\n");
-
-            deferredExecutor.runLater(15000, vGetCoordinatorEndpoints, 0);
-
+            vHandleNetworkJoinAndRejoin();
             break;
 
         case BDB_EVENT_REJOIN_FAILURE:
@@ -347,6 +386,11 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_NWK_STEERING_SUCCESS:
             DBG_vPrintf(TRUE, "BDB event callback: Network steering success\n");
+            vHandleNetworkJoinAndRejoin();
+            break;
+
+        case BDB_EVENT_NO_NETWORK:
+            DBG_vPrintf(TRUE, "BDB event callback: No good network to join\n");
             break;
 
         case BDB_EVENT_FAILURE_RECOVERY_FOR_REJOIN:
@@ -359,6 +403,29 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
     }
 }
 
+
+PRIVATE void vToggleSwitchValue()
+{
+    // Toggle the value
+    sSwitch.sOnOffServerCluster.bOnOff = sSwitch.sOnOffServerCluster.bOnOff ? FALSE : TRUE;
+
+    // Destination address - 0x0000 (coordinator)
+    tsZCL_Address addr;
+    addr.uAddress.u16DestinationAddress = 0x0000;
+    addr.eAddressMode = E_ZCL_AM_SHORT;
+
+    DBG_vPrintf(TRUE, "Reporing attribute... ");
+    PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
+    teZCL_Status status = eZCL_ReportAttribute(&addr,
+                                               GENERAL_CLUSTER_ID_ONOFF,
+                                               E_CLD_ONOFF_ATTR_ID_ONOFF,
+                                               HELLOZIGBEE_SWITCH_ENDPOINT,
+                                               1,
+                                               myPDUM_thAPduInstance);
+    PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
+    DBG_vPrintf(TRUE, "status: %02x\n", status);
+}
+
 PRIVATE void APP_vTaskSwitch()
 {
     ApplicationEvent value;
@@ -368,29 +435,15 @@ PRIVATE void APP_vTaskSwitch()
 
         if(value == BUTTON_SHORT_PRESS)
         {
-            // Toggle the value
-            sSwitch.sOnOffServerCluster.bOnOff = sSwitch.sOnOffServerCluster.bOnOff ? FALSE : TRUE;
-
-            // Destination address - 0x0000 (coordinator)
-            tsZCL_Address addr;
-            addr.uAddress.u16DestinationAddress = 0x0000;
-            addr.eAddressMode = E_ZCL_AM_SHORT;
-
-            DBG_vPrintf(TRUE, "Reporing attribute... ", value);
-            PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
-            teZCL_Status status = eZCL_ReportAttribute(&addr,
-                                                       GENERAL_CLUSTER_ID_ONOFF,
-                                                       E_CLD_ONOFF_ATTR_ID_ONOFF,
-                                                       HELLOZIGBEE_SWITCH_ENDPOINT,
-                                                       1,
-                                                       myPDUM_thAPduInstance);
-            PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
-            DBG_vPrintf(TRUE, "status: %02x\n", status);
+            vToggleSwitchValue();
         }
 
         if(value == BUTTON_LONG_PRESS)
         {
-            // TODO: add network join here
+            if(connectionState == JOINED)
+                vLeaveNetwork();
+            else
+                vJoinNetwork();
         }
     }
 }
@@ -441,6 +494,9 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
     deferredExecutor.init();
 
+    // Restore network connection state
+    connectionState.init(NOT_JOINED);
+
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
@@ -474,7 +530,9 @@ extern "C" PUBLIC void vAppMain(void)
     sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
     BDB_vInit(&sInitArgs);
 
-    DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior...\n");
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
+    sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
+    DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
     BDB_vStart();
 
     // Reset Zigbee stack to a very default state
@@ -482,10 +540,10 @@ extern "C" PUBLIC void vAppMain(void)
     ZPS_vSetKeys();
     ZPS_eAplAibSetApsUseExtendedPanId(0);
 
-    // Start ZigBee stack
-    DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
-    status = ZPS_eAplZdoStartStack();
-    DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
+//    // Start ZigBee stack
+//    DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
+//    status = ZPS_eAplZdoStartStack();
+//    DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)

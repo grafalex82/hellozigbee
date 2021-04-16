@@ -162,11 +162,13 @@ SET(SOURCES
         Queue.h
         Timer.h
         PeriodicTask.h
+        PersistedValue.h
         AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp
         DeferredExecutor.cpp
         DumpFunctions.cpp
+        ConnectionState.cpp
         Main.cpp
 )
 

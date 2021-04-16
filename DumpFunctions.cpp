@@ -28,9 +28,9 @@ void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
                 attributeId);
 }
 
-void vDumpDiscoveryCompleteEvent(ZPS_tsAfNwkDiscoveryEvent * pEvent)
+extern "C" void vDumpDiscoveryCompleteEvent(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "Network Discovery Complete: status %02x\n", pEvent->eStatus);
+    DBG_vPrintf(TRUE, "Network Discovery Complete: status 0x%02x\n", pEvent->eStatus);
     DBG_vPrintf(TRUE, "    Network count: %d\n", pEvent->u8NetworkCount);
     DBG_vPrintf(TRUE, "    Selected network: %d\n", pEvent->u8SelectedNetwork);
     DBG_vPrintf(TRUE, "    Unscanned channels: %4x\n", pEvent->u32UnscannedChannels);
@@ -102,6 +102,14 @@ void vDumpNwkFailedToJoinEvent(ZPS_tsAfNwkJoinFailedEvent * pEvent)
         pEvent->bRejoin);
 }
 
+void vDumpNwkLeaveConfirm(ZPS_tsAfNwkLeaveConfEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_LEAVE_CONFIRM: PanID: %016llx Status: %02x Rejoin:%02x\n",
+        pEvent->u64ExtAddr,
+        pEvent->eStatus,
+        pEvent->bRejoin);
+}
+
 void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
@@ -131,7 +139,11 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
             break;
 
         case ZPS_EVENT_NWK_DISCOVERY_COMPLETE:
-            vDumpDiscoveryCompleteEvent(&psStackEvent->uEvent.sNwkDiscoveryEvent);
+            //vDumpDiscoveryCompleteEvent(&psStackEvent->uEvent.sNwkDiscoveryEvent);
+            break;
+
+        case ZPS_EVENT_NWK_LEAVE_CONFIRM:
+            vDumpNwkLeaveConfirm(&psStackEvent->uEvent.sNwkLeaveConfirmEvent);
             break;
 
         default:

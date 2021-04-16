@@ -75,7 +75,7 @@ extern "C" {
 
 /* BDB Attribute values */
 #define BDB_COMMISSIONING_GROUP_ID              (0xFFFF)                /* bdbCommissioningGroupID */
-#define BDB_COMMISSIONING_MODE                  (0x0F)                  /* bdbCommissioningMode */
+#define BDB_COMMISSIONING_MODE                  (BDB_COMMISSIONING_MODE_NWK_STEERING)                  /* bdbCommissioningMode */
 #define BDB_COMMISSIONING_STATUS                (0x00)                  /* bdbCommissioningStatus */
 #define BDB_JOINING_NODE_EUI64                  (0x0000000000000000)    /* bdbJoiningNodeEui64 */                                                                   /* bdbJoiningNodeNewTCLinkKey */
 #define BDB_JOIN_USES_INSTALL_CODE_KEY          (FALSE)                 /* bdbJoinUsesInstallCodeKey */
