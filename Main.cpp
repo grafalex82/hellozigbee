@@ -33,8 +33,8 @@ extern "C"
 #include "BlinkTask.h"
 #include "ButtonsTask.h"
 #include "AppQueue.h"
-#include "DumpFunctions.h"
 #include "ConnectionState.h"
+#include "DumpFunctions.h"
 
 DeferredExecutor deferredExecutor;
 PersistedValue<JoinStateEnum, PWM_ID_NODE_STATE> connectionState;
@@ -74,8 +74,6 @@ extern "C" PUBLIC void vISR_SystemController(void)
 
 PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "ZCL General Callback: Processing event %d\n", psEvent->eEventType);
-
     switch (psEvent->eEventType)
     {
 
@@ -414,7 +412,7 @@ PRIVATE void vToggleSwitchValue()
     addr.uAddress.u16DestinationAddress = 0x0000;
     addr.eAddressMode = E_ZCL_AM_SHORT;
 
-    DBG_vPrintf(TRUE, "Reporing attribute... ");
+    DBG_vPrintf(TRUE, "Reporting attribute... ");
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
     teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                GENERAL_CLUSTER_ID_ONOFF,
@@ -533,17 +531,9 @@ extern "C" PUBLIC void vAppMain(void)
     sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
     sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
+    ZPS_vSaveAllZpsRecords();
     BDB_vStart();
 
-    // Reset Zigbee stack to a very default state
-    ZPS_vDefaultStack();
-    ZPS_vSetKeys();
-    ZPS_eAplAibSetApsUseExtendedPanId(0);
-
-//    // Start ZigBee stack
-//    DBG_vPrintf(TRUE, "vAppMain(): Starting ZigBee stack... ");
-//    status = ZPS_eAplZdoStartStack();
-//    DBG_vPrintf(TRUE, "ZPS_eAplZdoStartStack() status %d\n", status);
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
