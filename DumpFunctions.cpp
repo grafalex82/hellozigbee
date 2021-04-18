@@ -4,6 +4,10 @@ extern "C"
 {
     #include "dbg.h"
     #include "zcl_customcommand.h"
+
+    #include "bdb_api.h"
+    // work around of a bug in appZpsBeaconHandler.h that does not have a closing } for its extern "C" statement
+    }
 }
 
 void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
@@ -150,4 +154,31 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
             DBG_vPrintf(TRUE, "Unknown Zigbee stack event: event type %d\n", psStackEvent->eType);
             break;
     }
+}
+
+void vDumpNetworkParameters()
+{
+    DBG_vPrintf(TRUE, "Current network parameters\n");
+    DBG_vPrintf(TRUE, "    Device type: %d\n", ZPS_eAplZdoGetDeviceType());
+    DBG_vPrintf(TRUE, "    PanID: 0x%04x\n", ZPS_u16AplZdoGetNetworkPanId());
+    DBG_vPrintf(TRUE, "    Extended PanID: 0x%016llx\n", ZPS_u64AplZdoGetNetworkExtendedPanId());
+    DBG_vPrintf(TRUE, "    Radio Channel: %d\n", ZPS_u8AplZdoGetRadioChannel());
+    DBG_vPrintf(TRUE, "    Network addr: %04x\n", ZPS_u16AplZdoGetNwkAddr());
+    DBG_vPrintf(TRUE, "    IEEE Addr: 0x%016llx\n\n", ZPS_u64AplZdoGetIeeeAddr());
+
+    ZPS_tsAplAib * aib = ZPS_psAplAibGetAib();
+    DBG_vPrintf(TRUE, "    u64ApsTrustCenterAddress: 0x%016llx\n", aib->u64ApsTrustCenterAddress);
+    DBG_vPrintf(TRUE, "    u64ApsUseExtendedPanid: 0x%016llx\n", aib->u64ApsUseExtendedPanid);
+    DBG_vPrintf(TRUE, "    bApsDesignatedCoordinator: %d\n", aib->bApsDesignatedCoordinator);
+    DBG_vPrintf(TRUE, "    bApsUseInsecureJoin: %d\n", aib->bApsUseInsecureJoin);
+    DBG_vPrintf(TRUE, "    bDecryptInstallCode: %d\n", aib->bDecryptInstallCode);
+    DBG_vPrintf(TRUE, "    u8KeyType: %d\n\n", aib->u8KeyType);
+
+    DBG_vPrintf(TRUE, "    sBDB.eState: %d\n", sBDB.eState);
+    DBG_vPrintf(TRUE, "    sBDB.u8bdbCommissioningMode: %d\n", sBDB.sAttrib.u8bdbCommissioningMode);
+    DBG_vPrintf(TRUE, "    sBDB.ebdbCommissioningStatus: %d\n", sBDB.sAttrib.ebdbCommissioningStatus);
+    DBG_vPrintf(TRUE, "    sBDB.bbdbNodeIsOnANetwork: %d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
+    DBG_vPrintf(TRUE, "    sBDB.u64bdbJoiningNodeEui64: 0x%016llx\n", sBDB.sAttrib.u64bdbJoiningNodeEui64);
+    DBG_vPrintf(TRUE, "    sBDB.u8bdbNodeJoinLinkKeyType: %d\n", sBDB.sAttrib.u8bdbNodeJoinLinkKeyType);
+    DBG_vPrintf(TRUE, "    sBDB.bLeaveRequested: %d\n", sBDB.sAttrib.bLeaveRequested);
 }

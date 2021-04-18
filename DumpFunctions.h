@@ -4,9 +4,11 @@
 extern "C"
 {
     #include "zcl.h"
+
+    void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent);
+    void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent);
+    void vDumpNetworkParameters();
 }
 
-void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent);
-void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent);
 
 #endif // DUMPFUNCTIONS_H
