@@ -315,6 +315,11 @@ PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
             vHandleZdoDataIndication(psStackEvent);
             break;
 
+        case ZPS_EVENT_NWK_LEAVE_INDICATION:
+            if(psStackEvent->uEvent.sNwkLeaveIndicationEvent.u64ExtAddr == 0)
+                vHandleLeaveNetwork();
+            break;
+
         case ZPS_EVENT_NWK_LEAVE_CONFIRM:
             vHandleLeaveNetwork();
             break;
