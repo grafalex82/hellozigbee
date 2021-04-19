@@ -114,6 +114,22 @@ void vDumpNwkLeaveConfirm(ZPS_tsAfNwkLeaveConfEvent * pEvent)
         pEvent->bRejoin);
 }
 
+void vDumpBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
+        pEvent->u8SrcEp,
+        pEvent->u8DstEp,
+        pEvent->uDstAddr);
+}
+
+void vDumpUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
+        pEvent->u8SrcEp,
+        pEvent->u8DstEp,
+        pEvent->uDstAddr);
+}
+
 void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
@@ -148,6 +164,14 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_NWK_LEAVE_CONFIRM:
             vDumpNwkLeaveConfirm(&psStackEvent->uEvent.sNwkLeaveConfirmEvent);
+            break;
+
+        case ZPS_EVENT_ZDO_BIND:
+            vDumpBindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            break;
+
+        case ZPS_EVENT_ZDO_UNBIND:
+            vDumpUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
             break;
 
         default:
