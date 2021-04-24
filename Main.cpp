@@ -37,7 +37,7 @@ extern "C"
 #include "DumpFunctions.h"
 
 DeferredExecutor deferredExecutor;
-PersistedValue<JoinStateEnum, PWM_ID_NODE_STATE> connectionState;
+PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
 extern "C"
@@ -300,6 +300,21 @@ PRIVATE void vHandleZdoDataIndication(ZPS_tsAfEvent * pEvent)
     }
 }
 
+PRIVATE void vHandleZdoBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
+{
+    ZPS_teStatus status = ZPS_eAplZdoBind(GENERAL_CLUSTER_ID_ONOFF,
+                                          pEvent->u8SrcEp,
+                                          0x2C9C,
+                                          pEvent->uDstAddr.u64Addr,
+                                          pEvent->u8DstEp);
+    DBG_vPrintf(TRUE, "Binding SrcEP=%d to DstEP=%d Status=%d\n", pEvent->u8SrcEp, pEvent->u8DstEp, status);
+}
+
+PRIVATE void vHandleZdoUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
+{
+
+}
+
 
 PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 {
@@ -322,6 +337,14 @@ PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_NWK_LEAVE_CONFIRM:
             vHandleLeaveNetwork();
+            break;
+
+        case ZPS_EVENT_ZDO_BIND:
+            vHandleZdoBindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            break;
+
+        case ZPS_EVENT_ZDO_UNBIND:
+            vHandleZdoUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
             break;
 
         default:

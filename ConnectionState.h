@@ -3,7 +3,7 @@
 
 #include "PersistedValue.h"
 
-#define PWM_ID_NODE_STATE 1
+#define PDM_ID_NODE_STATE 1
 
 typedef enum
 {
@@ -15,7 +15,7 @@ typedef enum
 
 class ConnectionState
 {
-    PersistedValue<JoinStateEnum, PWM_ID_NODE_STATE> state;
+    PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> state;
 
 public:
     ConnectionState();
