@@ -263,3 +263,73 @@ void vDumpNetworkParameters()
     DBG_vPrintf(TRUE, "    sBDB.u8bdbNodeJoinLinkKeyType: %d\n", sBDB.sAttrib.u8bdbNodeJoinLinkKeyType);
     DBG_vPrintf(TRUE, "    sBDB.bLeaveRequested: %d\n", sBDB.sAttrib.bLeaveRequested);
 }
+
+void vDisplayNeighbourTable( void )
+{
+    void * thisNet = ZPS_pvAplZdoGetNwkHandle();
+    ZPS_tsNwkNib * thisNib = ZPS_psNwkNibGetHandle(thisNet);
+    uint8 i;
+
+    DBG_vPrintf(TRUE, "\n+++++++ Neighbour Table Size: %d\n", thisNib->sTblSize.u16NtActv);
+
+    for( i = 0 ; i < thisNib->sTblSize.u16NtActv ; i++ )
+    {
+
+        DBG_vPrintf(TRUE, "    SAddr: 0x%04x - ExtAddr: 0x%016llx - LQI: %3i - Failed TX's: %i - Auth: %i - %i %i %i %i %i %i - Active: %i - %i %i %i\n",
+                    thisNib->sTbl.psNtActv[i].u16NwkAddr,
+                    ZPS_u64NwkNibGetMappedIeeeAddr(thisNet,thisNib->sTbl.psNtActv[i].u16Lookup),
+                    thisNib->sTbl.psNtActv[i].u8LinkQuality,
+                    thisNib->sTbl.psNtActv[i].u8TxFailed,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1Authenticated,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1DeviceType,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1ExpectAnnc,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1LinkStatusDone,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1PowerSource,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1RxOnWhenIdle,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1SecurityMode,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u1Used,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u2Relationship,
+                    thisNib->sTbl.psNtActv[i].u8Age,
+                    thisNib->sTbl.psNtActv[i].uAncAttrs.bfBitfields.u3OutgoingCost
+                    );
+
+    }
+}
+
+void vDisplayDiscoveredNodes(void)
+{
+    ZPS_tsNwkNib * thisNib;
+    uint8 i;
+
+    thisNib = ZPS_psNwkNibGetHandle(ZPS_pvAplZdoGetNwkHandle());
+
+    DBG_vPrintf(TRUE, "\n++++++ Discovered nodes\n");
+    for( i = 0; i < thisNib->sTblSize.u8NtDisc; i++)
+    {
+        DBG_vPrintf(TRUE, "  Index: %d", i );
+
+        DBG_vPrintf(TRUE, "    EPID: %016llx", thisNib->sTbl.psNtDisc[i].u64ExtPanId);
+
+        DBG_vPrintf(TRUE, "    PAN: %04x", thisNib->sTbl.psNtDisc[i].u16PanId);
+
+        DBG_vPrintf(TRUE, "    SAddr: %04x", thisNib->sTbl.psNtDisc[i].u16NwkAddr);
+
+        DBG_vPrintf(TRUE, "    LQI %d\n", thisNib->sTbl.psNtDisc[i].u8LinkQuality);
+
+        DBG_vPrintf(TRUE, "    CH: %d", thisNib->sTbl.psNtDisc[i].u8LogicalChan);
+
+        DBG_vPrintf(TRUE, "    PJ: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1JoinPermit);
+
+        DBG_vPrintf(TRUE, "    Coord: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1PanCoord);
+
+        DBG_vPrintf(TRUE, "    RT Cap: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1ZrCapacity);
+
+        DBG_vPrintf(TRUE, "    ED Cap: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1ZedCapacity);
+
+        DBG_vPrintf(TRUE, "    Depth: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u4Depth);
+
+        DBG_vPrintf(TRUE, "    StPro: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u4StackProfile);
+
+        DBG_vPrintf(TRUE, "    PP: %d\r\n", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1PotentialParent);
+    }
+}

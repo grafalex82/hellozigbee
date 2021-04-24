@@ -8,6 +8,8 @@ extern "C"
     void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent);
     void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent);
     void vDumpNetworkParameters();
+    void vDisplayDiscoveredNodes();
+    void vDisplayNeighbourTable();
 }
 
 
