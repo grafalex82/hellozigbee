@@ -55,13 +55,43 @@ extern "C" void vDumpDiscoveryCompleteEvent(ZPS_tsAfNwkDiscoveryEvent * pEvent)
     }
 }
 
+const char * getClusterName(uint16 clusterID)
+{
+    switch(clusterID)
+    {
+        case ZPS_ZDP_DEVICE_ANNCE_REQ_CLUSTER_ID: return "Device announce request";
+        case ZPS_ZDP_NODE_DESC_REQ_CLUSTER_ID: return "Node descriptor request";
+        case ZPS_ZDP_SIMPLE_DESC_REQ_CLUSTER_ID: return "Simple descriptor request";
+        case ZPS_ZDP_ACTIVE_EP_REQ_CLUSTER_ID: return "Active endpoint request";
+        case ZPS_ZDP_BIND_REQ_CLUSTER_ID: return "Bind request";
+        case ZPS_ZDP_UNBIND_REQ_CLUSTER_ID: return "Unbind request";
+        case ZPS_ZDP_MGMT_LQI_REQ_CLUSTER_ID: return "Mgmt LQI request";
+        case ZPS_ZDP_MGMT_RTG_REQ_CLUSTER_ID: return "Mgmt routing request";
+        case ZPS_ZDP_MGMT_BIND_REQ_CLUSTER_ID: return "Mgmt bind request";
+
+        case ZPS_ZDP_NODE_DESC_RSP_CLUSTER_ID: return "Node descriptor response";
+        case ZPS_ZDP_SIMPLE_DESC_RSP_CLUSTER_ID: return "Simple descriptor response";
+        case ZPS_ZDP_ACTIVE_EP_RSP_CLUSTER_ID: return "Active endpoint response";
+        case ZPS_ZDP_MGMT_LQI_RSP_CLUSTER_ID: return "Mgmt LQI response";
+        case ZPS_ZDP_MGMT_RTG_RSP_CLUSTER_ID: return "Mgmt routing response";
+        case ZPS_ZDP_MGMT_BIND_RSP_CLUSTER_ID: return "Mgmt bind response";
+    }
+
+    return "???";
+}
+
 void vDumpDataIndicationEvent(ZPS_tsAfDataIndEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_INDICATION: SrcEP=%d DstEP=%d SrcAddr=%04x Cluster=%04x Status=%d\n",
+    const char * clusterName = "";
+    if(pEvent->u8DstEndpoint == 0)
+        clusterName = getClusterName(pEvent->u16ClusterId);
+
+    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_INDICATION: SrcEP=%d DstEP=%d SrcAddr=%04x Cluster=%04x (%s) Status=%d\n",
             pEvent->u8SrcEndpoint,
             pEvent->u8DstEndpoint,
             pEvent->uSrcAddress.u16Addr,
             pEvent->u16ClusterId,
+            clusterName,
             pEvent->eStatus);
 }
 
@@ -76,12 +106,17 @@ void vDumpDataConfirmEvent(ZPS_tsAfDataConfEvent * pEvent)
 
 void vDumpDataAckEvent(ZPS_tsAfDataAckEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_ACK: SrcEP=%d DrcEP=%d DstAddr=%04x Profile=%04x Cluster=%04x\n",
+    const char * clusterName = "";
+    if(pEvent->u8SrcEndpoint == 0)
+        clusterName = getClusterName(pEvent->u16ClusterId);
+
+    DBG_vPrintf(TRUE, "ZPS_EVENT_APS_DATA_ACK: SrcEP=%d DrcEP=%d DstAddr=%04x Profile=%04x Cluster=%04x (%s)\n",
                 pEvent->u8SrcEndpoint,
                 pEvent->u8DstEndpoint,
                 pEvent->u16DstAddr,
                 pEvent->u16ProfileId,
-                pEvent->u16ClusterId);
+                pEvent->u16ClusterId,
+                clusterName);
 }
 
 void vDumpJoinedAsRouterEvent(ZPS_tsAfNwkJoinedEvent * pEvent)
@@ -116,18 +151,40 @@ void vDumpNwkLeaveConfirm(ZPS_tsAfNwkLeaveConfEvent * pEvent)
 
 void vDumpBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
-        pEvent->u8SrcEp,
-        pEvent->u8DstEp,
-        pEvent->uDstAddr);
+    if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=%016llx\n",
+            pEvent->u8SrcEp,
+            pEvent->u8DstEp,
+            pEvent->uDstAddr.u64Addr);
+    else if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_SHORT)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
+            pEvent->u8SrcEp,
+            pEvent->u8DstEp,
+            pEvent->uDstAddr.u16Addr);
+    else
+        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d Unknown DstAddrMode=%d\n",
+            pEvent->u8SrcEp,
+            pEvent->u8DstEp,
+            pEvent->u8DstAddrMode);
 }
 
-void vDumpUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent)
+void vDumpUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
 {
-    DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
-        pEvent->u8SrcEp,
-        pEvent->u8DstEp,
-        pEvent->uDstAddr);
+    if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=%016llx\n",
+            pEvent->u8SrcEp,
+            pEvent->u8DstEp,
+            pEvent->uDstAddr.u64Addr);
+    else if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_SHORT)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
+            pEvent->u8SrcEp,
+            pEvent->u8DstEp,
+            pEvent->uDstAddr.u16Addr);
+    else
+        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d Unknown DstAddrMode=%d\n",
+            pEvent->u8SrcEp,
+            pEvent->u8DstEp,
+            pEvent->uDstAddr);
 }
 
 void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
