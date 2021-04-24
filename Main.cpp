@@ -167,6 +167,13 @@ PRIVATE void vHandleLeaveNetwork()
     ZPS_vSaveAllZpsRecords();
 }
 
+PRIVATE void vHandleRejoinFailure()
+{
+    DBG_vPrintf(TRUE, "== Failed to (re)join the network\n");
+
+    vHandleLeaveNetwork();
+}
+
 
 PRIVATE void vLeaveNetwork()
 {
@@ -408,6 +415,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_REJOIN_FAILURE:
             DBG_vPrintf(TRUE, "BDB event callback: Failed to rejoin\n");
+            vHandleRejoinFailure();
             break;
 
         case BDB_EVENT_NWK_STEERING_SUCCESS:
@@ -417,6 +425,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
         case BDB_EVENT_NO_NETWORK:
             DBG_vPrintf(TRUE, "BDB event callback: No good network to join\n");
+            vHandleRejoinFailure();
             break;
 
         case BDB_EVENT_FAILURE_RECOVERY_FOR_REJOIN:
