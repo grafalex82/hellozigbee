@@ -6,7 +6,7 @@
  *
  * COMPONENT:      pdum_gen.c
  *
- * DATE:           Tue Mar 30 20:35:51 2021
+ * DATE:           Sat May  1 20:04:27 2021
  *
  * AUTHOR:         NXP PDU Manager Configuration Tool
  *
@@ -119,21 +119,21 @@ PUBLIC pdum_tsAPduInstance s_asapduZDPInstances[16] = {
     { s_au8apduZDPInstance14Storage, 0, 0, 0 },
     { s_au8apduZDPInstance15Storage, 0, 0, 0 },
 };
-PRIVATE uint8 s_au8apduZCLInstance0Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance1Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance2Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance3Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance4Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance5Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance6Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance7Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance8Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance9Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance10Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance11Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance12Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance13Storage[100];
-PRIVATE uint8 s_au8apduZCLInstance14Storage[100];
+PRIVATE uint8 s_au8apduZCLInstance0Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance1Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance2Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance3Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance4Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance5Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance6Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance7Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance8Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance9Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance10Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance11Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance12Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance13Storage[1];
+PRIVATE uint8 s_au8apduZCLInstance14Storage[1];
 PUBLIC pdum_tsAPduInstance s_asapduZCLInstances[15] = {
     { s_au8apduZCLInstance0Storage, 0, 0, 1 },
     { s_au8apduZCLInstance1Storage, 0, 0, 1 },

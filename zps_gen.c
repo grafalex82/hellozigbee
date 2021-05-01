@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Tue Mar 30 20:35:42 2021
+ * DATE:           Sat May  1 20:04:24 2021
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -485,7 +485,7 @@ zps_tsAplAfMMServerContext	s_sMultiMaskServer ={     ZPS_E_MULTIMASK_STATE_IDLE,
     /* The MAC Interface Table (default values) */ 
 PRIVATE  MAC_tsMacInterface    g_sMacInterface [ 1 ]= 
 {
-        { 0, 0x7, E_MAC_FREQ_2400, E_MAC_TYPE_SOC  } , 
+        { 0, 0x5, E_MAC_FREQ_2400, E_MAC_TYPE_SOC  } , 
 };
 PRIVATE MAC_tsMacInterfaceTable g_asMacInterfaceTable =  
 { 
@@ -545,10 +545,6 @@ PUBLIC bool zps_bAplZdoBindUnbindServer(void *, void *, ZPS_tsAfEvent *);
 PUBLIC void zps_vAplZdoBindUnbindServerInit(void *, PDUM_thAPdu );
 PUBLIC bool zps_bAplZdoBindRequestServer(void *, void *, ZPS_tsAfEvent *);
 PUBLIC void zps_vAplZdoBindRequestServerInit(void *, uint8, uint8, zps_tsZdoServerConfAckContext* );
-PUBLIC bool zps_bAplZdoPermitJoiningServer(void *, void *, ZPS_tsAfEvent *);
-PUBLIC void zps_vAplZdoPermitJoiningServerInit(void *, PDUM_thAPdu );
-PUBLIC bool zps_bAplZdoMgmtRtgServer(void *, void *, ZPS_tsAfEvent *);
-PUBLIC void zps_vAplZdoMgmtRtgServerInit(void *, PDUM_thAPdu );
 
 /****************************************************************************/
 /***        Local Variables                                               ***/
@@ -608,12 +604,10 @@ PRIVATE uint8 s_sMgmtLeaveServerContext[40] __attribute__ ((aligned (4)));
 PRIVATE uint8 s_sMgmtNWKUpdateServerContext[88] __attribute__ ((aligned (4)));
 PRIVATE uint8 s_sBindUnbindServerContext[48] __attribute__ ((aligned (4)));
 PRIVATE uint8 s_sBindRequestServerContext[64] __attribute__ ((aligned (4)));
-PRIVATE zps_tsZdoServerConfAckContext s_sBindRequestServerAcksDcfmContext[10];
-PRIVATE uint8 s_sPermitJoiningServerContext[4] __attribute__ ((aligned (4)));
-PRIVATE uint8 s_sMgmtRtgServerContext[4] __attribute__ ((aligned (4)));
+PRIVATE zps_tsZdoServerConfAckContext s_sBindRequestServerAcksDcfmContext[3];
 
 /* ZDO Servers */
-PRIVATE const zps_tsAplZdoServer s_asAplZdoServers[19] = {
+PRIVATE const zps_tsAplZdoServer s_asAplZdoServers[17] = {
     { zps_bAplZdoZdoClient, s_sZdoClientContext },
     { zps_bAplZdoDeviceAnnceServer, s_sDeviceAnnceServerContext },
     { zps_bAplZdoActiveEpServer, s_sActiveEpServerContext },
@@ -629,8 +623,6 @@ PRIVATE const zps_tsAplZdoServer s_asAplZdoServers[19] = {
     { zps_bAplZdoMgmtNWKUpdateServer, s_sMgmtNWKUpdateServerContext },
     { zps_bAplZdoBindUnbindServer, s_sBindUnbindServerContext },
     { zps_bAplZdoBindRequestServer, s_sBindRequestServerContext },
-    { zps_bAplZdoPermitJoiningServer, s_sPermitJoiningServerContext },
-    { zps_bAplZdoMgmtRtgServer, s_sMgmtRtgServerContext },
     { zps_bAplZdoDefaultServer, s_sDefaultServerContext },
     { NULL, NULL }
 };
@@ -692,16 +684,16 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[2] = {
 
 /* Node Descriptor */
 PRIVATE ZPS_tsAplAfNodeDescriptor s_sNodeDescriptor = {
-    1,
+    2,
     FALSE,
     FALSE,
     0,
     0x08,
     0,
-    0x8e,
+    0x88,
     0x1037,
     0x7f,
-    0x0064,
+    0x0001,
     0x2c00,
     0x0064,
     0x00};
@@ -709,8 +701,8 @@ PRIVATE ZPS_tsAplAfNodeDescriptor s_sNodeDescriptor = {
 /* Node Power Descriptor */
 PRIVATE ZPS_tsAplAfNodePowerDescriptor s_sNodePowerDescriptor = {
     0x0,
-    0x1,
-    0x1,
+    0x2,
+    0x2,
     0xC};
 
 /* APSDE duplicate table */
@@ -734,22 +726,22 @@ PRIVATE zps_tsApsmeCmdContainer s_sApsmeCmdContainer_1 = { &s_sApsmeCmdContainer
 /* Network Layer Context */
 PRIVATE uint8                   s_sNwkContext[1904] __attribute__ ((aligned (4)));
 PRIVATE ZPS_tsNwkDiscNtEntry    s_asNwkNtDisc[16];
-PRIVATE ZPS_tsNwkActvNtEntry    s_asNwkNtActv[26];
-PRIVATE ZPS_tsNwkRtDiscEntry    s_asNwkRtDisc[1];
-PRIVATE ZPS_tsNwkRtEntry        s_asNwkRt[60];
+PRIVATE ZPS_tsNwkActvNtEntry    s_asNwkNtActv[1];
+PRIVATE ZPS_tsNwkRtDiscEntry    s_asNwkRtDisc[2];
+PRIVATE ZPS_tsNwkRtEntry        s_asNwkRt[1];
 PRIVATE ZPS_tsNwkBtr            s_asNwkBtt[9];
 PRIVATE ZPS_tsNwkRctEntry       s_asNwkRct[2];
 PRIVATE ZPS_tsNwkSecMaterialSet s_asNwkSecMatSet[2];
-PRIVATE uint32                  s_asNwkInFCSet[26];
+PRIVATE uint32                  s_asNwkInFCSet[1];
 PRIVATE uint16                  s_au16NwkAddrMapNwk[14];
 PRIVATE uint16                  s_au16NwkAddrMapLookup[14];
 PRIVATE uint64                  s_au64NwkAddrMapExt[40];
 #ifdef ZPS_FRQAG
-PRIVATE uint32                  s_au32RxPacketCount[26];
-PRIVATE uint32                  s_au32TxPacketCount[26];
+PRIVATE uint32                  s_au32RxPacketCount[1];
+PRIVATE uint32                  s_au32TxPacketCount[1];
 #endif
-PRIVATE uint32                  s_au32ZedTimeoutCount[6];
-PRIVATE uint8                  s_au8KeepAliveFlags[6];
+PRIVATE uint32                  s_au32ZedTimeoutCount[1];
+PRIVATE uint8                  s_au8KeepAliveFlags[1];
 
 PRIVATE const zps_tsNwkNibInitialValues s_sNibInitialValues =
 {
@@ -782,19 +774,19 @@ PRIVATE const zps_tsNwkNibInitialValues s_sNibInitialValues =
 };
 
 
-PRIVATE const uint16 u16ChildTableSize = 6;
+PRIVATE const uint16 u16ChildTableSize = 1;
 
 PRIVATE const ZPS_tsNwkNibTblSize     s_sNwkTblSize = {
-    26,
-    60,
+    1,
+    1,
     2,
     10,
     16,
-    1,
+    2,
     9,
     2,
     sizeof(s_sNibInitialValues),
-    6,
+    1,
     36
 };
 
@@ -843,9 +835,9 @@ PRIVATE zps_tsApl s_sApl = {
     {
          { 0x1B, 0x19, 0x4A },
         0,
-        ZPS_ZDO_DEVICE_ROUTER,
+        ZPS_ZDO_DEVICE_ENDDEVICE,
         ZPS_ZDO_PRECONFIGURED_LINK_KEY,
-        0xff,
+        0x00,
         2,
         2,
         3,
@@ -983,10 +975,7 @@ PRIVATE void vZdoServersInit(void)
     zps_vAplZdoMgmtLeaveServerInit(&s_sMgmtLeaveServerContext, apduZDP);
     zps_vAplZdoMgmtNWKUpdateServerInit(&s_sMgmtNWKUpdateServerContext, apduZDP, &s_sApl);
     zps_vAplZdoBindUnbindServerInit(&s_sBindUnbindServerContext, apduZDP);
-    zps_vAplZdoBindRequestServerInit(&s_sBindRequestServerContext, 1, 10, s_sBindRequestServerAcksDcfmContext);
-    zps_vAplZdoPermitJoiningServerInit(&s_sPermitJoiningServerContext, apduZDP);
-    zps_vAplZdoMgmtRtgServerInit(&s_sMgmtRtgServerContext, apduZDP);
-    zps_vRegisterCallbackForSecondsTick(ZPS_vSecondTimerCallback);
+    zps_vAplZdoBindRequestServerInit(&s_sBindRequestServerContext, 1, 3, s_sBindRequestServerAcksDcfmContext);
 }
 
 PUBLIC void* ZPS_vGetGpContext(void)

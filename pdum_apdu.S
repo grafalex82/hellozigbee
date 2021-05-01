@@ -15,6 +15,6 @@ pdum_apduZDP:
 pdum_apduZCL:
     .long    s_asapduZCLInstances
     .short    0
-    .short    100
+    .short    1
     .short    15
     .zero     2
