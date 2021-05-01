@@ -374,12 +374,12 @@ PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
     // Dump the event for debug purposes
     vDumpAfEvent(&psZpsAfEvent->sStackEvent);
 
-    if(psZpsAfEvent->u8EndPoint == HELLOZIGBEE_ZDO_ENDPOINT)
+    if(psZpsAfEvent->u8EndPoint == HELLOENDDEVICE_ZDO_ENDPOINT)
     {
         // events for ep 0
         vAppHandleZdoEvents(&psZpsAfEvent->sStackEvent);
     }
-    else if(psZpsAfEvent->u8EndPoint == HELLOZIGBEE_SWITCH_ENDPOINT &&
+    else if(psZpsAfEvent->u8EndPoint == HELLOENDDEVICE_SWITCH_ENDPOINT &&
             psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
     {
         vAppHandleZclEvents(&psZpsAfEvent->sStackEvent);
@@ -454,7 +454,7 @@ PRIVATE void vToggleSwitchValue()
     teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                GENERAL_CLUSTER_ID_ONOFF,
                                                E_CLD_ONOFF_ATTR_ID_ONOFF,
-                                               HELLOZIGBEE_SWITCH_ENDPOINT,
+                                               HELLOENDDEVICE_SWITCH_ENDPOINT,
                                                1,
                                                myPDUM_thAPduInstance);
     PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
@@ -541,7 +541,7 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
 
     DBG_vPrintf(TRUE, "vAppMain(): register On/Off endpoint...  ");
-    status = eZLO_RegisterOnOffLightEndPoint(HELLOZIGBEE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
+    status = eZLO_RegisterOnOffLightEndPoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
 
     //Fill Basic cluster attributes
