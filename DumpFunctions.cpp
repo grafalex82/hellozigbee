@@ -127,6 +127,14 @@ void vDumpJoinedAsRouterEvent(ZPS_tsAfNwkJoinedEvent * pEvent)
                 pEvent->bSecuredRejoin);
 }
 
+void vDumpJoinedAsEndDeviceEvent(ZPS_tsAfNwkJoinedEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_JOINED_AS_END_DEVICE: Addr=%04x, rejoin=%d, secured rejoin=%d\n",
+                pEvent->u16Addr,
+                pEvent->bRejoin,
+                pEvent->bSecuredRejoin);
+}
+
 void vDumpNwkStatusIndicationEvent(ZPS_tsAfNwkStatusIndEvent * pEvent)
 {
     DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_STATUS_INDICATION: Addr:%04x Status:%02x\n",
@@ -147,6 +155,19 @@ void vDumpNwkLeaveConfirm(ZPS_tsAfNwkLeaveConfEvent * pEvent)
         pEvent->u64ExtAddr,
         pEvent->eStatus,
         pEvent->bRejoin);
+}
+
+void vDumpNwkPollConfirm(ZPS_tsAfPollConfEvent * pEvent)
+{
+    if(pEvent->u8Status == MAC_ENUM_SUCCESS)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_POLL_CONFIRM: status=Success\n");
+    else if(pEvent->u8Status == MAC_ENUM_NO_ACK)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_POLL_CONFIRM: status=No ACK\n");
+    else if(pEvent->u8Status == MAC_ENUM_NO_DATA)
+        DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_POLL_CONFIRM: status=No Data\n");
+    else
+        DBG_vPrintf(TRUE, "ZPS_EVENT_NWK_POLL_CONFIRM: status=%d\n",
+        pEvent->u8Status);
 }
 
 void vDumpBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
@@ -207,6 +228,11 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
             vDumpJoinedAsRouterEvent(&psStackEvent->uEvent.sNwkJoinedEvent);
             break;
 
+        case ZPS_EVENT_NWK_JOINED_AS_ENDDEVICE:
+            vDumpJoinedAsEndDeviceEvent(&psStackEvent->uEvent.sNwkJoinedEvent);
+            break;
+
+
         case ZPS_EVENT_NWK_STATUS_INDICATION:
             vDumpNwkStatusIndicationEvent(&psStackEvent->uEvent.sNwkStatusIndicationEvent);
             break;
@@ -221,6 +247,10 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_NWK_LEAVE_CONFIRM:
             vDumpNwkLeaveConfirm(&psStackEvent->uEvent.sNwkLeaveConfirmEvent);
+            break;
+
+        case ZPS_EVENT_NWK_POLL_CONFIRM:
+            vDumpNwkPollConfirm(&psStackEvent->uEvent.sNwkPollConfirmEvent);
             break;
 
         case ZPS_EVENT_ZDO_BIND:
