@@ -9,6 +9,8 @@
 
 ButtonsTask::ButtonsTask()
 {
+    pressedCounter = 0;
+
     // Set up GPIO for the button
     vAHI_DioSetDirection(BOARD_BTN_PIN, 0);
     vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
