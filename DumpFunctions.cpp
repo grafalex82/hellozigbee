@@ -208,6 +208,11 @@ void vDumpUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
             pEvent->uDstAddr);
 }
 
+void vDumpTrustCenterStatusEvent(ZPS_tsAfTCstatusEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_TC_STATUS: status=0x%02x\n", pEvent->u8Status);
+}
+
 void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 {
     switch(psStackEvent->eType)
@@ -259,6 +264,10 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_ZDO_UNBIND:
             vDumpUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            break;
+
+        case ZPS_EVENT_TC_STATUS:
+            vDumpTrustCenterStatusEvent(&psStackEvent->uEvent.sApsTcEvent);
             break;
 
         default:
