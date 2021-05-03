@@ -24,6 +24,11 @@ public:
         timer.start(delay);
     }
 
+    void stopTimer()
+    {
+        timer.stop();
+    }
+
 protected:
     static void timerFunc(void * param)
     {

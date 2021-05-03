@@ -32,6 +32,7 @@ extern "C"
 #include "DeferredExecutor.h"
 #include "BlinkTask.h"
 #include "ButtonsTask.h"
+#include "PollTask.h"
 #include "AppQueue.h"
 #include "ConnectionState.h"
 #include "DumpFunctions.h"
@@ -53,7 +54,7 @@ extern "C"
 tsZLO_OnOffLightDevice sSwitch;
 
 
-ZTIMER_tsTimer timers[3 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
 
 
 
@@ -152,6 +153,8 @@ PRIVATE void vHandleNetworkJoinAndRejoin()
     DBG_vPrintf(TRUE, "== Device now is on the network\n");
     connectionState = JOINED;
     ZPS_vSaveAllZpsRecords();
+
+    PollTask::getInstance().startPoll(2000);
 }
 
 PRIVATE void vHandleLeaveNetwork()
@@ -159,6 +162,8 @@ PRIVATE void vHandleLeaveNetwork()
     DBG_vPrintf(TRUE, "== The device has left the network\n");
 
     connectionState = NOT_JOINED;
+
+    PollTask::getInstance().stopPoll();
 
     // Clear ZigBee stack internals
     ZPS_eAplAibSetApsUseExtendedPanId (0);

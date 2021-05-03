@@ -166,6 +166,7 @@ SET(SOURCES
         AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp
+        PollTask.cpp
         DeferredExecutor.cpp
         DumpFunctions.cpp
         ConnectionState.cpp

@@ -21,6 +21,11 @@ public:
     {
         ZTIMER_eStart(timerHandle, time);
     }
+
+    void stop()
+    {
+        ZTIMER_eStop(timerHandle);
+    }
 };
 
 #endif //TIMER_H
