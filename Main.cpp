@@ -133,6 +133,22 @@ PRIVATE void vHandleClusterUpdateMessage(tsZCL_CallBackEvent *psEvent)
     DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Cluster update message EP=%d ClusterID=%04x Cmd=%02x\n", psEvent->u8EndPoint, u16ClusterId, u8CommandId);
 }
 
+void vHandlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
+{
+    switch (pEvent->u8Status)
+    {
+        case MAC_ENUM_SUCCESS:
+        case MAC_ENUM_NO_ACK:
+            ZPS_eAplZdoPoll();
+            break;
+
+        case MAC_ENUM_NO_DATA:
+        default:
+            break;
+    }
+
+}
+
 PRIVATE void vJoinNetwork()
 {
     DBG_vPrintf(TRUE, "== Joining the network\n");
@@ -357,6 +373,10 @@ PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_ZDO_UNBIND:
             vHandleZdoUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            break;
+
+        case ZPS_EVENT_NWK_POLL_CONFIRM:
+            vHandlePollResponse(&psStackEvent->uEvent.sNwkPollConfirmEvent);
             break;
 
         default:
