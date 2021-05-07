@@ -10,10 +10,12 @@ extern "C"
 
 class BlinkTask : public PeriodicTask
 {
-    bool_t * blinkMode;
+    bool fastBlinking;
 
 public:
-    BlinkTask(bool_t * modeVarPtr);
+    BlinkTask();
+
+    void setBlinkMode(bool fast);
 
 protected:
     virtual void timerCallback();

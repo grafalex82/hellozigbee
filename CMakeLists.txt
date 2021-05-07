@@ -170,6 +170,9 @@ SET(SOURCES
         DeferredExecutor.cpp
         DumpFunctions.cpp
         ConnectionState.cpp
+        Endpoint.cpp
+        SwitchEndpoint.cpp
+        EndpointManager.cpp
         Main.cpp
 )
 

@@ -36,6 +36,8 @@ extern "C"
 #include "AppQueue.h"
 #include "ConnectionState.h"
 #include "DumpFunctions.h"
+#include "SwitchEndpoint.h"
+#include "EndpointManager.h"
 
 DeferredExecutor deferredExecutor;
 PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
@@ -51,7 +53,6 @@ extern "C"
 
 #define PDM_ID_BLINK_MODE   	    0x2
 
-tsZLO_OnOffLightDevice sSwitch;
 
 
 ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
@@ -68,6 +69,9 @@ QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
 QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
+
+
+SwitchEndpoint switch1;
 
 extern "C" PUBLIC void vISR_SystemController(void)
 {
@@ -113,24 +117,6 @@ PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
             DBG_vPrintf(TRUE, "ZCL General Callback: Invalid event type (%d) in APP_ZCL_cbGeneralCallback\n", psEvent->eEventType);
             break;
     }
-}
-
-PRIVATE void vHandleCustomClusterMessage(tsZCL_CallBackEvent *psEvent)
-{
-    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
-    tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    uint8 u8CommandId = msg->u8CommandId;
-
-    DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Custom cluster message EP=%d ClusterID=%04x Cmd=%02x\n", psEvent->u8EndPoint, u16ClusterId, u8CommandId);
-}
-
-PRIVATE void vHandleClusterUpdateMessage(tsZCL_CallBackEvent *psEvent)
-{
-    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
-    tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    uint8 u8CommandId = msg->u8CommandId;
-
-    DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Cluster update message EP=%d ClusterID=%04x Cmd=%02x\n", psEvent->u8EndPoint, u16ClusterId, u8CommandId);
 }
 
 void vHandlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
@@ -209,50 +195,6 @@ PRIVATE void vLeaveNetwork()
         vHandleLeaveNetwork();
      }
 }
-
-PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
-{
-    switch (psEvent->eEventType)
-    {
-        case E_ZCL_CBET_READ_REQUEST:
-            vDumpZclReadRequest(psEvent);
-            break;
-
-        case E_ZCL_CBET_UNHANDLED_EVENT:
-
-        case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
-
-        case E_ZCL_CBET_DEFAULT_RESPONSE:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: DEFAULT_RESPONSE received. No action\n");
-            break;
-
-        case E_ZCL_CBET_ERROR:
-
-        case E_ZCL_CBET_TIMER:
-
-        case E_ZCL_CBET_ZIGBEE_EVENT:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: No action (event type %d)\n", psEvent->eEventType);
-            break;
-
-        case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Read Attrib Rsp %d %02x\n", psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
-                *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
-            break;
-
-        case E_ZCL_CBET_CLUSTER_CUSTOM:
-            vHandleCustomClusterMessage(psEvent);
-            break;
-
-        case E_ZCL_CBET_CLUSTER_UPDATE:
-            vHandleClusterUpdateMessage(psEvent);
-            break;
-
-        default:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Invalid event type (%d) in APP_ZCL_cbEndpointCallback\r\n", psEvent->eEventType);
-            break;
-    }
-}
-
 
 void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
 {
@@ -463,29 +405,6 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
     }
 }
 
-
-PRIVATE void vToggleSwitchValue()
-{
-    // Toggle the value
-    sSwitch.sOnOffServerCluster.bOnOff = sSwitch.sOnOffServerCluster.bOnOff ? FALSE : TRUE;
-
-    // Destination address - 0x0000 (coordinator)
-    tsZCL_Address addr;
-    addr.uAddress.u16DestinationAddress = 0x0000;
-    addr.eAddressMode = E_ZCL_AM_SHORT;
-
-    DBG_vPrintf(TRUE, "Reporting attribute... ");
-    PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
-    teZCL_Status status = eZCL_ReportAttribute(&addr,
-                                               GENERAL_CLUSTER_ID_ONOFF,
-                                               E_CLD_ONOFF_ATTR_ID_ONOFF,
-                                               HELLOENDDEVICE_SWITCH_ENDPOINT,
-                                               1,
-                                               myPDUM_thAPduInstance);
-    PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
-    DBG_vPrintf(TRUE, "status: %02x\n", status);
-}
-
 PRIVATE void APP_vTaskSwitch()
 {
     ApplicationEvent value;
@@ -495,7 +414,7 @@ PRIVATE void APP_vTaskSwitch()
 
         if(value == BUTTON_SHORT_PRESS)
         {
-            vToggleSwitchValue();
+            switch1.toggle();
         }
 
         if(value == BUTTON_LONG_PRESS)
@@ -539,7 +458,6 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Init tasks
     DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
-    BlinkTask blinkTask(&sSwitch.sOnOffServerCluster.bOnOff);
     ButtonsTask buttonsTask;
 
     // Initialize ZigBee stack and application queues
@@ -565,16 +483,8 @@ extern "C" PUBLIC void vAppMain(void)
     ZPS_teStatus status = eZCL_Initialise(&APP_ZCL_cbGeneralCallback, apduZCL);
     DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
 
-    DBG_vPrintf(TRUE, "vAppMain(): register On/Off endpoint...  ");
-    status = eZLO_RegisterOnOffLightEndPoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &APP_ZCL_cbEndpointCallback, &sSwitch);
-    DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
-
-    //Fill Basic cluster attributes
-    memcpy(sSwitch.sBasicServerCluster.au8ManufacturerName, CLD_BAS_MANUF_NAME_STR, CLD_BAS_MANUF_NAME_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8ModelIdentifier, CLD_BAS_MODEL_ID_STR, CLD_BAS_MODEL_ID_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
-    sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
+    DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &switch1);
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
