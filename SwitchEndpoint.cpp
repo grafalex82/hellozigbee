@@ -62,6 +62,10 @@ void SwitchEndpoint::toggle()
 void SwitchEndpoint::doStateChange(bool state)
 {
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
+
+    sSwitch.sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
+
+    blinkTask.setBlinkMode(state);
 }
 
 void SwitchEndpoint::reportStateChange()
@@ -71,7 +75,7 @@ void SwitchEndpoint::reportStateChange()
     addr.uAddress.u16DestinationAddress = 0x0000;
     addr.eAddressMode = E_ZCL_AM_SHORT;
 
-    DBG_vPrintf(TRUE, "Reporting attribute... ");
+    DBG_vPrintf(TRUE, "Reporting attribute EP=%d value=%d... ", getEndpointId(), sSwitch.sOnOffServerCluster.bOnOff);
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
     teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                GENERAL_CLUSTER_ID_ONOFF,

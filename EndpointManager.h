@@ -14,7 +14,7 @@ class EndpointManager
 private:
     EndpointManager();
 
-    Endpoint * registry[ZCL_NUMBER_OF_ENDPOINTS];
+    Endpoint * registry[ZCL_NUMBER_OF_ENDPOINTS+1];
 
 public:
     static EndpointManager * getInstance();

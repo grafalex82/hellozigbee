@@ -13,6 +13,7 @@ class Endpoint
 
 public:
     Endpoint();
+
     void setEndpointId(uint8 id);
     uint8 getEndpointId() const;
 

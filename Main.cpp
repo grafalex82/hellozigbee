@@ -71,7 +71,23 @@ QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
 QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
 
 
-SwitchEndpoint switch1;
+struct Context
+{
+    SwitchEndpoint switch1;
+};
+
+
+extern "C" void __cxa_pure_virtual(void) __attribute__((__noreturn__));
+extern "C" void __cxa_deleted_virtual(void) __attribute__((__noreturn__));
+
+void __cxa_pure_virtual(void)
+{
+  // We might want to write some diagnostics to uart in this case
+  //std::terminate();
+  while (1)
+    ;
+}
+
 
 extern "C" PUBLIC void vISR_SystemController(void)
 {
@@ -405,7 +421,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
     }
 }
 
-PRIVATE void APP_vTaskSwitch()
+PRIVATE void APP_vTaskSwitch(Context * context)
 {
     ApplicationEvent value;
     if(appEventQueue.receive(&value))
@@ -414,7 +430,7 @@ PRIVATE void APP_vTaskSwitch()
 
         if(value == BUTTON_SHORT_PRESS)
         {
-            switch1.toggle();
+            context->switch1.toggle();
         }
 
         if(value == BUTTON_LONG_PRESS)
@@ -484,7 +500,8 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &switch1);
+    Context context;
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
@@ -516,7 +533,7 @@ extern "C" PUBLIC void vAppMain(void)
 
         ZTIMER_vTask();
 
-        APP_vTaskSwitch();
+        APP_vTaskSwitch(&context);
 
         vAHI_WatchdogRestart();
     }

@@ -9,15 +9,12 @@ extern "C"
 
 EndpointManager::EndpointManager()
 {
-    DBG_vPrintf(TRUE, "Endpoint Manager constructor\n");
     memset(registry, 0, sizeof(Endpoint*) * ZCL_NUMBER_OF_ENDPOINTS);
 }
 
 EndpointManager * EndpointManager::getInstance()
 {
-    DBG_vPrintf(TRUE, "About to create Endpoint Manager\n");
     static EndpointManager instance;
-    DBG_vPrintf(TRUE, "Returning Endpoint Manager\n");
     return &instance;
 }
 
