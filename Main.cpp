@@ -165,7 +165,7 @@ PRIVATE void vJoinNetwork()
     BDB_eNsStartNwkSteering();
 }
 
-PRIVATE void vHandleNetworkJoinAndRejoin()
+PUBLIC void vHandleNetworkJoinAndRejoin()
 {
     DBG_vPrintf(TRUE, "== Device now is on the network\n");
     ZigbeeDevice::getInstance()->setState(JOINED);
@@ -189,7 +189,7 @@ PRIVATE void vHandleLeaveNetwork()
     ZPS_vSaveAllZpsRecords();
 }
 
-PRIVATE void vHandleRejoinFailure()
+PUBLIC void vHandleRejoinFailure()
 {
     DBG_vPrintf(TRUE, "== Failed to (re)join the network\n");
 
@@ -351,7 +351,7 @@ PRIVATE void vAppHandleZclEvents(ZPS_tsAfEvent* psStackEvent)
     vZCL_EventHandler(&sCallBackEvent);
 }
 
-PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
+PUBLIC void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
 {
     // Dump the event for debug purposes
     vDumpAfEvent(&psZpsAfEvent->sStackEvent);
@@ -375,49 +375,6 @@ PRIVATE void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
     // Ensure Freeing of APDUs
     if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
         PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsDataIndEvent.hAPduInst);
-}
-
-
-PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
-{
-    switch(psBdbEvent->eEventType)
-    {
-        case BDB_EVENT_ZPSAF:
-            vAppHandleAfEvent(&psBdbEvent->uEventData.sZpsAfEvent);
-            break;
-
-        case BDB_EVENT_INIT_SUCCESS:
-            DBG_vPrintf(TRUE, "BDB event callback: BDB Init Successful\n");
-            break;
-
-        case BDB_EVENT_REJOIN_SUCCESS:
-            DBG_vPrintf(TRUE, "BDB event callback: Network Join Successful\n");
-            vHandleNetworkJoinAndRejoin();
-            break;
-
-        case BDB_EVENT_REJOIN_FAILURE:
-            DBG_vPrintf(TRUE, "BDB event callback: Failed to rejoin\n");
-            vHandleRejoinFailure();
-            break;
-
-        case BDB_EVENT_NWK_STEERING_SUCCESS:
-            DBG_vPrintf(TRUE, "BDB event callback: Network steering success\n");
-            vHandleNetworkJoinAndRejoin();
-            break;
-
-        case BDB_EVENT_NO_NETWORK:
-            DBG_vPrintf(TRUE, "BDB event callback: No good network to join\n");
-            vHandleRejoinFailure();
-            break;
-
-        case BDB_EVENT_FAILURE_RECOVERY_FOR_REJOIN:
-            DBG_vPrintf(TRUE, "BDB event callback: Failure recovery for rejoin\n");
-            break;
-
-        default:
-            DBG_vPrintf(1, "BDB event callback: evt %d\n", psBdbEvent->eEventType);
-            break;
-    }
 }
 
 PRIVATE void APP_vTaskSwitch(Context * context)

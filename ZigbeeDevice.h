@@ -29,6 +29,9 @@ public:
 
     JoinStateEnum getState() const {return connectionState;}
     void setState(JoinStateEnum state) {connectionState = state;}
+
+public:
+    void handleBdbEvent(BDB_tsBdbEvent *psBdbEvent);
 };
 
 #endif // ZIGBEEDEVICE_H
