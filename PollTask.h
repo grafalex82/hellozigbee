@@ -6,10 +6,9 @@
 class PollTask : public PeriodicTask
 {
     int pollPeriod;
-    PollTask();
 
 public:    
-    static PollTask & getInstance();
+    PollTask();
 
     void startPoll(int period);
     void stopPoll();

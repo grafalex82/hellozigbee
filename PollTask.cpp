@@ -14,12 +14,6 @@ PollTask::PollTask()
     PeriodicTask::init();
 }
 
-PollTask& PollTask::getInstance()
-{
-    static PollTask task;
-    return task;
-}
-
 void PollTask::startPoll(int period)
 {
     pollPeriod = period;

@@ -117,83 +117,6 @@ PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
     }
 }
 
-void vHandlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
-{
-    switch (pEvent->u8Status)
-    {
-        case MAC_ENUM_SUCCESS:
-        case MAC_ENUM_NO_ACK:
-            ZPS_eAplZdoPoll();
-            break;
-
-        case MAC_ENUM_NO_DATA:
-        default:
-            break;
-    }
-
-}
-
-PRIVATE void vJoinNetwork()
-{
-    DBG_vPrintf(TRUE, "== Joining the network\n");
-    ZigbeeDevice::getInstance()->setState(JOINING);
-
-    // Clear ZigBee stack internals
-    ZPS_eAplAibSetApsUseExtendedPanId (0);
-    ZPS_vDefaultStack();
-    ZPS_vSetKeys();
-    ZPS_vSaveAllZpsRecords();
-
-    // Connect to a network
-    BDB_eNsStartNwkSteering();
-}
-
-PUBLIC void vHandleNetworkJoinAndRejoin()
-{
-    DBG_vPrintf(TRUE, "== Device now is on the network\n");
-    ZigbeeDevice::getInstance()->setState(JOINED);
-    ZPS_vSaveAllZpsRecords();
-
-    PollTask::getInstance().startPoll(2000);
-}
-
-PRIVATE void vHandleLeaveNetwork()
-{
-    DBG_vPrintf(TRUE, "== The device has left the network\n");
-
-    ZigbeeDevice::getInstance()->setState(NOT_JOINED);
-
-    PollTask::getInstance().stopPoll();
-
-    // Clear ZigBee stack internals
-    ZPS_eAplAibSetApsUseExtendedPanId (0);
-    ZPS_vDefaultStack();
-    ZPS_vSetKeys();
-    ZPS_vSaveAllZpsRecords();
-}
-
-PUBLIC void vHandleRejoinFailure()
-{
-    DBG_vPrintf(TRUE, "== Failed to (re)join the network\n");
-
-    vHandleLeaveNetwork();
-}
-
-
-PRIVATE void vLeaveNetwork()
-{
-    DBG_vPrintf(TRUE, "== Leaving the network\n");
-    sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE;
-    ZigbeeDevice::getInstance()->setState(NOT_JOINED);
-
-    if (ZPS_E_SUCCESS !=  ZPS_eAplZdoLeaveNetwork(0, FALSE, FALSE))
-    {
-        // Leave failed, probably lost parent, so just reset everything
-        DBG_vPrintf(TRUE, "== Failed to properly leave the network. Force leaving the network\n");
-        vHandleLeaveNetwork();
-     }
-}
-
 void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
 {
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
@@ -246,120 +169,6 @@ PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
     DBG_vPrintf(TRUE, "Sent Simple Descriptor request to coordinator for EP %d (status %d)\n", ep, status);
 }
 
-
-PRIVATE void vHandleZdoDataIndication(ZPS_tsAfEvent * pEvent)
-{
-    ZPS_tsAfZdpEvent zdpEvent;
-
-    switch(pEvent->uEvent.sApsDataIndEvent.u16ClusterId)
-    {
-        case ZPS_ZDP_ACTIVE_EP_RSP_CLUSTER_ID:
-        {
-            bool res = zps_bAplZdpUnpackActiveEpResponse(pEvent, &zdpEvent);
-            DBG_vPrintf(TRUE, "Unpacking Active Endpoint Response: Status: %02x res:%02x\n", zdpEvent.uZdpData.sActiveEpRsp.u8Status, res);
-            for(uint8 i=0; i<zdpEvent.uZdpData.sActiveEpRsp.u8ActiveEpCount; i++)
-            {
-                uint8 ep = zdpEvent.uLists.au8Data[i];
-                DBG_vPrintf(TRUE, "Scheduling simple descriptor request for EP %d\n", ep);
-
-                deferredExecutor.runLater(1000, vSendSimpleDescriptorReq, ep);
-            }
-        }
-    }
-}
-
-PRIVATE void vHandleZdoBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
-{
-    ZPS_teStatus status = ZPS_eAplZdoBind(GENERAL_CLUSTER_ID_ONOFF,
-                                          pEvent->u8SrcEp,
-                                          0x2C9C,
-                                          pEvent->uDstAddr.u64Addr,
-                                          pEvent->u8DstEp);
-    DBG_vPrintf(TRUE, "Binding SrcEP=%d to DstEP=%d Status=%d\n", pEvent->u8SrcEp, pEvent->u8DstEp, status);
-}
-
-PRIVATE void vHandleZdoUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
-{
-
-}
-
-
-PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
-{
-    if(ZigbeeDevice::getInstance()->getState() != JOINED)
-    {
-        DBG_vPrintf(TRUE, "Handle ZDO event: Not joined yet. Discarding event %d\n", psStackEvent->eType);
-        return;
-    }
-
-    switch(psStackEvent->eType)
-    {
-        case ZPS_EVENT_APS_DATA_INDICATION:
-            vHandleZdoDataIndication(psStackEvent);
-            break;
-
-        case ZPS_EVENT_NWK_LEAVE_INDICATION:
-            if(psStackEvent->uEvent.sNwkLeaveIndicationEvent.u64ExtAddr == 0)
-                vHandleLeaveNetwork();
-            break;
-
-        case ZPS_EVENT_NWK_LEAVE_CONFIRM:
-            vHandleLeaveNetwork();
-            break;
-
-        case ZPS_EVENT_ZDO_BIND:
-            vHandleZdoBindEvent(&psStackEvent->uEvent.sZdoBindEvent);
-            break;
-
-        case ZPS_EVENT_ZDO_UNBIND:
-            vHandleZdoUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
-            break;
-
-        case ZPS_EVENT_NWK_POLL_CONFIRM:
-            vHandlePollResponse(&psStackEvent->uEvent.sNwkPollConfirmEvent);
-            break;
-
-        default:
-            //DBG_vPrintf(TRUE, "Handle ZDO event: event type %d\n", psStackEvent->eType);
-            break;
-    }
-}
-
-
-PRIVATE void vAppHandleZclEvents(ZPS_tsAfEvent* psStackEvent)
-{
-    tsZCL_CallBackEvent sCallBackEvent;
-    sCallBackEvent.pZPSevent = psStackEvent;
-    sCallBackEvent.eEventType = E_ZCL_CBET_ZIGBEE_EVENT;
-    vZCL_EventHandler(&sCallBackEvent);
-}
-
-PUBLIC void vAppHandleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
-{
-    // Dump the event for debug purposes
-    vDumpAfEvent(&psZpsAfEvent->sStackEvent);
-
-    if(psZpsAfEvent->u8EndPoint == HELLOENDDEVICE_ZDO_ENDPOINT)
-    {
-        // events for ep 0
-        vAppHandleZdoEvents(&psZpsAfEvent->sStackEvent);
-    }
-    else if(psZpsAfEvent->u8EndPoint == HELLOENDDEVICE_SWITCH_ENDPOINT &&
-            psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
-    {
-        vAppHandleZclEvents(&psZpsAfEvent->sStackEvent);
-    }
-    else if (psZpsAfEvent->sStackEvent.eType != ZPS_EVENT_APS_DATA_CONFIRM &&
-             psZpsAfEvent->sStackEvent.eType != ZPS_EVENT_APS_DATA_ACK)
-    {
-        DBG_vPrintf(TRUE, "AF event callback: endpoint %d, event %d\n", psZpsAfEvent->u8EndPoint, psZpsAfEvent->sStackEvent.eType);
-    }
-
-    // Ensure Freeing of APDUs
-    if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
-        PDUM_eAPduFreeAPduInstance(psZpsAfEvent->sStackEvent.uEvent.sApsDataIndEvent.hAPduInst);
-}
-
 PRIVATE void APP_vTaskSwitch(Context * context)
 {
     ApplicationEvent value;
@@ -374,10 +183,7 @@ PRIVATE void APP_vTaskSwitch(Context * context)
 
         if(value == BUTTON_LONG_PRESS)
         {
-            if(ZigbeeDevice::getInstance()->getState() == JOINED)
-                vLeaveNetwork();
-            else
-                vJoinNetwork();
+            ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
         }
     }
 }
