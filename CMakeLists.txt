@@ -172,6 +172,7 @@ SET(SOURCES
         Endpoint.cpp
         SwitchEndpoint.cpp
         EndpointManager.cpp
+        ZigbeeDevice.cpp
         Main.cpp
 )
 

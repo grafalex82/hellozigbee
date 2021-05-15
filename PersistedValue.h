@@ -23,12 +23,12 @@ public:
         DBG_vPrintf(TRUE, "PersistedValue::init(). Status %d, value %d\n", status, value);
     }
 
-    T getValue()
+    T getValue() const
     {
         return value;
     }
 
-    operator T()
+    operator T() const
     {
         return value;
     }

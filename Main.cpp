@@ -40,7 +40,6 @@ extern "C"
 #include "ZigbeeDevice.h"
 
 DeferredExecutor deferredExecutor;
-PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
 extern "C"
@@ -154,7 +153,7 @@ void vHandlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
 PRIVATE void vJoinNetwork()
 {
     DBG_vPrintf(TRUE, "== Joining the network\n");
-    connectionState = JOINING;
+    ZigbeeDevice::getInstance()->setState(JOINING);
 
     // Clear ZigBee stack internals
     ZPS_eAplAibSetApsUseExtendedPanId (0);
@@ -169,7 +168,7 @@ PRIVATE void vJoinNetwork()
 PRIVATE void vHandleNetworkJoinAndRejoin()
 {
     DBG_vPrintf(TRUE, "== Device now is on the network\n");
-    connectionState = JOINED;
+    ZigbeeDevice::getInstance()->setState(JOINED);
     ZPS_vSaveAllZpsRecords();
 
     PollTask::getInstance().startPoll(2000);
@@ -179,7 +178,7 @@ PRIVATE void vHandleLeaveNetwork()
 {
     DBG_vPrintf(TRUE, "== The device has left the network\n");
 
-    connectionState = NOT_JOINED;
+    ZigbeeDevice::getInstance()->setState(NOT_JOINED);
 
     PollTask::getInstance().stopPoll();
 
@@ -202,7 +201,7 @@ PRIVATE void vLeaveNetwork()
 {
     DBG_vPrintf(TRUE, "== Leaving the network\n");
     sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE;
-    connectionState = NOT_JOINED;
+    ZigbeeDevice::getInstance()->setState(NOT_JOINED);
 
     if (ZPS_E_SUCCESS !=  ZPS_eAplZdoLeaveNetwork(0, FALSE, FALSE))
     {
@@ -304,7 +303,7 @@ PRIVATE void vHandleZdoUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
 
 PRIVATE void vAppHandleZdoEvents(ZPS_tsAfEvent* psStackEvent)
 {
-    if(connectionState != JOINED)
+    if(ZigbeeDevice::getInstance()->getState() != JOINED)
     {
         DBG_vPrintf(TRUE, "Handle ZDO event: Not joined yet. Discarding event %d\n", psStackEvent->eType);
         return;
@@ -435,7 +434,7 @@ PRIVATE void APP_vTaskSwitch(Context * context)
 
         if(value == BUTTON_LONG_PRESS)
         {
-            if(connectionState == JOINED)
+            if(ZigbeeDevice::getInstance()->getState() == JOINED)
                 vLeaveNetwork();
             else
                 vJoinNetwork();
@@ -453,7 +452,7 @@ extern "C" PUBLIC void vAppMain(void)
     // Initialize UART
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
 
-    // Restore blink mode from EEPROM
+    // Initialize PDM
     DBG_vPrintf(TRUE, "vAppMain(): init PDM...\n");
     PDM_eInitialise(0);
     DBG_vPrintf(TRUE, "vAppMain(): PDM Capacity %d Occupancy %d\n",
@@ -488,9 +487,6 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
     deferredExecutor.init();
 
-    // Restore network connection state
-    connectionState.init(NOT_JOINED);
-
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
@@ -502,6 +498,9 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
+
+    // Force creating ZigbeeDevice here
+    ZigbeeDevice::getInstance();
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
@@ -517,7 +516,7 @@ extern "C" PUBLIC void vAppMain(void)
     sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
     BDB_vInit(&sInitArgs);
 
-    sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = (ZigbeeDevice::getInstance()->getState() == JOINED ? TRUE : FALSE);
     sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
     DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
     ZPS_vSaveAllZpsRecords();

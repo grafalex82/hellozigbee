@@ -3,6 +3,12 @@
 
 #include "PersistedValue.h"
 #include "PdmIds.h"
+#include "PollTask.h"
+
+extern "C"
+{
+    #include "zps_apl_af.h"
+}
 
 typedef enum
 {
@@ -14,8 +20,15 @@ typedef enum
 
 class ZigbeeDevice
 {
+    PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
+
 public:
     ZigbeeDevice();
+
+    static ZigbeeDevice * getInstance();
+
+    JoinStateEnum getState() const {return connectionState;}
+    void setState(JoinStateEnum state) {connectionState = state;}
 };
 
 #endif // ZIGBEEDEVICE_H
