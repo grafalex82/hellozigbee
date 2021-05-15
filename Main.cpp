@@ -75,48 +75,6 @@ extern "C" PUBLIC void vISR_SystemController(void)
 {
 }
 
-PRIVATE void APP_ZCL_cbGeneralCallback(tsZCL_CallBackEvent *psEvent)
-{
-    switch (psEvent->eEventType)
-    {
-
-        case E_ZCL_CBET_UNHANDLED_EVENT:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Unhandled Event\n");
-            break;
-
-        case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Read attributes response\n");
-            break;
-
-        case E_ZCL_CBET_READ_REQUEST:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Read request\n");
-            break;
-
-        case E_ZCL_CBET_DEFAULT_RESPONSE:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Default response\n");
-            break;
-
-        case E_ZCL_CBET_ERROR:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Error\n");
-            break;
-
-        case E_ZCL_CBET_TIMER:
-            break;
-
-        case E_ZCL_CBET_ZIGBEE_EVENT:
-            DBG_vPrintf(TRUE, "ZCL General Callback: ZigBee\n");
-            break;
-
-        case E_ZCL_CBET_CLUSTER_CUSTOM:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Custom\n");
-            break;
-
-        default:
-            DBG_vPrintf(TRUE, "ZCL General Callback: Invalid event type (%d) in APP_ZCL_cbGeneralCallback\n", psEvent->eEventType);
-            break;
-    }
-}
-
 void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
 {
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
@@ -232,10 +190,6 @@ extern "C" PUBLIC void vAppMain(void)
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
-
-    DBG_vPrintf(TRUE, "vAppMain(): init Zigbee Class Library (ZCL)...  ");
-    ZPS_teStatus status = eZCL_Initialise(&APP_ZCL_cbGeneralCallback, apduZCL);
-    DBG_vPrintf(TRUE, "eZCL_Initialise() status %d\n", status);
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;

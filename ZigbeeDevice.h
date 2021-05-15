@@ -30,9 +30,6 @@ public:
 
     static ZigbeeDevice * getInstance();
 
-    JoinStateEnum getState() const {return connectionState;}
-    void setState(JoinStateEnum state) {connectionState = state;}
-
     void joinNetwork();
     void leaveNetwork();
     void joinOrLeaveNetwork();
