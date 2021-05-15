@@ -20,8 +20,24 @@ extern "C"
 #include "DumpFunctions.h"
 #include "Queue.h"
 
+extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
+extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
+extern PUBLIC tszQueue zps_TimeEvents;
+extern PUBLIC tszQueue zps_msgMcpsDcfm;
+
+QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
+QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
+QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
+QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
+
 ZigbeeDevice::ZigbeeDevice()
 {
+    // Initialize Zigbee stack queues
+    DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
+    msgMlmeDcfmIndQueue.init();
+    msgMcpsDcfmIndQueue.init();
+    msgMcpsDcfmQueue.init();
+    timeEventQueue.init();
 
     // Restore network connection state
     connectionState.init(NOT_JOINED);

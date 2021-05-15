@@ -50,24 +50,7 @@ extern "C"
 }
 
 
-#define PDM_ID_BLINK_MODE   	    0x2
-
-
-
 ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
-
-
-
-
-extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
-extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
-extern PUBLIC tszQueue zps_TimeEvents;
-extern PUBLIC tszQueue zps_msgMcpsDcfm;
-
-QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
-QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
-QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
-QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
 
 
 struct Context
@@ -434,10 +417,6 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize ZigBee stack and application queues
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
-    msgMlmeDcfmIndQueue.init();
-    msgMcpsDcfmIndQueue.init();
-    msgMcpsDcfmQueue.init();
-    timeEventQueue.init();
     appEventQueue.init();
 
     // Initialize deferred executor
