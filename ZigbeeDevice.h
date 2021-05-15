@@ -4,6 +4,7 @@
 #include "PersistedValue.h"
 #include "PdmIds.h"
 #include "PollTask.h"
+#include "Queue.h"
 
 extern "C"
 {
@@ -21,6 +22,7 @@ typedef enum
 class ZigbeeDevice
 {
     PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
+    Queue<BDB_tsZpsAfEvent, 3> bdbEventQueue;
 
 public:
     ZigbeeDevice();

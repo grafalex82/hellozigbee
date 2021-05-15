@@ -41,6 +41,25 @@ ZigbeeDevice::ZigbeeDevice()
 
     // Restore network connection state
     connectionState.init(NOT_JOINED);
+
+    // Initialise Application Framework stack
+    DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
+    ZPS_teStatus status = ZPS_eAplAfInit();
+    DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
+
+    // Initialize Base Class Behavior
+    DBG_vPrintf(TRUE, "vAppMain(): initialize base device behavior...\n");
+    bdbEventQueue.init();
+    BDB_tsInitArgs sInitArgs;
+    sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
+    BDB_vInit(&sInitArgs);
+
+    // Start the node
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
+    sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
+    DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
+    ZPS_vSaveAllZpsRecords();
+    BDB_vStart();
 }
 
 ZigbeeDevice * ZigbeeDevice::getInstance()

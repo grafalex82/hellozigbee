@@ -438,27 +438,6 @@ extern "C" PUBLIC void vAppMain(void)
     // Force creating ZigbeeDevice here
     ZigbeeDevice::getInstance();
 
-    // Initialise Application Framework stack
-    DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
-    status = ZPS_eAplAfInit();
-    DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
-
-    // Initialize Base Class Behavior
-    DBG_vPrintf(TRUE, "vAppMain(): initialize base device behavior...\n");
-    Queue<BDB_tsZpsAfEvent, 3> bdbEventQueue;
-    bdbEventQueue.init();
-
-    BDB_tsInitArgs sInitArgs;
-    sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
-    BDB_vInit(&sInitArgs);
-
-    sBDB.sAttrib.bbdbNodeIsOnANetwork = (ZigbeeDevice::getInstance()->getState() == JOINED ? TRUE : FALSE);
-    sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
-    DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
-    ZPS_vSaveAllZpsRecords();
-    BDB_vStart();
-
-
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
     {
