@@ -34,10 +34,10 @@ extern "C"
 #include "ButtonsTask.h"
 #include "PollTask.h"
 #include "AppQueue.h"
-#include "ConnectionState.h"
 #include "DumpFunctions.h"
 #include "SwitchEndpoint.h"
 #include "EndpointManager.h"
+#include "ZigbeeDevice.h"
 
 DeferredExecutor deferredExecutor;
 PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
