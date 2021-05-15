@@ -1,3 +1,7 @@
+#include "ZigbeeDevice.h"
+#include "DumpFunctions.h"
+#include "Queue.h"
+
 extern "C"
 {
     #include "jendefs.h"
@@ -10,15 +14,8 @@ extern "C"
     #include "zps_apl_af.h"
     #include "bdb_api.h"
     #include "dbg.h"
-
-    // work around of a bug in appZpsBeaconHandler.h that does not have a closing } for its extern "C" statement
-    }
-
 }
 
-#include "ZigbeeDevice.h"
-#include "DumpFunctions.h"
-#include "Queue.h"
 
 extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
 extern PUBLIC tszQueue zps_msgMcpsDcfmInd;

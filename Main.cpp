@@ -3,8 +3,6 @@ extern "C"
     #include "AppHardwareApi.h"
     #include "dbg.h"
     #include "dbg_uart.h"
-    #include "ZTimer.h"
-    #include "ZQueue.h"
     #include "portmacro.h"
     #include "pwrm.h"
     #include "PDM.h"
@@ -12,29 +10,12 @@ extern "C"
     // Local configuration and generated files
     #include "pdum_gen.h"
     #include "zps_gen.h"
-
-    // ZigBee includes
-    #include "zcl.h"
-    #include "zps_apl.h"
-    #include "zps_apl_af.h"
-    #include "bdb_api.h"
-
-    // work around of a bug in appZpsBeaconHandler.h that does not have a closing } for its extern "C" statement
-    }
-
-    // Zigbee cluster includes
-    #include "on_off_light.h"
-    #include "OnOff.h"
 }
 
 #include "Queue.h"
-#include "Timer.h"
 #include "DeferredExecutor.h"
-#include "BlinkTask.h"
 #include "ButtonsTask.h"
-#include "PollTask.h"
 #include "AppQueue.h"
-#include "DumpFunctions.h"
 #include "SwitchEndpoint.h"
 #include "EndpointManager.h"
 #include "ZigbeeDevice.h"
@@ -80,6 +61,7 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
 
+#if 0
 PRIVATE void vGetCoordinatorEndpoints(uint8)
 {
     PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
@@ -126,6 +108,7 @@ PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
 
     DBG_vPrintf(TRUE, "Sent Simple Descriptor request to coordinator for EP %d (status %d)\n", ep, status);
 }
+#endif //0
 
 PRIVATE void APP_vTaskSwitch(Context * context)
 {
@@ -179,7 +162,7 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
     ButtonsTask buttonsTask;
 
-    // Initialize ZigBee stack and application queues
+    // Initialize application queue
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
     appEventQueue.init();
 

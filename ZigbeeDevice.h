@@ -8,19 +8,24 @@
 
 extern "C"
 {
+    #include "zps_gen.h"
     #include "zps_apl_af.h"
+    #include "bdb_api.h"
+
+    // work around of a bug in appZpsBeaconHandler.h that does not have a closing } for its extern "C" statement
+    }
 }
-
-typedef enum
-{
-    NOT_JOINED,
-    JOINING,
-    JOINED
-
-} JoinStateEnum;
 
 class ZigbeeDevice
 {
+    typedef enum
+    {
+        NOT_JOINED,
+        JOINING,
+        JOINED
+
+    } JoinStateEnum;
+
     PersistedValue<JoinStateEnum, PDM_ID_NODE_STATE> connectionState;
     Queue<BDB_tsZpsAfEvent, 3> bdbEventQueue;
     PollTask pollTask;
