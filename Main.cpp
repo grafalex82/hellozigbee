@@ -178,8 +178,8 @@ extern "C" PUBLIC void vAppMain(void)
     Context context;
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 
-    // Force creating ZigbeeDevice here
-    ZigbeeDevice::getInstance();
+    // Start ZigbeeDevice
+    ZigbeeDevice::getInstance()->start();
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)

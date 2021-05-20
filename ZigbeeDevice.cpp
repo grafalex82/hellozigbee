@@ -30,7 +30,7 @@ QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
 ZigbeeDevice::ZigbeeDevice()
 {
     // Initialize Zigbee stack queues
-    DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
+    DBG_vPrintf(TRUE, "ZigbeeDevice(): init zigbee queues...\n");
     msgMlmeDcfmIndQueue.init();
     msgMcpsDcfmIndQueue.init();
     msgMcpsDcfmQueue.init();
@@ -40,21 +40,25 @@ ZigbeeDevice::ZigbeeDevice()
     connectionState.init(NOT_JOINED);
 
     // Initialise Application Framework stack
-    DBG_vPrintf(TRUE, "vAppMain(): init Application Framework (AF)... ");
+    DBG_vPrintf(TRUE, "ZigbeeDevice(): init Application Framework (AF)... ");
     ZPS_teStatus status = ZPS_eAplAfInit();
     DBG_vPrintf(TRUE, "ZPS_eAplAfInit() status %d\n", status);
 
     // Initialize Base Class Behavior
-    DBG_vPrintf(TRUE, "vAppMain(): initialize base device behavior...\n");
+    DBG_vPrintf(TRUE, "ZigbeeDevice(): initialize base device behavior...\n");
     bdbEventQueue.init();
     BDB_tsInitArgs sInitArgs;
     sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
     BDB_vInit(&sInitArgs);
 
-    // Start the node
+    idleCycles = 0;
+}
+
+void ZigbeeDevice::start()
+{
     sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
     sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
-    DBG_vPrintf(TRUE, "vAppMain(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
+    DBG_vPrintf(TRUE, "ZigbeeDevice(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
     ZPS_vSaveAllZpsRecords();
     BDB_vStart();
 }

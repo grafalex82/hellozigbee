@@ -35,6 +35,8 @@ public:
 
     static ZigbeeDevice * getInstance();
 
+    void start();
+
     void joinNetwork();
     void leaveNetwork();
     void joinOrLeaveNetwork();
