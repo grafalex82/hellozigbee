@@ -173,6 +173,7 @@ SET(SOURCES
         SwitchEndpoint.cpp
         EndpointManager.cpp
         ZigbeeDevice.cpp
+        SleepTimer.cpp
         Main.cpp
 )
 

@@ -19,6 +19,7 @@ extern "C"
 #include "SwitchEndpoint.h"
 #include "EndpointManager.h"
 #include "ZigbeeDevice.h"
+#include "SleepTimer.h"
 
 DeferredExecutor deferredExecutor;
 
@@ -37,6 +38,7 @@ ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
 struct Context
 {
     SwitchEndpoint switch1;
+    SleepTimer sleepTimer;
 };
 
 
@@ -54,6 +56,26 @@ void __cxa_pure_virtual(void)
 
 extern "C" PUBLIC void vISR_SystemController(void)
 {
+    // clear pending DIO changed bits by reading register
+    uint8 wakeStatus = u8AHI_WakeTimerFiredStatus();
+    uint32 dioStatus = u32AHI_DioInterruptStatus();
+
+    DBG_vPrintf(TRUE, "In vISR_SystemController\n");
+
+#define BOARD_BTN_BIT               (1)
+#define BOARD_BTN_PIN               (1UL << BOARD_BTN_BIT)
+
+    if(dioStatus/* & BOARD_BTN_PIN*/)
+    {
+        DBG_vPrintf(TRUE, "=-=-=- Button interrupt dioStatus=%04x\n", dioStatus);
+        PWRM_vWakeInterruptCallback();
+    }
+
+    if(wakeStatus & E_AHI_WAKE_TIMER_MASK_1)
+    {
+        DBG_vPrintf(TRUE, "=-=-=- Wake Timer Interrupt\n");
+        PWRM_vWakeInterruptCallback();
+    }
 }
 
 void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
@@ -110,12 +132,19 @@ PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
 }
 #endif //0
 
+PUBLIC void wakeCallBack(void)
+{
+    DBG_vPrintf(TRUE, "=-=-=- wakeCallBack()\n");
+}
+
 PRIVATE void APP_vTaskSwitch(Context * context)
 {
     ApplicationEvent value;
     if(appEventQueue.receive(&value))
     {
         DBG_vPrintf(TRUE, "Processing button message %d\n", value);
+
+        context->sleepTimer.reset();
 
         if(value == BUTTON_SHORT_PRESS)
         {
@@ -126,6 +155,15 @@ PRIVATE void APP_vTaskSwitch(Context * context)
         {
             ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
         }
+    }
+
+    if(context->sleepTimer.canSleep() && ZigbeeDevice::getInstance()->canSleep())
+    {
+        DBG_vPrintf(TRUE, "=-=-=- Scheduling enter sleep mode... ");
+
+        static pwrm_tsWakeTimerEvent wakeStruct;
+        PWRM_teStatus status = PWRM_eScheduleActivity(&wakeStruct, 15 * 32000, wakeCallBack);
+        DBG_vPrintf(TRUE, "status = %d\n", status);
     }
 }
 
@@ -148,7 +186,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize power manager and sleep mode
     DBG_vPrintf(TRUE, "vAppMain(): init PWRM...\n");
-    PWRM_vInit(E_AHI_SLEEP_DEEP);
+    PWRM_vInit(E_AHI_SLEEP_OSCON_RAMON);
 
     // PDU Manager initialization
     DBG_vPrintf(TRUE, "vAppMain(): init PDUM...\n");
@@ -193,6 +231,8 @@ extern "C" PUBLIC void vAppMain(void)
         APP_vTaskSwitch(&context);
 
         vAHI_WatchdogRestart();
+
+        PWRM_vManagePower();
     }
 }
 
@@ -202,11 +242,18 @@ static PWRM_DECLARE_CALLBACK_DESCRIPTOR(Wakeup);
 PWRM_CALLBACK(PreSleep)
 {
     DBG_vPrintf(TRUE, "Going to sleep..\n\n");
-    DBG_vUartFlush();
 
+    // Set Wake conditions
+    //vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
+
+    // Save the MAC settings (will get lost though if we don't preserve RAM)
+    vAppApiSaveMacSettings();
+
+    // Put ZTimer module to sleep (stop tick timer)
     ZTIMER_vSleep();
 
     // Disable UART (if enabled)
+    DBG_vUartFlush();
     vAHI_UartDisable(E_AHI_UART_0);
 
     // clear interrupts
@@ -223,8 +270,7 @@ PWRM_CALLBACK(Wakeup)
 
     // Re-initialize Debug UART
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
-
-    DBG_vPrintf(TRUE, "\nWaking..\n");
+    DBG_vPrintf(TRUE, "\nWaking...\n");
     DBG_vUartFlush();
 
     // Re-initialize hardware and interrupts
@@ -232,8 +278,15 @@ PWRM_CALLBACK(Wakeup)
     SET_IPL(0);
     portENABLE_INTERRUPTS();
 
+    // Restore Mac settings (turns radio on)
+    vMAC_RestoreSettings();
+
     // Wake the timers
     ZTIMER_vWake();
+
+    // Poll the parent router for zigbee messages
+    DBG_vPrintf(TRUE, "Polling for zigbee messages\n");
+    ZigbeeDevice::getInstance()->pollParent();
 }
 
 extern "C" void vAppRegisterPWRMCallbacks(void)

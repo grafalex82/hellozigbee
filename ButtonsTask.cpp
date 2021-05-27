@@ -14,6 +14,8 @@ ButtonsTask::ButtonsTask()
     // Set up GPIO for the button
     vAHI_DioSetDirection(BOARD_BTN_PIN, 0);
     vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
+    vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
+    vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
 
     PeriodicTask::init();
     startTimer(1000);

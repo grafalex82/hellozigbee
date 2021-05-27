@@ -51,7 +51,7 @@ ZigbeeDevice::ZigbeeDevice()
     sInitArgs.hBdbEventsMsgQ = bdbEventQueue.getHandle();
     BDB_vInit(&sInitArgs);
 
-    idleCycles = 0;
+    polling = false;
 }
 
 void ZigbeeDevice::start()
@@ -143,10 +143,11 @@ void ZigbeeDevice::handlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
     {
         case MAC_ENUM_SUCCESS:
         case MAC_ENUM_NO_ACK:
-            ZPS_eAplZdoPoll();
+            pollParent();
             break;
 
         case MAC_ENUM_NO_DATA:
+            polling = false;
         default:
             break;
     }
@@ -310,4 +311,15 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent * event)
 {
     DBG_vPrintf(TRUE, "APP_vBdbCallback\n");
     ZigbeeDevice::getInstance()->handleBdbEvent(event);
+}
+
+void ZigbeeDevice::pollParent()
+{
+    polling = true;
+    ZPS_eAplZdoPoll();
+}
+
+bool ZigbeeDevice::canSleep() const
+{
+    return !polling;
 }

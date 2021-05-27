@@ -30,6 +30,8 @@ class ZigbeeDevice
     Queue<BDB_tsZpsAfEvent, 3> bdbEventQueue;
     PollTask pollTask;
 
+    bool polling;
+
 public:
     ZigbeeDevice();
 
@@ -40,6 +42,9 @@ public:
     void joinNetwork();
     void leaveNetwork();
     void joinOrLeaveNetwork();
+
+    void pollParent();
+    bool canSleep() const;
 
 protected:
     void handleNetworkJoinAndRejoin();
