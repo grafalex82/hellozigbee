@@ -6,10 +6,16 @@
 
 class ButtonsTask : public PeriodicTask
 {
-    int pressedCounter;
+    uint32 pressedCounter;
+    uint32 idleCounter;
 
 public:
     ButtonsTask();
+
+    static ButtonsTask * getInstance();
+
+    bool handleDioInterrupt(uint32 dioStatus);
+    bool canSleep() const;
 
 protected:
     virtual void timerCallback();

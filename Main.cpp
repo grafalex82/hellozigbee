@@ -19,7 +19,6 @@ extern "C"
 #include "SwitchEndpoint.h"
 #include "EndpointManager.h"
 #include "ZigbeeDevice.h"
-#include "SleepTimer.h"
 
 DeferredExecutor deferredExecutor;
 
@@ -38,7 +37,6 @@ ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
 struct Context
 {
     SwitchEndpoint switch1;
-    SleepTimer sleepTimer;
 };
 
 
@@ -62,10 +60,7 @@ extern "C" PUBLIC void vISR_SystemController(void)
 
     DBG_vPrintf(TRUE, "In vISR_SystemController\n");
 
-#define BOARD_BTN_BIT               (1)
-#define BOARD_BTN_PIN               (1UL << BOARD_BTN_BIT)
-
-    if(dioStatus/* & BOARD_BTN_PIN*/)
+    if(ButtonsTask::getInstance()->handleDioInterrupt(dioStatus))
     {
         DBG_vPrintf(TRUE, "=-=-=- Button interrupt dioStatus=%04x\n", dioStatus);
         PWRM_vWakeInterruptCallback();
@@ -144,8 +139,6 @@ PRIVATE void APP_vTaskSwitch(Context * context)
     {
         DBG_vPrintf(TRUE, "Processing button message %d\n", value);
 
-        context->sleepTimer.reset();
-
         if(value == BUTTON_SHORT_PRESS)
         {
             context->switch1.toggle();
@@ -157,7 +150,8 @@ PRIVATE void APP_vTaskSwitch(Context * context)
         }
     }
 
-    if(context->sleepTimer.canSleep() && ZigbeeDevice::getInstance()->canSleep())
+    if(ButtonsTask::getInstance()->canSleep() &&
+       ZigbeeDevice::getInstance()->canSleep())
     {
         DBG_vPrintf(TRUE, "=-=-=- Scheduling enter sleep mode... ");
 
@@ -198,7 +192,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Init tasks
     DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
-    ButtonsTask buttonsTask;
+    ButtonsTask::getInstance();
 
     // Initialize application queue
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
@@ -242,9 +236,6 @@ static PWRM_DECLARE_CALLBACK_DESCRIPTOR(Wakeup);
 PWRM_CALLBACK(PreSleep)
 {
     DBG_vPrintf(TRUE, "Going to sleep..\n\n");
-
-    // Set Wake conditions
-    //vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
 
     // Save the MAC settings (will get lost though if we don't preserve RAM)
     vAppApiSaveMacSettings();
