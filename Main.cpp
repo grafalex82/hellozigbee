@@ -45,8 +45,7 @@ extern "C" void __cxa_deleted_virtual(void) __attribute__((__noreturn__));
 
 void __cxa_pure_virtual(void)
 {
-  // We might want to write some diagnostics to uart in this case
-  //std::terminate();
+  DBG_vPrintf(TRUE, "!!!!!!! Pure virtual function call.\n");
   while (1)
     ;
 }
@@ -153,11 +152,10 @@ PRIVATE void APP_vTaskSwitch(Context * context)
     if(ButtonsTask::getInstance()->canSleep() &&
        ZigbeeDevice::getInstance()->canSleep())
     {
-        DBG_vPrintf(TRUE, "=-=-=- Scheduling enter sleep mode... ");
-
         static pwrm_tsWakeTimerEvent wakeStruct;
         PWRM_teStatus status = PWRM_eScheduleActivity(&wakeStruct, 15 * 32000, wakeCallBack);
-        DBG_vPrintf(TRUE, "status = %d\n", status);
+        if(status != PWRM_E_TIMER_RUNNING)
+            DBG_vPrintf(TRUE, "=-=-=- Scheduling enter sleep mode... status=%d\n", status);
     }
 }
 
@@ -210,8 +208,8 @@ extern "C" PUBLIC void vAppMain(void)
     Context context;
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 
-    // Start ZigbeeDevice
-    ZigbeeDevice::getInstance()->start();
+    // Start ZigbeeDevice and rejoin the network (if was joined)
+    ZigbeeDevice::getInstance()->rejoinNetwork();
 
     DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
     while(1)
@@ -276,8 +274,7 @@ PWRM_CALLBACK(Wakeup)
     ZTIMER_vWake();
 
     // Poll the parent router for zigbee messages
-    DBG_vPrintf(TRUE, "Polling for zigbee messages\n");
-    ZigbeeDevice::getInstance()->pollParent();
+    ZigbeeDevice::getInstance()->handleWakeUp();
 }
 
 extern "C" void vAppRegisterPWRMCallbacks(void)

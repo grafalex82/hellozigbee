@@ -31,20 +31,23 @@ class ZigbeeDevice
     PollTask pollTask;
 
     bool polling;
+    int rejoinFailures;
+    int cyclesTillNextRejoin;
 
 public:
     ZigbeeDevice();
 
     static ZigbeeDevice * getInstance();
 
-    void start();
-
     void joinNetwork();
+    void rejoinNetwork();
     void leaveNetwork();
     void joinOrLeaveNetwork();
 
     void pollParent();
     bool canSleep() const;
+    bool needsRejoin() const;
+    void handleWakeUp();
 
 protected:
     void handleNetworkJoinAndRejoin();

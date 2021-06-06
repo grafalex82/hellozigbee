@@ -52,15 +52,7 @@ ZigbeeDevice::ZigbeeDevice()
     BDB_vInit(&sInitArgs);
 
     polling = false;
-}
-
-void ZigbeeDevice::start()
-{
-    sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
-    sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
-    DBG_vPrintf(TRUE, "ZigbeeDevice(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
-    ZPS_vSaveAllZpsRecords();
-    BDB_vStart();
+    rejoinFailures = 0;
 }
 
 ZigbeeDevice * ZigbeeDevice::getInstance()
@@ -75,13 +67,28 @@ void ZigbeeDevice::joinNetwork()
     connectionState = JOINING;
 
     // Clear ZigBee stack internals
-    ZPS_eAplAibSetApsUseExtendedPanId (0);
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE);
+    sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
+    ZPS_eAplAibSetApsUseExtendedPanId(0);
     ZPS_vDefaultStack();
     ZPS_vSetKeys();
     ZPS_vSaveAllZpsRecords();
 
     // Connect to a network
-    BDB_eNsStartNwkSteering();
+    ZPS_teStatus status = BDB_eNsStartNwkSteering();
+    DBG_vPrintf(TRUE, "  BDB_eNsStartNwkSteering=%d\n", status);
+}
+
+void ZigbeeDevice::rejoinNetwork()
+{
+    DBG_vPrintf(TRUE, "== Rejoining the network\n");
+
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
+    sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
+
+    DBG_vPrintf(TRUE, "ZigbeeDevice(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
+    ZPS_vSaveAllZpsRecords();
+    BDB_vStart();
 }
 
 void ZigbeeDevice::leaveNetwork()
@@ -89,6 +96,7 @@ void ZigbeeDevice::leaveNetwork()
     DBG_vPrintf(TRUE, "== Leaving the network\n");
     sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE;
     connectionState = NOT_JOINED;
+    rejoinFailures = 0;
 
     if (ZPS_E_SUCCESS !=  ZPS_eAplZdoLeaveNetwork(0, FALSE, FALSE))
     {
@@ -110,9 +118,15 @@ void ZigbeeDevice::handleNetworkJoinAndRejoin()
 {
     DBG_vPrintf(TRUE, "== Device now is on the network\n");
     connectionState = JOINED;
+
+    // Store the extended network ID for future use
+    ZPS_eAplAibSetApsUseExtendedPanId(ZPS_u64NwkNibGetEpid(ZPS_pvAplZdoGetNwkHandle()));
+
     ZPS_vSaveAllZpsRecords();
 
+    // Get ready for network communication
     pollTask.startPoll(2000);
+    rejoinFailures = 0;
 }
 
 void ZigbeeDevice::handleLeaveNetwork()
@@ -133,8 +147,17 @@ void ZigbeeDevice::handleLeaveNetwork()
 void ZigbeeDevice::handleRejoinFailure()
 {
     DBG_vPrintf(TRUE, "== Failed to (re)join the network\n");
+    polling = false;
 
-    handleLeaveNetwork();
+    if(connectionState == JOINED && ++rejoinFailures < 5)
+    {
+        DBG_vPrintf(TRUE, "  Rejoin counter %d\n", rejoinFailures);
+
+        // Schedule sleep for a minute
+        cyclesTillNextRejoin = 4; // 4 * 15s = 1 minute
+    }
+    else
+        handleLeaveNetwork();
 }
 
 void ZigbeeDevice::handlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
@@ -316,10 +339,40 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent * event)
 void ZigbeeDevice::pollParent()
 {
     polling = true;
+    DBG_vPrintf(TRUE, "ZigbeeDevice: Polling parent for zigbee messages\n");
     ZPS_eAplZdoPoll();
 }
 
 bool ZigbeeDevice::canSleep() const
 {
     return !polling;
+}
+
+bool ZigbeeDevice::needsRejoin() const
+{
+    // Non-zero rejoin failure counter reflects that we have received spontaneous
+    // Rejoin failure message while the node was in JOINED state
+    return rejoinFailures > 0 && connectionState == JOINED;
+}
+
+void ZigbeeDevice::handleWakeUp()
+{
+    if(connectionState != JOINED)
+        return;
+
+    if(needsRejoin())
+    {
+        // Device that is basically connected, but currently needs a rejoin will have to
+        // sleep a few cycles between rejoin attempts
+        if(cyclesTillNextRejoin-- > 0)
+        {
+            DBG_vPrintf(TRUE, "ZigbeeDevice: Rejoining in %d cycles\n", cyclesTillNextRejoin);
+            return;
+        }
+
+        rejoinNetwork();
+    }
+    else
+        // Connected device will just poll its parent on wake up
+        pollParent();
 }
