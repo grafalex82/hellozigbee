@@ -26,7 +26,7 @@ ADD_DEFINITIONS(
         -DJENNIC_MAC_MiniMacShim
 
 #        -DTRACE_ZCL=TRUE
-        -DDEBUG_BDB
+#        -DDEBUG_BDB
 #        -DDEBUG_CLD_ONOFF
 #        -DDEBUG_ZQUEUE
 
@@ -173,6 +173,7 @@ SET(SOURCES
         SwitchEndpoint.cpp
         EndpointManager.cpp
         ZigbeeDevice.cpp
+        BasicClusterEndpoint.cpp
         Main.cpp
 )
 

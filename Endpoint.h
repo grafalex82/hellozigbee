@@ -21,7 +21,7 @@ public:
     virtual void handleZclEvent(tsZCL_CallBackEvent *psEvent);
 
 protected:
-    virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent) = 0;
+    virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
 };
 
 #endif // ENDPOINT_H

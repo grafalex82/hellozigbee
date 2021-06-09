@@ -21,14 +21,6 @@ void SwitchEndpoint::init()
     teZCL_Status status = eZLO_RegisterOnOffLightEndPoint(getEndpointId(), &EndpointManager::handleZclEvent, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
 
-    // Fill Basic cluster attributes
-    // Note: I am not really sure why this device info shall be a part of a switch endpoint
-    memcpy(sSwitch.sBasicServerCluster.au8ManufacturerName, CLD_BAS_MANUF_NAME_STR, CLD_BAS_MANUF_NAME_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8ModelIdentifier, CLD_BAS_MODEL_ID_STR, CLD_BAS_MODEL_ID_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
-    memcpy(sSwitch.sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
-    sSwitch.sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
-
     // Initialize blinking
     // Note: this blinking task represents a relay that would be tied with this switch. That is why blinkTask
     // is a property of SwitchEndpoint, and not the global task object

@@ -49,7 +49,7 @@
 #define ZCL_MANUFACTURER_CODE                                0x1037
 
 /* Sets the number of endpoints that will be created by the ZCL library */
-#define ZCL_NUMBER_OF_ENDPOINTS                             1
+#define ZCL_NUMBER_OF_ENDPOINTS                             2
 
 #define ZCL_ATTRIBUTE_READ_SERVER_SUPPORTED
 #define ZCL_ATTRIBUTE_READ_CLIENT_SUPPORTED
@@ -72,12 +72,12 @@
 #define BASIC_SERVER
 #define BASIC_CLIENT
 
-#define CLD_SCENES
-#define SCENES_CLIENT
+//#define CLD_SCENES
+//#define SCENES_CLIENT
 
-#define CLD_IDENTIFY
-#define IDENTIFY_CLIENT
-#define IDENTIFY_SERVER
+//#define CLD_IDENTIFY
+//#define IDENTIFY_CLIENT
+//#define IDENTIFY_SERVER
 
 #define CLD_ONOFF
 #define ONOFF_CLIENT

@@ -67,7 +67,7 @@ void ZigbeeDevice::joinNetwork()
     connectionState = JOINING;
 
     // Clear ZigBee stack internals
-    sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE);
+    sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE;
     sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
     ZPS_eAplAibSetApsUseExtendedPanId(0);
     ZPS_vDefaultStack();
@@ -271,8 +271,7 @@ void ZigbeeDevice::handleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
         // events for ep 0
         handleZdoEvents(&psZpsAfEvent->sStackEvent);
     }
-    else if(psZpsAfEvent->u8EndPoint == HELLOENDDEVICE_SWITCH_ENDPOINT &&
-            psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
+    else if(psZpsAfEvent->sStackEvent.eType == ZPS_EVENT_APS_DATA_INDICATION)
     {
         handleZclEvents(&psZpsAfEvent->sStackEvent);
     }

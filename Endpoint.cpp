@@ -21,6 +21,11 @@ uint8 Endpoint::getEndpointId() const
     return endpointId;
 }
 
+void Endpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "Endpoint: Warning: using default cluster update handler for event type (%d)\n", psEvent->eEventType);
+}
+
 void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
 {
     switch (psEvent->eEventType)

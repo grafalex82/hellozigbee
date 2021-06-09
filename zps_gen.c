@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Sat May  1 21:30:16 2021
+ * DATE:           Wed Jun  9 20:15:37 2021
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -501,8 +501,8 @@ PRIVATE MAC_tsMacInterfaceTable g_asMacInterfaceTable =
   g_bIgnoreBroadcast,
   1
 };
-PUBLIC uint8 u8MaxZpsConfigEp = 1 ;
-PUBLIC uint8 au8EpMapPresent[1] = { 1  }; 
+PUBLIC uint8 u8MaxZpsConfigEp = 2 ;
+PUBLIC uint8 au8EpMapPresent[2] = {1 , 2  }; 
 PUBLIC uint8 u8ZpsConfigStackProfileId = 2;
 PUBLIC const uint32 g_u32ApsFcSaveCountBitShift = 10;
 PUBLIC const uint32 g_u32NwkFcSaveCountBitShift = 10;
@@ -635,19 +635,26 @@ PRIVATE uint8 s_au8Endpoint0InputClusterDiscFlags[11] = { 0x00, 0x00, 0x00, 0x00
 PRIVATE const uint16 s_au16Endpoint0OutputClusterList[83] = { 0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002a, 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037, 0x0038, 0x8000, 0x8001, 0x8002, 0x8003, 0x8004, 0x8005, 0x8006, 0x8010, 0x8011, 0x8012, 0x8014, 0x8015, 0x8016, 0x8017, 0x8018, 0x8019, 0x801a, 0x801b, 0x801c, 0x801d, 0x801e, 0x8020, 0x8021, 0x8022, 0x8023, 0x8024, 0x8025, 0x8026, 0x8027, 0x8028, 0x8029, 0x802a, 0x8030, 0x8031, 0x8032, 0x8033, 0x8034, 0x8035, 0x8036, 0x8037, 0x8038, };
 PRIVATE uint8 s_au8Endpoint0OutputClusterDiscFlags[11] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-PRIVATE const uint16 s_au16Endpoint1InputClusterList[4] = { 0x0000, 0x0003, 0x0006, 0xffff, };
-PRIVATE const PDUM_thAPdu s_ahEndpoint1InputClusterAPdus[4] = { apduZCL, apduZCL, apduZCL, apduZCL, };
-PRIVATE uint8 s_au8Endpoint1InputClusterDiscFlags[1] = { 0x07 };
+PRIVATE const uint16 s_au16Endpoint1InputClusterList[2] = { 0x0000, 0xffff, };
+PRIVATE const PDUM_thAPdu s_ahEndpoint1InputClusterAPdus[2] = { apduZCL, apduZCL, };
+PRIVATE uint8 s_au8Endpoint1InputClusterDiscFlags[1] = { 0x01 };
 
-PRIVATE const uint16 s_au16Endpoint1OutputClusterList[3] = { 0x0000, 0x0003, 0x0006, };
-PRIVATE uint8 s_au8Endpoint1OutputClusterDiscFlags[1] = { 0x07 };
+PRIVATE const uint16 s_au16Endpoint1OutputClusterList[1] = { 0x0000, };
+PRIVATE uint8 s_au8Endpoint1OutputClusterDiscFlags[1] = { 0x01 };
+
+PRIVATE const uint16 s_au16Endpoint2InputClusterList[1] = { 0x0006, };
+PRIVATE const PDUM_thAPdu s_ahEndpoint2InputClusterAPdus[1] = { apduZCL, };
+PRIVATE uint8 s_au8Endpoint2InputClusterDiscFlags[1] = { 0x01 };
+
+PRIVATE const uint16 s_au16Endpoint2OutputClusterList[1] = { 0x0006, };
+PRIVATE uint8 s_au8Endpoint2OutputClusterDiscFlags[1] = { 0x01 };
 
 PUBLIC void APP_vGenCallback(uint8 u8Endpoint, ZPS_tsAfEvent *psStackEvent);
 tszQueue zps_msgMlmeDcfmInd;
 tszQueue zps_msgMcpsDcfmInd;
 tszQueue zps_TimeEvents;
 tszQueue zps_msgMcpsDcfm;
-PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[2] = {
+PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[3] = {
     {
         {
             0x0000,
@@ -670,14 +677,30 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[2] = {
             0,
             0,
             1,
-            4,
-            3,
+            2,
+            1,
             s_au16Endpoint1InputClusterList,
             s_au16Endpoint1OutputClusterList,
             s_au8Endpoint1InputClusterDiscFlags,
             s_au8Endpoint1OutputClusterDiscFlags,
         },
         s_ahEndpoint1InputClusterAPdus,
+        1
+    },
+    {
+        {
+            0x0104,
+            0,
+            0,
+            2,
+            1,
+            1,
+            s_au16Endpoint2InputClusterList,
+            s_au16Endpoint2OutputClusterList,
+            s_au8Endpoint2InputClusterDiscFlags,
+            s_au8Endpoint2OutputClusterDiscFlags,
+        },
+        s_ahEndpoint2InputClusterAPdus,
         1
     },
 };
@@ -861,7 +884,7 @@ PRIVATE zps_tsApl s_sApl = {
         NULL,
         &s_sNodeDescriptor,
         &s_sNodePowerDescriptor,
-        2,
+        3,
         s_asSimpleDescConts,
         NULL,
         NULL,

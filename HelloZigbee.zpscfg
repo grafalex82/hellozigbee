@@ -681,13 +681,13 @@
       <OutputClusters Cluster="Mgmt_Cache_rsp" TxAPDUs="HelloEndDevice->apduZDP" Discoverable="false"/>
       <OutputClusters Cluster="Mgmt_NWK_Update_rsp" TxAPDUs="HelloEndDevice->apduZDP" Discoverable="false"/>
     </Endpoints>
-    <Endpoints Id="1" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="SWITCH">
+    <Endpoints Id="1" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="BASIC">
       <InputClusters Cluster="Basic" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
-      <InputClusters Cluster="Identify" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
-      <InputClusters Cluster="OnOff" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Default" RxAPDU="HelloEndDevice->apduZCL" Discoverable="false"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
-      <OutputClusters Cluster="Identify" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH">
+      <InputClusters Cluster="OnOff" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
     </Endpoints>
     <PDUConfiguration NumNPDUs="25" PDUMMutexName="mutexPDUM">

@@ -18,6 +18,7 @@ extern "C"
 #include "AppQueue.h"
 #include "SwitchEndpoint.h"
 #include "EndpointManager.h"
+#include "BasicClusterEndpoint.h"
 #include "ZigbeeDevice.h"
 
 DeferredExecutor deferredExecutor;
@@ -36,6 +37,7 @@ ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
 
 struct Context
 {
+    BasicClusterEndpoint basicEndpoint;
     SwitchEndpoint switch1;
 };
 
@@ -206,6 +208,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 
     // Start ZigbeeDevice and rejoin the network (if was joined)
