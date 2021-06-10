@@ -470,13 +470,13 @@
       <OutputClusters Cluster="Mgmt_Cache_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
       <OutputClusters Cluster="Mgmt_NWK_Update_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
     </Endpoints>
-    <Endpoints Id="1" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="SWITCH">
+    <Endpoints Id="1" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="BASIC">
       <InputClusters Cluster="Basic" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
-      <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
-      <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Default" RxAPDU="HelloZigbee->apduZCL" Discoverable="false"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
-      <OutputClusters Cluster="Identify" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH">
+      <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
     <PDUConfiguration NumNPDUs="25" PDUMMutexName="mutexPDUM">

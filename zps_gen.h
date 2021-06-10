@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.h
  *
- * DATE:           Wed Jun  9 20:15:37 2021
+ * DATE:           Thu Jun 10 16:52:03 2021
  *
  * AUTHOR:         NXP Zigbee Protocol Stack Configuration Tool
  *
@@ -46,7 +46,7 @@
 /****************************************************************************/
 
 #define ZPS_NWK_OPT_ALL
-#define ZPS_NODE_HELLOENDDEVICE
+#define ZPS_NODE_HELLOZIGBEE
 
 /* Profile 'ZDP' */
 #define ZDP_PROFILE_ID    (0x0000)
@@ -155,7 +155,8 @@
 
 /* Endpoints */
 #define HELLOZIGBEE_ZDO_ENDPOINT    (0)
-#define HELLOZIGBEE_SWITCH_ENDPOINT    (1)
+#define HELLOZIGBEE_BASIC_ENDPOINT    (1)
+#define HELLOZIGBEE_SWITCH_ENDPOINT    (2)
 
 /* Node 'HelloEndDevice' */
 
@@ -164,13 +165,13 @@
 #define HELLOENDDEVICE_BASIC_ENDPOINT    (1)
 #define HELLOENDDEVICE_SWITCH_ENDPOINT    (2)
 /* Table Sizes */
-#define ZPS_NEIGHBOUR_TABLE_SIZE      (1)
+#define ZPS_NEIGHBOUR_TABLE_SIZE      (26)
 #define ZPS_ADDRESS_MAP_TABLE_SIZE    (10)
-#define ZPS_ROUTING_TABLE_SIZE        (1)
+#define ZPS_ROUTING_TABLE_SIZE        (60)
 #define ZPS_MAC_ADDRESS_TABLE_SIZE    (36)
 #define ZPS_BINDING_TABLE_SIZE        (16)
 #define ZPS_GROUP_TABLE_SIZE          (0)
-#define ZPS_CHILD_TABLE_SIZE          (0)
+#define ZPS_CHILD_TABLE_SIZE          (6)
 #define ZPS_MAX_CHANNEL_LIST_SIZE     (1)
 
 /****************************************************************************/
