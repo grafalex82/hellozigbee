@@ -54,7 +54,6 @@ void BasicClusterEndpoint::init()
     DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Register Basic Cluster. status=%d\n", status);
 
     // Fill Basic cluster attributes
-    // Note: I am not really sure why this device info shall be a part of a switch endpoint
     memcpy(deviceObject.sBasicServerCluster.au8ManufacturerName, CLD_BAS_MANUF_NAME_STR, CLD_BAS_MANUF_NAME_SIZE);
     memcpy(deviceObject.sBasicServerCluster.au8ModelIdentifier, CLD_BAS_MODEL_ID_STR, CLD_BAS_MODEL_ID_SIZE);
     memcpy(deviceObject.sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);

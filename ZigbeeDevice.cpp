@@ -337,6 +337,12 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent * event)
 
 void ZigbeeDevice::pollParent()
 {
+    // Sleeping devices have to poll their parents, while routers always keep the receiver on
+    // Note: this condition should check sleeping/non-sleeping device criteria, rather than device type.
+    //       Perhaps even end device may be a non-sleeping device, and therefore not require polling.
+    if(ZPS_eAplZdoGetDeviceType() != ZPS_ZDO_DEVICE_ENDDEVICE)
+        return;
+
     polling = true;
     DBG_vPrintf(TRUE, "ZigbeeDevice: Polling parent for zigbee messages\n");
     ZPS_eAplZdoPoll();
@@ -344,6 +350,13 @@ void ZigbeeDevice::pollParent()
 
 bool ZigbeeDevice::canSleep() const
 {
+    // It is assumed that only end devices can sleep.
+    // Note: this condition should check sleeping/non-sleeping device criteria, rather than device type.
+    //       Perhaps even end device may be a non-sleeping device, and therefore not require polling.
+    if(ZPS_eAplZdoGetDeviceType() != ZPS_ZDO_DEVICE_ENDDEVICE)
+        return false;
+
+    // End device may sleep if they are not polling the parent right now
     return !polling;
 }
 
