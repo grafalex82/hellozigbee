@@ -85,6 +85,8 @@ const char * getClusterName(uint16 clusterID)
         case ZPS_ZDP_MGMT_LQI_RSP_CLUSTER_ID: return "Mgmt LQI response";
         case ZPS_ZDP_MGMT_RTG_RSP_CLUSTER_ID: return "Mgmt routing response";
         case ZPS_ZDP_MGMT_BIND_RSP_CLUSTER_ID: return "Mgmt bind response";
+        case ZPS_ZDP_BIND_RSP_CLUSTER_ID: return "Bind response";
+        case ZPS_ZDP_UNBIND_RSP_CLUSTER_ID: return "Unbind response";
     }
 
     return "???";
