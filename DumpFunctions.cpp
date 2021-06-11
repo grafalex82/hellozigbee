@@ -380,7 +380,6 @@ PRIVATE void vDisplayBindTableEntry(ZPS_tsAplApsmeBindingTableEntry * entry)
 
 void vDisplayBindTable()
 {
-
     // Get pointers
     ZPS_tsAplAib * aib = ZPS_psAplAibGetAib();
     ZPS_tsAplApsmeBindingTableType * bindingTable = aib->psAplApsmeAibBindingTable;
@@ -417,5 +416,20 @@ void vDisplayBindTable()
                         entry->u8SourceEndpoint,
                         entry->u8DestinationEndPoint);
         }
+    }
+}
+
+void vDisplayAddressMap()
+{
+    ZPS_tsNwkNib * nib = ZPS_psNwkNibGetHandle(ZPS_pvAplZdoGetNwkHandle());
+
+    uint16 mapsize = nib->sTblSize.u16AddrMap;
+    DBG_vPrintf(TRUE, "Address map (size=%d)\n", mapsize);
+
+    for(uint16 i=0; i<mapsize; i++)
+    {
+        DBG_vPrintf(TRUE, "    Addr=%04x ieeeAddr=%016llx\n",
+                    nib->sTbl.pu16AddrMapNwk[i],
+                    ZPS_u64NwkNibGetMappedIeeeAddr(ZPS_pvAplZdoGetNwkHandle(),nib->sTbl.pu16AddrLookup[i]));
     }
 }

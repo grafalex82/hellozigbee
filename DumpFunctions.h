@@ -11,6 +11,7 @@ extern "C"
     void vDisplayDiscoveredNodes();
     void vDisplayNeighbourTable();
     void vDisplayBindTable();
+    void vDisplayAddressMap();
 }
 
 
