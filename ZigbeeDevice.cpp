@@ -222,7 +222,24 @@ void ZigbeeDevice::handleZdoBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
 
 void ZigbeeDevice::handleZdoUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
 {
+    uint16 shortAddr = pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE ?
+                        ZPS_u16AplZdoLookupAddr(pEvent->uDstAddr.u64Addr) :
+                        pEvent->uDstAddr.u16Addr;
+    uint64 ieeeAddr = pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE ?
+                                                pEvent->uDstAddr.u64Addr :
+                                                ZPS_u64AplZdoLookupIeeeAddr(pEvent->uDstAddr.u16Addr);
 
+    ZPS_teStatus status = ZPS_eAplZdoUnbind(GENERAL_CLUSTER_ID_ONOFF,
+                                          pEvent->u8SrcEp,
+                                          shortAddr,
+                                          ieeeAddr,
+                                          pEvent->u8DstEp);
+    DBG_vPrintf(TRUE, "Unbinding SrcEP=%d to DstEP=%d Status=%d\n", pEvent->u8SrcEp, pEvent->u8DstEp, status);
+
+    status = ZPS_eAplZdoAddAddrMapEntry(shortAddr, ieeeAddr, FALSE);
+    DBG_vPrintf(TRUE, "Adding a address map entry Status=%d\n", status);
+
+    vDisplayBindTable();
 }
 
 void ZigbeeDevice::handleZclEvents(ZPS_tsAfEvent* psStackEvent)

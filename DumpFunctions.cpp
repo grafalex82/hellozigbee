@@ -410,8 +410,8 @@ void vDisplayBindTable()
         {
             ZPS_tsAplApsmeBindingTableStoreEntry * entry = table->pvAplApsmeBindingTableEntryForSpSrcAddr + i;
 
-            DBG_vPrintf(TRUE, "    AddrOrLkUp=%04x ClusterID=%04x addrMode=%d SrcEP=%d DstEP=%d\n",
-                        entry->u16AddrOrLkUp,
+            DBG_vPrintf(TRUE, "    Addr=%016llx ClusterID=%04x addrMode=%d SrcEP=%d DstEP=%d\n",
+                        ZPS_u64NwkNibGetMappedIeeeAddr(ZPS_pvAplZdoGetNwkHandle(), entry->u16AddrOrLkUp),
                         entry->u16ClusterId,
                         entry->u8DstAddrMode,
                         entry->u8SourceEndpoint,
