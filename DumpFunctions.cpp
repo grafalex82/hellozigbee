@@ -10,6 +10,16 @@ extern "C"
     }
 }
 
+PRIVATE void vPrintAddr(ZPS_tuAddress addr, uint8 mode)
+{
+    if(mode == ZPS_E_ADDR_MODE_IEEE)
+        DBG_vPrintf(TRUE, "%016llx", addr.u64Addr);
+    else if(mode == ZPS_E_ADDR_MODE_SHORT)
+        DBG_vPrintf(TRUE, "%04x", addr.u16Addr);
+    else
+        DBG_vPrintf(TRUE, "unknown addr mode %d", mode);
+}
+
 void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
 {
     // Read command header
@@ -172,21 +182,9 @@ void vDumpNwkPollConfirm(ZPS_tsAfPollConfEvent * pEvent)
 
 void vDumpBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
 {
-    if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE)
-        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=%016llx\n",
-            pEvent->u8SrcEp,
-            pEvent->u8DstEp,
-            pEvent->uDstAddr.u64Addr);
-    else if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_SHORT)
-        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
-            pEvent->u8SrcEp,
-            pEvent->u8DstEp,
-            pEvent->uDstAddr.u16Addr);
-    else
-        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d Unknown DstAddrMode=%d\n",
-            pEvent->u8SrcEp,
-            pEvent->u8DstEp,
-            pEvent->u8DstAddrMode);
+    DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_BIND: SrcEP=%d DstEP=%d DstAddr=", pEvent->u8SrcEp, pEvent->u8DstEp);
+    vPrintAddr(pEvent->uDstAddr, pEvent->u8DstAddrMode);
+    DBG_vPrintf(TRUE, "\n");
 }
 
 void vDumpUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
@@ -370,5 +368,54 @@ void vDisplayDiscoveredNodes(void)
         DBG_vPrintf(TRUE, "    StPro: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u4StackProfile);
 
         DBG_vPrintf(TRUE, "    PP: %d\r\n", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1PotentialParent);
+    }
+}
+
+PRIVATE void vDisplayBindTableEntry(ZPS_tsAplApsmeBindingTableEntry * entry)
+{
+    DBG_vPrintf(TRUE, "    ClusterID=%04x SrcEP=%d DstEP=%d DstAddr=", entry->u16ClusterId, entry->u8SourceEndpoint, entry->u8DestinationEndPoint);
+    vPrintAddr(entry->uDstAddress, entry->u8DstAddrMode);
+    DBG_vPrintf(TRUE, "\n");
+}
+
+void vDisplayBindTable()
+{
+
+    // Get pointers
+    ZPS_tsAplAib * aib = ZPS_psAplAibGetAib();
+    ZPS_tsAplApsmeBindingTableType * bindingTable = aib->psAplApsmeAibBindingTable;
+    ZPS_tsAplApsmeBindingTableCache* cache = bindingTable->psAplApsmeBindingTableCache;
+    ZPS_tsAplApsmeBindingTable* table = bindingTable->psAplApsmeBindingTable;
+
+    // Print header
+    DBG_vPrintf(TRUE, "\n+++++++ Binding Table\n");
+    DBG_vPrintf(TRUE, "    Cache ptr=%04x:\n", cache);
+    DBG_vPrintf(TRUE, "    Table ptr=%04x:\n", table);
+
+    // Dump cache
+    if(cache)
+    {
+        DBG_vPrintf(TRUE, "Cache:\n");
+        vDisplayBindTableEntry(cache->pvAplApsmeBindingTableForRemoteSrcAddr);
+        DBG_vPrintf(TRUE, "Cache size = %d\n", cache->u32SizeOfBindingCache);
+        for(uint32 i=0; i < cache->u32SizeOfBindingCache; i++)
+            DBG_vPrintf(TRUE, "    %016llx\n", cache->pu64RemoteDevicesList[i]);
+    }
+
+    // Dump table
+    if(table)
+    {
+        DBG_vPrintf(TRUE, "Binding table (size=%d)\n", table->u32SizeOfBindingTable);
+        for(uint32 i=0; i<table->u32SizeOfBindingTable; i++)
+        {
+            ZPS_tsAplApsmeBindingTableStoreEntry * entry = table->pvAplApsmeBindingTableEntryForSpSrcAddr + i;
+
+            DBG_vPrintf(TRUE, "    AddrOrLkUp=%04x ClusterID=%04x addrMode=%d SrcEP=%d DstEP=%d\n",
+                        entry->u16AddrOrLkUp,
+                        entry->u16ClusterId,
+                        entry->u8DstAddrMode,
+                        entry->u8SourceEndpoint,
+                        entry->u8DestinationEndPoint);
+        }
     }
 }

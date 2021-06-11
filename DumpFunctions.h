@@ -10,6 +10,7 @@ extern "C"
     void vDumpNetworkParameters();
     void vDisplayDiscoveredNodes();
     void vDisplayNeighbourTable();
+    void vDisplayBindTable();
 }
 
 

@@ -77,7 +77,6 @@ void SwitchEndpoint::reportStateChange()
                                                myPDUM_thAPduInstance);
     PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
     DBG_vPrintf(TRUE, "status: %02x\n", status);
-
 }
 
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
