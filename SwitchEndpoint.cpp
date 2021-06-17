@@ -65,7 +65,7 @@ void SwitchEndpoint::reportStateChange()
     // Destination address - 0x0000 (coordinator)
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
-    addr.eAddressMode = E_ZCL_AM_SHORT;
+    addr.eAddressMode = E_ZCL_AM_BOUND;
 
     DBG_vPrintf(TRUE, "Reporting attribute EP=%d value=%d... ", getEndpointId(), sSwitch.sOnOffServerCluster.bOnOff);
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();

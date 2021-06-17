@@ -83,6 +83,11 @@
 #define ONOFF_CLIENT
 #define ONOFF_SERVER
 
+#define CLD_BIND_SERVER
+#define MAX_NUM_BIND_QUEUE_BUFFERS 4
+#define MAX_PDU_BIND_QUEUE_PAYLOAD_SIZE 100
+
+
 /****************************************************************************/
 /*             Basic Cluster - Optional Attributes                          */
 /*                                                                          */
