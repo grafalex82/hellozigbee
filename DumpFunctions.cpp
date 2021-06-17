@@ -191,21 +191,17 @@ void vDumpBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
 
 void vDumpUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
 {
-    if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE)
-        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=%016llx\n",
-            pEvent->u8SrcEp,
-            pEvent->u8DstEp,
-            pEvent->uDstAddr.u64Addr);
-    else if(pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_SHORT)
-        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=%04x\n",
-            pEvent->u8SrcEp,
-            pEvent->u8DstEp,
-            pEvent->uDstAddr.u16Addr);
-    else
-        DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d Unknown DstAddrMode=%d\n",
-            pEvent->u8SrcEp,
-            pEvent->u8DstEp,
-            pEvent->uDstAddr);
+    DBG_vPrintf(TRUE, "ZPS_EVENT_ZDO_UNBIND: SrcEP=%d DstEP=%d DstAddr=", pEvent->u8SrcEp, pEvent->u8DstEp);
+    vPrintAddr(pEvent->uDstAddr, pEvent->u8DstAddrMode);
+    DBG_vPrintf(TRUE, "\n");
+}
+
+void vDumpBindRequestServer(ZPS_tsAfBindRequestServerEvent * pEvent)
+{
+    DBG_vPrintf(TRUE, "ZPS_EVENT_BIND_REQUEST_SERVER: Status=%02x SrcEP=%d Failures=%d\n",
+                pEvent->u8Status,
+                pEvent->u8SrcEndpoint,
+                pEvent->u32FailureCount);
 }
 
 void vDumpTrustCenterStatusEvent(ZPS_tsAfTCstatusEvent * pEvent)
@@ -264,6 +260,10 @@ void vDumpAfEvent(ZPS_tsAfEvent* psStackEvent)
 
         case ZPS_EVENT_ZDO_UNBIND:
             vDumpUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            break;
+
+        case ZPS_EVENT_BIND_REQUEST_SERVER:
+            vDumpBindRequestServer(&psStackEvent->uEvent.sBindRequestServerEvent);
             break;
 
         case ZPS_EVENT_TC_STATUS:
