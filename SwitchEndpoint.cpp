@@ -18,7 +18,7 @@ void SwitchEndpoint::init()
 {
     // Initialize the endpoint
     DBG_vPrintf(TRUE, "SwitchEndpoint::init(): register On/Off endpoint #%d...  ", getEndpointId());
-    teZCL_Status status = eZLO_RegisterOnOffLightEndPoint(getEndpointId(), &EndpointManager::handleZclEvent, &sSwitch);
+    teZCL_Status status = eZLO_RegisterOnOffLightSwitchEndPoint(getEndpointId(), &EndpointManager::handleZclEvent, &sSwitch);
     DBG_vPrintf(TRUE, "eApp_ZCL_RegisterEndpoint() status %d\n", status);
 
     // Initialize blinking
@@ -30,7 +30,8 @@ void SwitchEndpoint::init()
 
 bool SwitchEndpoint::getState() const
 {
-    return sSwitch.sOnOffServerCluster.bOnOff;
+    //return sSwitch.sOnOffServerCluster.bOnOff;
+    return false;
 }
 
 void SwitchEndpoint::switchOn()
@@ -55,7 +56,7 @@ void SwitchEndpoint::doStateChange(bool state)
 {
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
 
-    sSwitch.sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
+    //sSwitch.sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
 
     blinkTask.setBlinkMode(state);
 }
@@ -66,7 +67,7 @@ void SwitchEndpoint::reportStateChange()
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
     addr.eAddressMode = E_ZCL_AM_BOUND;
-
+/*
     DBG_vPrintf(TRUE, "Reporting attribute EP=%d value=%d... ", getEndpointId(), sSwitch.sOnOffServerCluster.bOnOff);
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
     teZCL_Status status = eZCL_ReportAttribute(&addr,
@@ -77,6 +78,15 @@ void SwitchEndpoint::reportStateChange()
                                                myPDUM_thAPduInstance);
     PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
     DBG_vPrintf(TRUE, "status: %02x\n", status);
+
+*/
+    uint8 sequenceNo;
+    teZCL_Status status = eCLD_OnOffCommandSend(getEndpointId(),
+                                   1,
+                                   &addr,
+                                   &sequenceNo,
+                                   E_CLD_ONOFF_CMD_TOGGLE);
+    DBG_vPrintf(TRUE, "Sending On/Off command status: %02x\n", status);
 }
 
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)

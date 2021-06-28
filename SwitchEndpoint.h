@@ -4,7 +4,7 @@
 extern "C"
 {
     #include "zcl.h"
-    #include "on_off_light.h"
+    #include "on_off_light_switch.h"
 }
 
 #include "Endpoint.h"
@@ -13,7 +13,7 @@ extern "C"
 class SwitchEndpoint: public Endpoint
 {    
 protected:
-    tsZLO_OnOffLightDevice sSwitch;
+    tsZLO_OnOffLightSwitchDevice sSwitch;
     BlinkTask blinkTask;
 
 public:
