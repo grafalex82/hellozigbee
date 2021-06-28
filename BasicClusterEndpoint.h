@@ -23,9 +23,7 @@ struct BasicClusterInstances
     #endif
 } __attribute__ ((aligned(4)));
 
-
-// Endpoint low level structure
-struct BasicClusterDevice
+class BasicClusterEndpoint : public Endpoint
 {
     tsZCL_EndPointDefinition endPoint;
 
@@ -44,16 +42,16 @@ struct BasicClusterDevice
         tsCLD_AS_Ota sCLD_OTA;
         tsOTA_Common sCLD_OTA_CustomDataStruct;
     #endif
-};
-
-class BasicClusterEndpoint : public Endpoint
-{
-    BasicClusterDevice deviceObject;
 
 public:
     BasicClusterEndpoint();
 
     virtual void init();
+
+protected:
+    virtual void registerBasicCluster();
+    virtual void registerOtaCluster();
+    virtual void registerEndpoint();
 };
 
 #endif // BASICCLUSTERENDPOINT_H
