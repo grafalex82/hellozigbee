@@ -126,7 +126,8 @@ void ZigbeeDevice::handleNetworkJoinAndRejoin()
     ZPS_vSaveAllZpsRecords();
 
     // Get ready for network communication
-    pollTask.startPoll(2000);
+    if(ZPS_eAplZdoGetDeviceType() == ZPS_ZDO_DEVICE_ENDDEVICE)
+        pollTask.startPoll(2000);
     rejoinFailures = 0;
 }
 
@@ -318,7 +319,6 @@ void ZigbeeDevice::handleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent)
 
 void ZigbeeDevice::handleBdbEvent(BDB_tsBdbEvent *psBdbEvent)
 {
-    DBG_vPrintf(TRUE, "ZigbeeDevice::handleBdbEvent\n");
     switch(psBdbEvent->eEventType)
     {
         case BDB_EVENT_ZPSAF:
@@ -361,7 +361,6 @@ void ZigbeeDevice::handleBdbEvent(BDB_tsBdbEvent *psBdbEvent)
 
 PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent * event)
 {
-    DBG_vPrintf(TRUE, "APP_vBdbCallback\n");
     ZigbeeDevice::getInstance()->handleBdbEvent(event);
 }
 
