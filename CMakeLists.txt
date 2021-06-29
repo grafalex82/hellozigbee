@@ -82,11 +82,9 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOff.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommandHandler.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OOSC.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Scenes.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/ScenesCommandHandler.c
-
-        ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Source/on_off_light.c
-        ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Source/on_off_light_switch.c
 
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_fr.c
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_start.c

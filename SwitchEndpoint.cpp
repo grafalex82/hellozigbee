@@ -41,6 +41,18 @@ void SwitchEndpoint::registerClientCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create OnOff client cluster instance. status=%d\n", status);
 }
 
+void SwitchEndpoint::registerOnOffConfigServerCluster()
+{
+    // Initialize On/Off config server cluser
+    teZCL_Status status = eCLD_OOSCCreateOnOffSwitchConfig(&sClusterInstance.sOnOffConfigServer,
+                                                           TRUE,                              // Server
+                                                           &sCLD_OOSC,
+                                                           &sOnOffConfigServerCluster,
+                                                           &au8OOSCAttributeControlBits[0]);
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create OnOff config server cluster instance. status=%d\n", status);
+}
+
 void SwitchEndpoint::registerEndpoint()
 {
     // Initialize endpoint structure
@@ -63,6 +75,7 @@ void SwitchEndpoint::init()
     // Register all clusters and endpoint itself
     registerServerCluster();
     registerClientCluster();
+    registerOnOffConfigServerCluster();
     registerEndpoint();
 
     // Initialize blinking

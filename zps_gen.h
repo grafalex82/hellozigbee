@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.h
  *
- * DATE:           Thu Jun 10 16:52:03 2021
+ * DATE:           Mon Jun 28 18:44:26 2021
  *
  * AUTHOR:         NXP Zigbee Protocol Stack Configuration Tool
  *
@@ -146,6 +146,7 @@
 #define HA_ZLL_COMMISSIONING_CLUSTER_ID    (0x1000)
 #define HA_OTA_CLUSTER_ID    (0x0019)
 #define HA_DEFAULT_CLUSTER_ID    (0xffff)
+#define HA_OOSC_CLUSTER_ID    (0x0007)
 
 /* Node 'Coordinator' */
 /* Endpoints */

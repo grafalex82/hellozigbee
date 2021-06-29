@@ -5,6 +5,7 @@ extern "C"
 {
     #include "zcl.h"
     #include "OnOff.h"
+    #include "OOSC.h"
 }
 
 #include "Endpoint.h"
@@ -15,6 +16,7 @@ struct OnOffClusterInstances
 {
     tsZCL_ClusterInstance sOnOffClient;
     tsZCL_ClusterInstance sOnOffServer;
+    tsZCL_ClusterInstance sOnOffConfigServer;
 } __attribute__ ((aligned(4)));
 
 
@@ -25,6 +27,7 @@ protected:
     OnOffClusterInstances sClusterInstance;
     tsCLD_OnOff sOnOffClientCluster;
     tsCLD_OnOff sOnOffServerCluster;
+    tsCLD_OOSC sOnOffConfigServerCluster;
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
 
     BlinkTask blinkTask;
@@ -48,6 +51,7 @@ protected:
 protected:
     virtual void registerServerCluster();
     virtual void registerClientCluster();
+    virtual void registerOnOffConfigServerCluster();
     virtual void registerEndpoint();
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
 };
