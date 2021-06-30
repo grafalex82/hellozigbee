@@ -34,6 +34,16 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             vDumpZclReadRequest(psEvent);
             break;
 
+        case E_ZCL_CBET_WRITE_INDIVIDUAL_ATTRIBUTE:
+            vDumpZclWriteAttributeRequest(psEvent);
+            break;
+
+        case E_ZCL_CBET_WRITE_ATTRIBUTES:
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Write attributes completed\n");
+            break;
+
+
+
         case E_ZCL_CBET_UNHANDLED_EVENT:
         case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
         case E_ZCL_CBET_DEFAULT_RESPONSE:

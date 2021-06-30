@@ -42,6 +42,13 @@ void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
                 attributeId);
 }
 
+void vDumpZclWriteAttributeRequest(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "ZCL Write Attribute: Clustter %04x Attrib %04x\n",
+            psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
+            psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
+}
+
 extern "C" void vDumpDiscoveryCompleteEvent(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 {
     DBG_vPrintf(TRUE, "Network Discovery Complete: status 0x%02x\n", pEvent->eStatus);
