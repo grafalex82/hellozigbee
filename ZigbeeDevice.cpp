@@ -15,6 +15,8 @@ extern "C"
     #include "bdb_api.h"
     #include "dbg.h"
     #include "OnOff.h"
+
+    void ZPS_vZdoSetBindCallback(void *);
 }
 
 
@@ -27,6 +29,14 @@ QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
 QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
+
+uint8 bindCallback(uint16 cmd, uint64 *addr, uint16 clusterID, uint8 dstEP, uint8 srcEP, uint8 addrMode)
+{
+    DBG_vPrintf(TRUE, "+_+_+_ bindCallback(): cmd=%04x, addr=0x%016llx, ClusterID=%04x, dstEP=%d, srcEP=%d, mode=%d\n",
+                cmd, *addr, clusterID, dstEP, srcEP, addrMode);
+
+    return TRUE; // Allow bind request
+}
 
 ZigbeeDevice::ZigbeeDevice()
 {
@@ -54,6 +64,8 @@ ZigbeeDevice::ZigbeeDevice()
 
     polling = false;
     rejoinFailures = 0;
+
+    ZPS_vZdoSetBindCallback((void*)bindCallback);
 }
 
 ZigbeeDevice * ZigbeeDevice::getInstance()
@@ -201,21 +213,26 @@ void ZigbeeDevice::handleZdoDataIndication(ZPS_tsAfEvent * pEvent)
 
 void ZigbeeDevice::handleZdoBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
 {
+    // We do not support group address as of now
+    if(pEvent->u8DstAddrMode != ZPS_E_ADDR_MODE_IEEE)
+    {
+        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindEvent() WARNING: Only IEEE address mode is supported\n");
+        return;
+    }
+
+
     // Prepare short and full address
-    uint16 shortAddr = pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE ?
-                        ZPS_u16AplZdoLookupAddr(pEvent->uDstAddr.u64Addr) :
-                        pEvent->uDstAddr.u16Addr;
-    uint64 ieeeAddr = pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE ?
-                                                pEvent->uDstAddr.u64Addr :
-                                                ZPS_u64AplZdoLookupIeeeAddr(pEvent->uDstAddr.u16Addr);
+    uint16 shortAddr = ZPS_u16AplZdoLookupAddr(pEvent->uDstAddr.u64Addr);
+
+    // TODO: Parse Bind request to get Cluster ID
 
     // Bind endpoints
     ZPS_teStatus status = ZPS_eAplZdoBind(GENERAL_CLUSTER_ID_ONOFF,
                                           pEvent->u8SrcEp,
                                           shortAddr,
-                                          ieeeAddr,
+                                          pEvent->uDstAddr.u64Addr,
                                           pEvent->u8DstEp);
-    DBG_vPrintf(TRUE, "Binding to %04x/%016llx SrcEP=%d to DstEP=%d Status=%d\n", shortAddr, ieeeAddr, pEvent->u8SrcEp, pEvent->u8DstEp, status);
+    DBG_vPrintf(TRUE, "Binding to %04x/%016llx SrcEP=%d to DstEP=%d Status=%d\n", shortAddr, pEvent->uDstAddr.u64Addr, pEvent->u8SrcEp, pEvent->u8DstEp, status);
 
     vDisplayBindTable();
     vDisplayAddressMap();
