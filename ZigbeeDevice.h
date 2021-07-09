@@ -34,6 +34,17 @@ class ZigbeeDevice
     int rejoinFailures;
     int cyclesTillNextRejoin;
 
+    struct BindRequest
+    {
+        bool bind;
+        uint64 dstAddr;
+        uint16 clusterID;
+        uint8 srcEP;
+        uint8 dstEP;
+    };
+
+    Queue<BindRequest, 5> bindRequestQueue;
+
 public:
     ZigbeeDevice();
 
@@ -54,12 +65,13 @@ protected:
     void handleLeaveNetwork();
     void handleRejoinFailure();
     void handlePollResponse(ZPS_tsAfPollConfEvent* pEvent);
-    void handleZdoBindEvent(ZPS_tsAfZdoBindEvent * pEvent);
-    void handleZdoUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent);
+    void handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool bind);
     void handleZdoDataIndication(ZPS_tsAfEvent * pEvent);
     void handleZdoEvents(ZPS_tsAfEvent* psStackEvent);
     void handleZclEvents(ZPS_tsAfEvent* psStackEvent);
     void handleAfEvent(BDB_tsZpsAfEvent *psZpsAfEvent);
+
+    static uint8 notifyBindRequestComing(uint16 cmd, uint64 *addr, uint16 clusterID, uint8 dstEP, uint8 srcEP, uint8 addrMode);
 
 public:
     void handleBdbEvent(BDB_tsBdbEvent *psBdbEvent);

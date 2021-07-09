@@ -30,14 +30,6 @@ QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
 QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
 QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
 
-uint8 bindCallback(uint16 cmd, uint64 *addr, uint16 clusterID, uint8 dstEP, uint8 srcEP, uint8 addrMode)
-{
-    DBG_vPrintf(TRUE, "+_+_+_ bindCallback(): cmd=%04x, addr=0x%016llx, ClusterID=%04x, dstEP=%d, srcEP=%d, mode=%d\n",
-                cmd, *addr, clusterID, dstEP, srcEP, addrMode);
-
-    return TRUE; // Allow bind request
-}
-
 ZigbeeDevice::ZigbeeDevice()
 {
     // Initialize Zigbee stack queues
@@ -65,7 +57,9 @@ ZigbeeDevice::ZigbeeDevice()
     polling = false;
     rejoinFailures = 0;
 
-    ZPS_vZdoSetBindCallback((void*)bindCallback);
+    // Prepare bind requests caching
+    ZPS_vZdoSetBindCallback((void*)notifyBindRequestComing);
+    bindRequestQueue.init();
 }
 
 ZigbeeDevice * ZigbeeDevice::getInstance()
@@ -211,53 +205,77 @@ void ZigbeeDevice::handleZdoDataIndication(ZPS_tsAfEvent * pEvent)
     }
 }
 
-void ZigbeeDevice::handleZdoBindEvent(ZPS_tsAfZdoBindEvent * pEvent)
+uint8 ZigbeeDevice::notifyBindRequestComing(uint16 cmd, uint64 *addr, uint16 clusterID, uint8 dstEP, uint8 srcEP, uint8 addrMode)
+{
+    DBG_vPrintf(TRUE, "+_+_+_ bindCallback(): cmd=%04x, addr=0x%016llx, ClusterID=%04x, dstEP=%d, srcEP=%d, mode=%d\n",
+                cmd, *addr, clusterID, dstEP, srcEP, addrMode);
+
+    // Store the request in the queue to be processed when official bind request arrive
+    BindRequest req = {
+        cmd==ZPS_ZDP_BIND_REQ_CLUSTER_ID,
+        *addr,
+        clusterID,
+        srcEP,
+        dstEP
+    };
+    ZigbeeDevice::getInstance()->bindRequestQueue.send(req);
+
+    return TRUE; // Allow bind request
+}
+
+void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool bind)
 {
     // We do not support group address as of now
     if(pEvent->u8DstAddrMode != ZPS_E_ADDR_MODE_IEEE)
     {
-        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindEvent() WARNING: Only IEEE address mode is supported\n");
+        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): WARNING: Only IEEE address mode is supported\n");
         return;
     }
 
+    // Retrieve stored bind request
+    BindRequest req;
+    if(!bindRequestQueue.receive(&req))
+    {
+        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): WARNING: Unexpected bind request\n");
+        return;
+    }
+
+    // Verify this is the same bind request that we were notified earlier
+    if(bind != req.bind ||
+       pEvent->uDstAddr.u64Addr != req.dstAddr ||
+       pEvent->u8SrcEp != req.srcEP ||
+       pEvent->u8DstEp != req.dstEP)
+    {
+        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): WARNING: Unexpected bind/unbind request bind=%d Addr=%016llx SrcEP=%d DstEP=%d\n",
+                    bind, pEvent->uDstAddr.u64Addr, pEvent->u8SrcEp, pEvent->u8DstEp);
+        return;
+    }
 
     // Prepare short and full address
     uint16 shortAddr = ZPS_u16AplZdoLookupAddr(pEvent->uDstAddr.u64Addr);
 
-    // TODO: Parse Bind request to get Cluster ID
-
     // Bind endpoints
-    ZPS_teStatus status = ZPS_eAplZdoBind(GENERAL_CLUSTER_ID_ONOFF,
-                                          pEvent->u8SrcEp,
-                                          shortAddr,
-                                          pEvent->uDstAddr.u64Addr,
-                                          pEvent->u8DstEp);
-    DBG_vPrintf(TRUE, "Binding to %04x/%016llx SrcEP=%d to DstEP=%d Status=%d\n", shortAddr, pEvent->uDstAddr.u64Addr, pEvent->u8SrcEp, pEvent->u8DstEp, status);
+    if(bind)
+    {
+        ZPS_teStatus status = ZPS_eAplZdoBind(req.clusterID,
+                                              req.srcEP,
+                                              shortAddr,
+                                              req.dstAddr,
+                                              req.dstEP);
+        DBG_vPrintf(TRUE, "Binding to %04x/%016llx SrcEP=%d to DstEP=%d Status=%d\n", shortAddr, req.dstAddr, req.srcEP, req.dstEP, status);
+    }
+    else
+    {
+        ZPS_teStatus status = ZPS_eAplZdoUnbind(req.clusterID,
+                                              req.srcEP,
+                                              shortAddr,
+                                              req.dstAddr,
+                                              req.dstEP);
+        DBG_vPrintf(TRUE, "Unbinding to %04x/%016llx SrcEP=%d from DstEP=%d Status=%d\n", shortAddr, req.dstAddr, req.srcEP, req.dstEP, status);
+    }
 
     vDisplayBindTable();
     vDisplayAddressMap();
-}
-
-void ZigbeeDevice::handleZdoUnbindEvent(ZPS_tsAfZdoUnbindEvent * pEvent)
-{
-    uint16 shortAddr = pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE ?
-                        ZPS_u16AplZdoLookupAddr(pEvent->uDstAddr.u64Addr) :
-                        pEvent->uDstAddr.u16Addr;
-    uint64 ieeeAddr = pEvent->u8DstAddrMode == ZPS_E_ADDR_MODE_IEEE ?
-                                                pEvent->uDstAddr.u64Addr :
-                                                ZPS_u64AplZdoLookupIeeeAddr(pEvent->uDstAddr.u16Addr);
-
-    ZPS_teStatus status = ZPS_eAplZdoUnbind(GENERAL_CLUSTER_ID_ONOFF,
-                                          pEvent->u8SrcEp,
-                                          shortAddr,
-                                          ieeeAddr,
-                                          pEvent->u8DstEp);
-    DBG_vPrintf(TRUE, "Unbinding SrcEP=%d to DstEP=%d Status=%d\n", pEvent->u8SrcEp, pEvent->u8DstEp, status);
-
-    status = ZPS_eAplZdoAddAddrMapEntry(shortAddr, ieeeAddr, FALSE);
-    DBG_vPrintf(TRUE, "Adding a address map entry Status=%d\n", status);
-
-    vDisplayBindTable();
 }
 
 void ZigbeeDevice::handleZclEvents(ZPS_tsAfEvent* psStackEvent)
@@ -292,11 +310,11 @@ void ZigbeeDevice::handleZdoEvents(ZPS_tsAfEvent* psStackEvent)
             break;
 
         case ZPS_EVENT_ZDO_BIND:
-            handleZdoBindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            handleZdoBindUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent, true);
             break;
 
         case ZPS_EVENT_ZDO_UNBIND:
-            handleZdoUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent);
+            handleZdoBindUnbindEvent(&psStackEvent->uEvent.sZdoBindEvent, false);
             break;
 
         case ZPS_EVENT_NWK_POLL_CONFIRM:
