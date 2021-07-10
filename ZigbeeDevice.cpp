@@ -15,8 +15,6 @@ extern "C"
     #include "bdb_api.h"
     #include "dbg.h"
     #include "OnOff.h"
-
-    void ZPS_vZdoSetBindCallback(void *);
 }
 
 
@@ -56,10 +54,6 @@ ZigbeeDevice::ZigbeeDevice()
 
     polling = false;
     rejoinFailures = 0;
-
-    // Prepare bind requests caching
-    ZPS_vZdoSetBindCallback((void*)notifyBindRequestComing);
-    bindRequestQueue.init();
 }
 
 ZigbeeDevice * ZigbeeDevice::getInstance()
@@ -205,75 +199,8 @@ void ZigbeeDevice::handleZdoDataIndication(ZPS_tsAfEvent * pEvent)
     }
 }
 
-uint8 ZigbeeDevice::notifyBindRequestComing(uint16 cmd, uint64 *addr, uint16 clusterID, uint8 dstEP, uint8 srcEP, uint8 addrMode)
+void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * /*pEvent*/, bool /*bind*/)
 {
-    DBG_vPrintf(TRUE, "+_+_+_ bindCallback(): cmd=%04x, addr=0x%016llx, ClusterID=%04x, dstEP=%d, srcEP=%d, mode=%d\n",
-                cmd, *addr, clusterID, dstEP, srcEP, addrMode);
-
-    // Store the request in the queue to be processed when official bind request arrive
-    BindRequest req = {
-        cmd==ZPS_ZDP_BIND_REQ_CLUSTER_ID,
-        *addr,
-        clusterID,
-        srcEP,
-        dstEP
-    };
-    ZigbeeDevice::getInstance()->bindRequestQueue.send(req);
-
-    return TRUE; // Allow bind request
-}
-
-void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool bind)
-{
-    // We do not support group address as of now
-    if(pEvent->u8DstAddrMode != ZPS_E_ADDR_MODE_IEEE)
-    {
-        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): WARNING: Only IEEE address mode is supported\n");
-        return;
-    }
-
-    // Retrieve stored bind request
-    BindRequest req;
-    if(!bindRequestQueue.receive(&req))
-    {
-        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): WARNING: Unexpected bind request\n");
-        return;
-    }
-
-    // Verify this is the same bind request that we were notified earlier
-    if(bind != req.bind ||
-       pEvent->uDstAddr.u64Addr != req.dstAddr ||
-       pEvent->u8SrcEp != req.srcEP ||
-       pEvent->u8DstEp != req.dstEP)
-    {
-        DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): WARNING: Unexpected bind/unbind request bind=%d Addr=%016llx SrcEP=%d DstEP=%d\n",
-                    bind, pEvent->uDstAddr.u64Addr, pEvent->u8SrcEp, pEvent->u8DstEp);
-        return;
-    }
-
-    // Prepare short and full address
-    uint16 shortAddr = ZPS_u16AplZdoLookupAddr(pEvent->uDstAddr.u64Addr);
-
-    // Bind endpoints
-    if(bind)
-    {
-        ZPS_teStatus status = ZPS_eAplZdoBind(req.clusterID,
-                                              req.srcEP,
-                                              shortAddr,
-                                              req.dstAddr,
-                                              req.dstEP);
-        DBG_vPrintf(TRUE, "Binding to %04x/%016llx SrcEP=%d to DstEP=%d Status=%d\n", shortAddr, req.dstAddr, req.srcEP, req.dstEP, status);
-    }
-    else
-    {
-        ZPS_teStatus status = ZPS_eAplZdoUnbind(req.clusterID,
-                                              req.srcEP,
-                                              shortAddr,
-                                              req.dstAddr,
-                                              req.dstEP);
-        DBG_vPrintf(TRUE, "Unbinding to %04x/%016llx SrcEP=%d from DstEP=%d Status=%d\n", shortAddr, req.dstAddr, req.srcEP, req.dstEP, status);
-    }
-
     vDisplayBindTable();
     vDisplayAddressMap();
 }
