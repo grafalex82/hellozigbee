@@ -76,6 +76,8 @@ const char * getClusterName(uint16 clusterID)
 {
     switch(clusterID)
     {
+        case ZPS_ZDP_NWK_ADDR_REQ_CLUSTER_ID: return "Network address request";
+        case ZPS_ZDP_IEEE_ADDR_REQ_CLUSTER_ID: return "IEEE address request";
         case ZPS_ZDP_DEVICE_ANNCE_REQ_CLUSTER_ID: return "Device announce request";
         case ZPS_ZDP_NODE_DESC_REQ_CLUSTER_ID: return "Node descriptor request";
         case ZPS_ZDP_SIMPLE_DESC_REQ_CLUSTER_ID: return "Simple descriptor request";
@@ -86,6 +88,8 @@ const char * getClusterName(uint16 clusterID)
         case ZPS_ZDP_MGMT_RTG_REQ_CLUSTER_ID: return "Mgmt routing request";
         case ZPS_ZDP_MGMT_BIND_REQ_CLUSTER_ID: return "Mgmt bind request";
 
+        case ZPS_ZDP_NWK_ADDR_RSP_CLUSTER_ID: return "Network addr response";
+        case ZPS_ZDP_IEEE_ADDR_RSP_CLUSTER_ID: return "IEEE addr response";
         case ZPS_ZDP_NODE_DESC_RSP_CLUSTER_ID: return "Node descriptor response";
         case ZPS_ZDP_SIMPLE_DESC_RSP_CLUSTER_ID: return "Simple descriptor response";
         case ZPS_ZDP_ACTIVE_EP_RSP_CLUSTER_ID: return "Active endpoint response";

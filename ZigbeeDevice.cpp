@@ -8,6 +8,7 @@ extern "C"
 
     // Local configuration and generated files
     #include "zps_gen.h"
+    #include "pdum_gen.h"
 
     // ZigBee includes
     #include "zps_apl.h"
@@ -199,10 +200,25 @@ void ZigbeeDevice::handleZdoDataIndication(ZPS_tsAfEvent * pEvent)
     }
 }
 
-void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * /*pEvent*/, bool /*bind*/)
+void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool bind)
 {
-    vDisplayBindTable();
-    vDisplayAddressMap();
+    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
+
+    // Address of interest
+    ZPS_tsAplZdpNwkAddrReq req = {pEvent->uDstAddr.u64Addr, 0, 0};
+
+    // Target addr (Broadcast)
+    ZPS_tuAddress uDstAddr;
+    uDstAddr.u16Addr = 0xFFFF;   // Broadcast
+
+    // Perform the request
+    uint8 u8SeqNumber;
+    ZPS_teStatus status = ZPS_eAplZdpNwkAddrRequest(hAPduInst,
+                                                    uDstAddr,     // Broadcast addr
+                                                    FALSE,
+                                                    &u8SeqNumber,
+                                                    &req);
+    DBG_vPrintf(TRUE, "ZigbeeDevice::handleZdoBindUnbindEvent(): looking for network addr for %016llx. Status=%02x\n", pEvent->uDstAddr.u64Addr, status);
 }
 
 void ZigbeeDevice::handleZclEvents(ZPS_tsAfEvent* psStackEvent)
