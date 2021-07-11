@@ -202,7 +202,8 @@ void ZigbeeDevice::handleZdoDataIndication(ZPS_tsAfEvent * pEvent)
 
 void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool bind)
 {
-    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
+    if(!bind)
+        return;
 
     // Address of interest
     ZPS_tsAplZdpNwkAddrReq req = {pEvent->uDstAddr.u64Addr, 0, 0};
@@ -213,6 +214,7 @@ void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool 
 
     // Perform the request
     uint8 u8SeqNumber;
+    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
     ZPS_teStatus status = ZPS_eAplZdpNwkAddrRequest(hAPduInst,
                                                     uDstAddr,     // Broadcast addr
                                                     FALSE,
