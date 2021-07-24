@@ -69,8 +69,15 @@
 /* On/Off switch configuration attribute ID's (3.9.2.2) */
 typedef enum 
 {
-    E_CLD_OOSC_ATTR_ID_SWITCH_TYPE          = 0x0000,   /* Mandatory */
-    E_CLD_OOSC_ATTR_ID_SWITCH_ACTIONS       = 0x0010,   /* Mandatory */
+    E_CLD_OOSC_ATTR_ID_SWITCH_TYPE              = 0x0000,   /* Mandatory */
+    E_CLD_OOSC_ATTR_ID_SWITCH_ACTIONS           = 0x0010,   /* Mandatory */
+
+    // Custom attributes
+    E_CLD_OOSC_ATTR_ID_SWITCH_MODE              = 0xff00,
+    E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE        = 0xff01,
+    E_CLD_OOSC_ATTR_ID_SWITCH_BUTTON_MODE       = 0xff02,
+    E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE         = 0xff03,
+    E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff04
 } teCLD_OOSC_ClusterID;
 
 
@@ -91,6 +98,21 @@ typedef enum
     E_CLD_OOSC_ACTION_TOGGLE
 } teCLD_OOSC_SwitchAction;
 
+typedef enum
+{
+    E_CLD_OOSC_LOCAL_MODE_UNLINKED,
+    E_CLD_OOSC_LOCAL_MODE_FRONT,
+    E_CLD_OOSC_LOCAL_MODE_SINGLE,
+    E_CLD_OOSC_LOCAL_MODE_DOUBLE,
+    E_CLD_OOSC_LOCAL_MODE_TRIPLE,
+    E_CLD_OOSC_LOCAL_MODE_LONG,
+} teCLD_OOSC_LocalSwitchMode;
+
+typedef enum
+{
+    E_CLD_OOSC_BUTTON_MODE_SIMPLE,
+    E_CLD_OOSC_BUTTON_MODE_SMART,
+} teCLD_OOSC_ButtonMode;
 
 /* On/Off Switch Configuration Cluster */
 typedef struct
@@ -98,6 +120,12 @@ typedef struct
 #ifdef OOSC_SERVER    
     zenum8                  eSwitchType;                /* Mandatory */
     zenum8                  eSwitchActions;             /* Mandatory */
+
+    // Custom attrs
+    zenum8                  eLocalSwitchMode;
+    zenum8                  eButtonMode;
+    zuint16                 iMaxPause;
+    zuint16                 iMinLongPress;
 #endif    
     zuint16                 u16ClusterRevision;
 } tsCLD_OOSC;
