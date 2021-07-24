@@ -82,7 +82,6 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOff.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommandHandler.c
-        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OOSC.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Scenes.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/ScenesCommandHandler.c
 
@@ -111,6 +110,8 @@ TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
 # Hello World
 
 INCLUDE_DIRECTORIES(
+    ${PROJECT_SOURCE_DIR}
+
     ${SDK_PREFIX}/Components/Aes/Include
     ${SDK_PREFIX}/Components/AES_SW/Include
     ${SDK_PREFIX}/Components/AppApi/Include
@@ -140,9 +141,6 @@ INCLUDE_DIRECTORIES(
     ${SDK_PREFIX}/Components/ZPSMAC/Include
     ${SDK_PREFIX}/Components/ZPSNWK/Include
     ${SDK_PREFIX}/Components/ZPSTSV/Include
-
-
-    ${PROJECT_SOURCE_DIR}
 )
 
 LINK_DIRECTORIES(
@@ -174,6 +172,7 @@ SET(SOURCES
         ZigbeeUtils.cpp
         ZigbeeDevice.cpp
         BasicClusterEndpoint.cpp
+	OOSC.c
         Main.cpp
 )
 
