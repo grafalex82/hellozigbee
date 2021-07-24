@@ -50,6 +50,9 @@ or
 	- End device will search for another router and send rejoin request to the new parent.
 - Device joining and rejoining, as well as failure recovery is implemented using BDB component (a part of Zigbee SDK).
 	- Firmware adds just a few rejoin attemts on top of standard BDB implementation
+- Device supports binding commands that come from the coordinator (e.g. zigbee2mqtt). It supports binding of On/Off cluster.
+	- If the device is not bound to any other device - on button press it sends reports to the coordinator
+	- If the device is bound to another device - on button press it sends Toggle command to the bound device(s)
 
 # Zigbee2mqtt integration
 
@@ -69,3 +72,4 @@ All this code is explained in very detail in the following articles (in Russian)
 - https://habr.com/ru/post/547374/ - Getting started with JN5169 microcontroller (SDK, compiler, project structure, peripherals, sleep modes).
 - https://habr.com/ru/post/550660/ - Getting started with Zigbee network concepts. SDK structure and event handling explained.
 - https://habr.com/ru/post/561280/ - Correct network joining and rejoining using BDB component. End devices explained. Firmware architecture and porting to C++.
+- https://habr.com/ru/post/568316/ - Binding. Reports vs commands, Server vs client clusters explained. 
