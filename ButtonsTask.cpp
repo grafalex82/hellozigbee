@@ -46,6 +46,12 @@ bool ButtonsTask::canSleep() const
     return idleCounter > 500; // 500 cycles * 10 ms = 5 sec
 }
 
+inline void ButtonsTask::sendButtonEvent(ApplicationEventType evtType, uint8 button)
+{
+    ApplicationEvent evt = {evtType, button, timeStamp};
+    appEventQueue.send(evt);
+}
+
 void ButtonsTask::timerCallback()
 {
     timeStamp++;
@@ -63,8 +69,7 @@ void ButtonsTask::timerCallback()
         {
             pressed = true;
             DBG_vPrintf(TRUE, "Detected button press\n");
-            ApplicationEvent evt = {BUTTON_PRESS, 0, timeStamp};
-            appEventQueue.send(evt);
+            sendButtonEvent(BUTTON_PRESS, 0);
         }
     }
     else if(pressed)
@@ -73,16 +78,14 @@ void ButtonsTask::timerCallback()
         if(pressedCounter > 500) // 5 sec
         {
             DBG_vPrintf(TRUE, "Button released. Long press detected\n");
-            ApplicationEvent evt = {VERY_LONG_PRESS, 0, timeStamp};
-            appEventQueue.send(evt);
+            sendButtonEvent(VERY_LONG_PRESS, 0);
         }
 
         // detect short press
         else
         {
             DBG_vPrintf(TRUE, "Button released. Short press detected\n");
-            ApplicationEvent evt = {BUTTON_RELEASE, 0, timeStamp};
-            appEventQueue.send(evt);
+            sendButtonEvent(BUTTON_RELEASE, 0);
         }
 
         pressed = false;

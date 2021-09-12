@@ -3,6 +3,7 @@
 
 #include "PeriodicTask.h"
 #include "Queue.h"
+#include "AppQueue.h"
 
 class ButtonsTask : public PeriodicTask
 {
@@ -21,6 +22,9 @@ public:
 
 protected:
     virtual void timerCallback();
+
+private:
+    void sendButtonEvent(ApplicationEventType evtType, uint8 button);
 };
 
 #endif // BUTTONSTASK_H
