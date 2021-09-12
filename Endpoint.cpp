@@ -42,7 +42,9 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Write attributes completed\n");
             break;
 
-
+        case E_ZCL_CBET_CHECK_ATTRIBUTE_RANGE:
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Check attribute %04x range. No action\n", psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
+            break;
 
         case E_ZCL_CBET_UNHANDLED_EVENT:
         case E_ZCL_CBET_READ_ATTRIBUTES_RESPONSE:
