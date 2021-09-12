@@ -5,9 +5,18 @@
 
 typedef enum
 {
-        BUTTON_SHORT_PRESS,
-        BUTTON_LONG_PRESS
-} ApplicationEvent;
+    BUTTON_PRESS,
+    BUTTON_RELEASE,
+    VERY_LONG_PRESS
+} ApplicationEventType;
+
+struct ApplicationEvent
+{
+    ApplicationEventType eventType;
+    uint8 buttonId;
+    uint32 timeStamp;
+};
+
 
 extern Queue<ApplicationEvent, 5> appEventQueue;
 

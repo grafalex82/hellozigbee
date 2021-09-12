@@ -8,6 +8,8 @@ class ButtonsTask : public PeriodicTask
 {
     uint32 pressedCounter;
     uint32 idleCounter;
+    uint32 timeStamp;
+    bool pressed;
 
 public:
     ButtonsTask();

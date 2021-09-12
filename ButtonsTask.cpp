@@ -11,6 +11,8 @@ ButtonsTask::ButtonsTask()
 {
     pressedCounter = 0;
     idleCounter = 0;
+    timeStamp = 0;
+    pressed = false;
 
     // Set up GPIO for the button
     vAHI_DioSetDirection(BOARD_BTN_PIN, 0);
@@ -46,6 +48,8 @@ bool ButtonsTask::canSleep() const
 
 void ButtonsTask::timerCallback()
 {
+    timeStamp++;
+
     uint32 input = u32AHI_DioReadInput();
     bool btnState = (input & BOARD_BTN_PIN) == 0;
 
@@ -53,24 +57,35 @@ void ButtonsTask::timerCallback()
     {
         idleCounter = 0;
         pressedCounter++;
-        DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", pressedCounter);
+        //DBG_vPrintf(TRUE, "Button still pressed for %d ticks\n", pressedCounter);
+
+        if(!pressed && (pressedCounter >= 2)) // Just pressed?
+        {
+            pressed = true;
+            DBG_vPrintf(TRUE, "Detected button press\n");
+            ApplicationEvent evt = {BUTTON_PRESS, 0, timeStamp};
+            appEventQueue.send(evt);
+        }
     }
-    else
+    else if(pressed)
     {
-        // detect long press
-        if(pressedCounter > 200) // 2 sec
+        // detect very long press
+        if(pressedCounter > 500) // 5 sec
         {
             DBG_vPrintf(TRUE, "Button released. Long press detected\n");
-            appEventQueue.send(BUTTON_LONG_PRESS);
+            ApplicationEvent evt = {VERY_LONG_PRESS, 0, timeStamp};
+            appEventQueue.send(evt);
         }
 
         // detect short press
-        else if(pressedCounter > 5) //50ms
+        else
         {
             DBG_vPrintf(TRUE, "Button released. Short press detected\n");
-            appEventQueue.send(BUTTON_SHORT_PRESS);
+            ApplicationEvent evt = {BUTTON_RELEASE, 0, timeStamp};
+            appEventQueue.send(evt);
         }
 
+        pressed = false;
         pressedCounter = 0;
         idleCounter++;
     }

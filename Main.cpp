@@ -135,17 +135,17 @@ PUBLIC void wakeCallBack(void)
 
 PRIVATE void APP_vTaskSwitch(Context * context)
 {
-    ApplicationEvent value;
-    if(appEventQueue.receive(&value))
+    ApplicationEvent evt;
+    if(appEventQueue.receive(&evt))
     {
-        DBG_vPrintf(TRUE, "Processing button message %d\n", value);
+        DBG_vPrintf(TRUE, "Processing button message type=%d, button=%d, timeStamp=%d\n", evt.eventType, evt.buttonId, evt.timeStamp);
 
-        if(value == BUTTON_SHORT_PRESS)
-        {
-            context->switch1.toggle();
-        }
+//        if( == BUTTON_SHORT_PRESS)
+//        {
+//            context->switch1.toggle();
+//        }
 
-        if(value == BUTTON_LONG_PRESS)
+        if(evt.eventType == VERY_LONG_PRESS)
         {
             ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
         }
