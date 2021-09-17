@@ -187,10 +187,19 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     uint16 clusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
     uint16 attrId = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
 
-    if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION &&
-       attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
+    if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION)
     {
-        ButtonsTask::getInstance()->setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
+            ButtonsTask::getInstance()->setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+
+        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE)
+            ButtonsTask::getInstance()->setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
+
+        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE)
+            ButtonsTask::getInstance()->setMaxPause(sOnOffConfigServerCluster.iMaxPause);
+
+        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR)
+            ButtonsTask::getInstance()->setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
     }
 }
 

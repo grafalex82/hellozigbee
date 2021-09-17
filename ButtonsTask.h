@@ -38,6 +38,9 @@ public:
     bool canSleep() const;
 
     void setSwitchType(SwitchType type);
+    void setLocalSwitchMode(LocalSwitchMode mode);
+    void setMaxPause(uint16 value);
+    void setMinLongPress(uint16 value);
 
 protected:
     virtual void timerCallback();

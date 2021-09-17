@@ -133,6 +133,37 @@ PUBLIC void wakeCallBack(void)
     DBG_vPrintf(TRUE, "=-=-=- wakeCallBack()\n");
 }
 
+PRIVATE SwitchEndpoint * getSwitchEndpointForButton(Context * context, uint8 button)
+{
+    if(button == 0)
+        return &context->switch1;
+
+    return NULL;
+}
+
+PRIVATE void handleButtonEvent(Context * context, ApplicationEventType eventType, uint8 buttonId)
+{
+    SwitchEndpoint * endpoint = getSwitchEndpointForButton(context, buttonId);
+
+    switch(eventType)
+    {
+    case SWITCH_TRIGGER:
+        endpoint->toggle();
+        break;
+
+    case SWITCH_ON:
+        endpoint->switchOn();
+        break;
+
+    case SWITCH_OFF:
+        endpoint->switchOff();
+        break;
+
+    default:
+        break;
+    }
+}
+
 PRIVATE void APP_vTaskSwitch(Context * context)
 {
     ApplicationEvent evt;
@@ -148,6 +179,10 @@ PRIVATE void APP_vTaskSwitch(Context * context)
         if(evt.eventType == BUTTON_VERY_LONG_PRESS)
         {
             ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
+        }
+        else
+        {
+            handleButtonEvent(context, evt.eventType, evt.buttonId);
         }
     }
 

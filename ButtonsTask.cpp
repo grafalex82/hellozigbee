@@ -81,6 +81,25 @@ void ButtonsTask::setSwitchType(SwitchType type)
     changeState(IDLE);
 }
 
+void ButtonsTask::setLocalSwitchMode(LocalSwitchMode mode)
+{
+    switchMode = mode;
+    changeState(IDLE);
+}
+
+void ButtonsTask::setMaxPause(uint16 value)
+{
+    maxPause = value/ButtonPollCycle;
+    changeState(IDLE);
+}
+
+void ButtonsTask::setMinLongPress(uint16 value)
+{
+    longPressDuration = value/ButtonPollCycle;
+    changeState(IDLE);
+}
+
+
 void ButtonsTask::changeState(ButtonState state)
 {
     currentState = state;
