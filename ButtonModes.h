@@ -3,6 +3,14 @@
 
 typedef enum
 {
+    SWITCH_TYPE_TOGGLE,
+    SWITCH_TYPE_MOMENTARY,
+    SWITCH_TYPE_MULTIFUNCTION
+} SwitchType;
+
+
+typedef enum
+{
     SWITCH_MODE_UNLINKED,
     SWITCH_MODE_FRONT,
     SWITCH_MODE_SINGLE,
@@ -10,12 +18,6 @@ typedef enum
     SWITCH_MODE_TRIPPLE,
     SWITCH_MODE_LONG,
 } LocalSwitchMode;
-
-typedef enum
-{
-    BUTTON_MODE_SIMPLE,
-    BUTTON_MODE_SMART,
-} ButtonMode;
 
 
 #endif //BUTTON_MODES_H

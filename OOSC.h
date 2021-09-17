@@ -77,9 +77,8 @@ typedef enum
     // Custom attributes
     E_CLD_OOSC_ATTR_ID_SWITCH_MODE              = 0xff00,
     E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE        = 0xff01,
-    E_CLD_OOSC_ATTR_ID_SWITCH_BUTTON_MODE       = 0xff02,
-    E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE         = 0xff03,
-    E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff04
+    E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE         = 0xff02,
+    E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff03
 } teCLD_OOSC_ClusterID;
 
 
@@ -110,7 +109,6 @@ typedef struct
 
     // Custom attrs
     zenum8                  eLocalSwitchMode;
-    zenum8                  eButtonMode;
     zuint16                 iMaxPause;
     zuint16                 iMinLongPress;
 #endif    

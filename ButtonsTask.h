@@ -11,8 +11,8 @@ class ButtonsTask : public PeriodicTask
     uint32 idleCounter;
     uint32 currentStateDuration;
 
+    SwitchType switchType;
     LocalSwitchMode switchMode;
-    ButtonMode buttonMode;
     uint16 maxPause;
     uint16 longPressDuration;
 
@@ -40,7 +40,7 @@ public:
 protected:
     virtual void timerCallback();
     virtual void switchState(ButtonState state);
-    virtual void buttonStateMachine(bool pressed);
+    virtual void buttonStateMachineMultifunction(bool pressed);
     void sendButtonEvent(ApplicationEventType evtType, uint8 button);
 
     const char * getStateName(ButtonState state);

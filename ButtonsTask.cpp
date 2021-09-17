@@ -15,8 +15,8 @@ ButtonsTask::ButtonsTask()
     currentState = IDLE;
     currentStateDuration = 0;
 
+    switchType = SWITCH_TYPE_MULTIFUNCTION;
     switchMode = SWITCH_MODE_DOUBLE;
-    buttonMode = BUTTON_MODE_SMART;
     maxPause = 30;
     longPressDuration = 100;
 
@@ -83,7 +83,7 @@ void ButtonsTask::switchState(ButtonState state)
     DBG_vPrintf(TRUE, "Switching button state to %s\n", getStateName(state));
 }
 
-void ButtonsTask::buttonStateMachine(bool pressed)
+void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
 {
     // Let at least 20ms to stabilize button value, do not make any early decisions
     currentStateDuration++;
@@ -98,13 +98,13 @@ void ButtonsTask::buttonStateMachine(bool pressed)
             {
                 switchState(PRESSED1);
 
-                if(buttonMode == BUTTON_MODE_SIMPLE || switchMode == SWITCH_MODE_FRONT)
+                if(switchMode == SWITCH_MODE_FRONT)
                     sendButtonEvent(SWITCH_TRIGGER, 0);
             }
             break;
 
         case PRESSED1:
-            if(pressed && currentStateDuration > longPressDuration && buttonMode == BUTTON_MODE_SMART)
+            if(pressed && currentStateDuration > longPressDuration)
             {
                 switchState(LONG_PRESS);
                 sendButtonEvent(BUTTON_PRESSED, 0);
@@ -115,12 +115,7 @@ void ButtonsTask::buttonStateMachine(bool pressed)
 
             if(!pressed)
             {
-                if(buttonMode == BUTTON_MODE_SIMPLE)
-                    switchState(IDLE);
-                else
-                {
-                    switchState(PAUSE1);
-                }
+                switchState(PAUSE1);
             }
 
             break;
@@ -209,7 +204,14 @@ void ButtonsTask::timerCallback()
     else
         idleCounter++;
 
-    buttonStateMachine(btnState);
+    switch(switchType)
+    {
+        case SWITCH_TYPE_MULTIFUNCTION:
+            buttonStateMachineMultifunction(btnState);
+            break;
+        default:
+            break;
+    }
 
     startTimer(ButtonPollCycle);
 }

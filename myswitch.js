@@ -13,10 +13,9 @@ const DataType = {
     enum8: 0x30,
 }
 
-const switchModesValues = ['toggle', 'momentary'];
+const switchTypeValues = ['toggle', 'momentary', 'multifunction'];
 const switchActionValues = ['onOff', 'offOn', 'toggle'];
 const relayModeValues = ['unlinked', 'front', 'single', 'double', 'tripple', 'long'];
-const buttonModeValues = ['simple', 'smart'];
 
 
 const manufacturerOptions = {
@@ -44,9 +43,9 @@ const fromZigbeeConverter = {
         const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
         const result = {};
 
-        // switch mode
+        // switch type
         if(msg.data.hasOwnProperty('65280')) {
-            result[`switch_mode_${ep_name}`] = switchModesValues[msg.data['65280']];
+            result[`switch_type_${ep_name}`] = switchTypeValues[msg.data['65280']];
         }
 
         // switch action
@@ -59,19 +58,15 @@ const fromZigbeeConverter = {
             result[`relay_mode_${ep_name}`] = relayModeValues[msg.data['65281']];
         }
 
-        // button mode
-        if(msg.data.hasOwnProperty('65282')) {
-            result[`button_mode_${ep_name}`] = buttonModeValues[msg.data['65282']];
-        }
 
         // Maximum pause between button clicks to be treates a single multiclick
-        if(msg.data.hasOwnProperty('65283')) {
-            result[`max_pause_${ep_name}`] = msg.data['65283'];
+        if(msg.data.hasOwnProperty('65282')) {
+            result[`max_pause_${ep_name}`] = msg.data['65282'];
         }
 
         // Munimal duration for the long press
-        if(msg.data.hasOwnProperty('65284')) {
-            result[`min_long_press_${ep_name}`] = msg.data['65284'];
+        if(msg.data.hasOwnProperty('65283')) {
+            result[`min_long_press_${ep_name}`] = msg.data['65283'];
         }
 
         meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
@@ -81,7 +76,7 @@ const fromZigbeeConverter = {
 
 
 const toZigbeeConverter = {
-    key: ['switch_mode', 'switch_actions', 'relay_mode', 'button_mode', 'max_pause', 'min_long_press'],
+    key: ['switch_type', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press'],
 
     convertGet: async (entity, key, meta) => {
         meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
@@ -92,11 +87,10 @@ const toZigbeeConverter = {
         }
         else {
             const lookup = {
-                switch_mode: 65280,
+                switch_type: 65280,
                 relay_mode: 65281,
-                button_mode: 65282,
-                max_pause: 65283,
-                min_long_press: 65284
+                max_pause: 65282,
+                min_long_press: 65283
             };
             meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
@@ -111,8 +105,8 @@ const toZigbeeConverter = {
         let newValue = value;
 
         switch(key) {
-            case 'switch_mode':
-                newValue = switchModesValues.indexOf(value);
+            case 'switch_type':
+                newValue = switchTypeValues.indexOf(value);
                 payload = {65280: {'value': newValue, 'type': DataType.enum8}};
                 meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
@@ -120,7 +114,6 @@ const toZigbeeConverter = {
 
             case 'switch_actions':
                 newValue = switchActionValues.indexOf(value);
-//                payload = {switchActions: {'value': newValue}};
                 payload = {switchActions: newValue};
                 meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
                 await entity.write('genOnOffSwitchCfg', payload);
@@ -132,19 +125,13 @@ const toZigbeeConverter = {
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
-            case 'button_mode':
-                newValue = buttonModeValues.indexOf(value)
-                payload = {65282: {'value': newValue, 'type': DataType.enum8}};
-                await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
-                break;
-
             case 'max_pause':
-                payload = {65283: {'value': value, 'type': DataType.uint16}};
+                payload = {65282: {'value': value, 'type': DataType.uint16}};
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
             case 'min_long_press':
-                payload = {65284: {'value': value, 'type': DataType.uint16}};
+                payload = {65283: {'value': value, 'type': DataType.uint16}};
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
@@ -163,10 +150,9 @@ const toZigbeeConverter = {
 function genEndpoint(epName) {
     return [
         e.switch().withEndpoint(epName),
-        exposes.enum('switch_mode', ea.ALL, switchModesValues).withEndpoint(epName),
+        exposes.enum('switch_type', ea.ALL, switchTypeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
-        exposes.enum('button_mode', ea.ALL, buttonModeValues).withEndpoint(epName),
         exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
         exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
     ]
