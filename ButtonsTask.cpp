@@ -231,12 +231,6 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
             break;
 
         case LONG_PRESS:
-            if(pressed && currentStateDuration > 5000/ButtonPollCycle)
-            {
-                sendButtonEvent(BUTTON_VERY_LONG_PRESS, 0);
-                switchState(IDLE);
-            }
-
             if(!pressed)
             {
                 switchState(IDLE);
@@ -253,10 +247,10 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
 void ButtonsTask::timerCallback()
 {
     uint32 input = u32AHI_DioReadInput();
-    bool btnState = (input & BOARD_BTN_PIN) == 0;
+    bool pressed = (input & BOARD_BTN_PIN) == 0;
 
     // Reset the idle counter when user interacts with the button
-    if(btnState)
+    if(pressed)
         idleCounter = 0;
     else
         idleCounter++;
@@ -270,18 +264,26 @@ void ButtonsTask::timerCallback()
         switch(switchType)
         {
         case SWITCH_TYPE_TOGGLE:
-            buttonStateMachineToggle(btnState);
+            buttonStateMachineToggle(pressed);
             break;
         case SWITCH_TYPE_MOMENTARY:
-            buttonStateMachineMomentary(btnState);
+            buttonStateMachineMomentary(pressed);
             break;
         case SWITCH_TYPE_MULTIFUNCTION:
-            buttonStateMachineMultifunction(btnState);
+            buttonStateMachineMultifunction(pressed);
             break;
         default:
             break;
         }
     }
+
+    // Process a very long press to join/leave the network
+    if(pressed && currentStateDuration > 5000/ButtonPollCycle)
+    {
+        sendButtonEvent(BUTTON_VERY_LONG_PRESS, 0);
+        switchState(IDLE);
+    }
+
     startTimer(ButtonPollCycle);
 }
 
