@@ -54,6 +54,7 @@ protected:
     virtual void registerOnOffConfigServerCluster();
     virtual void registerEndpoint();
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
+    virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };
 
 #endif // SWITCH_ENDPOINT_H

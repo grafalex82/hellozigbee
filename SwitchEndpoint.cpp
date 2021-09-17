@@ -3,6 +3,7 @@
 #include "DumpFunctions.h"
 #include "EndpointManager.h"
 #include "ZigbeeUtils.h"
+#include "ButtonsTask.h"
 
 extern "C"
 {
@@ -179,6 +180,18 @@ void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
                 u8CommandId);
 
     doStateChange(getState());
+}
+
+void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 clusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+    uint16 attrId = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
+
+    if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION &&
+       attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
+    {
+        ButtonsTask::getInstance()->setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+    }
 }
 
 bool SwitchEndpoint::runsInServerMode() const

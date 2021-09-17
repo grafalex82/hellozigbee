@@ -22,6 +22,7 @@ public:
 
 protected:
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
+    virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };
 
 #endif // ENDPOINT_H

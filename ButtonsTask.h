@@ -37,9 +37,11 @@ public:
     bool handleDioInterrupt(uint32 dioStatus);
     bool canSleep() const;
 
+    void setSwitchType(SwitchType type);
+
 protected:
     virtual void timerCallback();
-    virtual void switchState(ButtonState state);
+    virtual void changeState(ButtonState state);
     virtual void buttonStateMachineToggle(bool pressed);
     virtual void buttonStateMachineMomentary(bool pressed);
     virtual void buttonStateMachineMultifunction(bool pressed);

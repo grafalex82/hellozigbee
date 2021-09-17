@@ -75,7 +75,13 @@ const char * ButtonsTask::getStateName(ButtonState state)
     return "";
 }
 
-void ButtonsTask::switchState(ButtonState state)
+void ButtonsTask::setSwitchType(SwitchType type)
+{
+    switchType = type;
+    changeState(IDLE);
+}
+
+void ButtonsTask::changeState(ButtonState state)
 {
     currentState = state;
     currentStateDuration = 0;
@@ -91,7 +97,7 @@ void ButtonsTask::buttonStateMachineToggle(bool pressed)
         case IDLE:
             if(pressed)
             {
-                switchState(PRESSED1);
+                changeState(PRESSED1);
                 sendButtonEvent(BUTTON_ACTION_SINGLE, 0);
 
                 if(switchMode == SWITCH_MODE_FRONT)
@@ -101,12 +107,12 @@ void ButtonsTask::buttonStateMachineToggle(bool pressed)
 
         case PRESSED1:
             if(!pressed)
-                switchState(IDLE);
+                changeState(IDLE);
 
             break;
 
         default:
-            switchState(IDLE);  // How did we get here?
+            changeState(IDLE);  // How did we get here?
             break;
     }
 }
@@ -119,7 +125,7 @@ void ButtonsTask::buttonStateMachineMomentary(bool pressed)
         case IDLE:
             if(pressed)
             {
-                switchState(PRESSED1);
+                changeState(PRESSED1);
                 sendButtonEvent(BUTTON_PRESSED, 0);
 
                 if(switchMode == SWITCH_MODE_FRONT)
@@ -130,7 +136,7 @@ void ButtonsTask::buttonStateMachineMomentary(bool pressed)
         case PRESSED1:
             if(!pressed)
             {
-                switchState(IDLE);
+                changeState(IDLE);
                 sendButtonEvent(BUTTON_RELEASED, 0);
 
                 if(switchMode == SWITCH_MODE_FRONT)
@@ -140,7 +146,7 @@ void ButtonsTask::buttonStateMachineMomentary(bool pressed)
             break;
 
         default:
-            switchState(IDLE); // How did we get here?
+            changeState(IDLE); // How did we get here?
             break;
     }
 }
@@ -153,7 +159,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
         case IDLE:
             if(pressed)
             {
-                switchState(PRESSED1);
+                changeState(PRESSED1);
 
                 if(switchMode == SWITCH_MODE_FRONT)
                     sendButtonEvent(SWITCH_TRIGGER, 0);
@@ -163,7 +169,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
         case PRESSED1:
             if(pressed && currentStateDuration > longPressDuration)
             {
-                switchState(LONG_PRESS);
+                changeState(LONG_PRESS);
                 sendButtonEvent(BUTTON_PRESSED, 0);
 
                 if(switchMode == SWITCH_MODE_LONG)
@@ -172,7 +178,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
 
             if(!pressed)
             {
-                switchState(PAUSE1);
+                changeState(PAUSE1);
             }
 
             break;
@@ -180,7 +186,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
         case PAUSE1:
             if(!pressed && currentStateDuration > maxPause)
             {
-                switchState(IDLE);
+                changeState(IDLE);
                 sendButtonEvent(BUTTON_ACTION_SINGLE, 0);
 
                 if(switchMode == SWITCH_MODE_SINGLE)
@@ -188,14 +194,14 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
             }
 
             if(pressed)
-                switchState(PRESSED2);
+                changeState(PRESSED2);
 
             break;
 
         case PRESSED2:
             if(!pressed)
             {
-                switchState(PAUSE2);
+                changeState(PAUSE2);
             }
 
             break;
@@ -203,7 +209,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
         case PAUSE2:
             if(!pressed && currentStateDuration > maxPause)
             {
-                switchState(IDLE);
+                changeState(IDLE);
                 sendButtonEvent(BUTTON_ACTION_DOUBLE, 0);
 
                 if(switchMode == SWITCH_MODE_DOUBLE)
@@ -212,7 +218,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
 
             if(pressed)
             {
-                switchState(PRESSED3);
+                changeState(PRESSED3);
             }
 
             break;
@@ -220,7 +226,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
         case PRESSED3:
             if(!pressed)
             {
-                switchState(IDLE);
+                changeState(IDLE);
 
                 if(switchMode == SWITCH_MODE_TRIPPLE)
                     sendButtonEvent(SWITCH_TRIGGER, 0);
@@ -233,7 +239,7 @@ void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
         case LONG_PRESS:
             if(!pressed)
             {
-                switchState(IDLE);
+                changeState(IDLE);
 
                 sendButtonEvent(BUTTON_RELEASED, 0);
             }
@@ -281,7 +287,7 @@ void ButtonsTask::timerCallback()
     if(pressed && currentStateDuration > 5000/ButtonPollCycle)
     {
         sendButtonEvent(BUTTON_VERY_LONG_PRESS, 0);
-        switchState(IDLE);
+        changeState(IDLE);
     }
 
     startTimer(ButtonPollCycle);
