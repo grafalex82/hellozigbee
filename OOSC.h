@@ -47,6 +47,8 @@
 #ifndef OOSC_H
 #define OOSC_H
 
+#include "ButtonModes.h"
+
 #include <jendefs.h>
 #include "zcl.h"
 #include "zcl_options.h"
@@ -98,21 +100,6 @@ typedef enum
     E_CLD_OOSC_ACTION_TOGGLE
 } teCLD_OOSC_SwitchAction;
 
-typedef enum
-{
-    E_CLD_OOSC_LOCAL_MODE_UNLINKED,
-    E_CLD_OOSC_LOCAL_MODE_FRONT,
-    E_CLD_OOSC_LOCAL_MODE_SINGLE,
-    E_CLD_OOSC_LOCAL_MODE_DOUBLE,
-    E_CLD_OOSC_LOCAL_MODE_TRIPLE,
-    E_CLD_OOSC_LOCAL_MODE_LONG,
-} teCLD_OOSC_LocalSwitchMode;
-
-typedef enum
-{
-    E_CLD_OOSC_BUTTON_MODE_SIMPLE,
-    E_CLD_OOSC_BUTTON_MODE_SMART,
-} teCLD_OOSC_ButtonMode;
 
 /* On/Off Switch Configuration Cluster */
 typedef struct

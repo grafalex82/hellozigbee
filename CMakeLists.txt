@@ -160,6 +160,7 @@ SET(SOURCES
         Timer.h
         PeriodicTask.h
         PersistedValue.h
+	ButtonModes.h
         AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp

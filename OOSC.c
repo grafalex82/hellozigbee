@@ -152,8 +152,8 @@ PUBLIC  teZCL_Status eCLD_OOSCCreateOnOffSwitchConfig(
             /* Set attribute defaults */
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eSwitchType = E_CLD_OOSC_TYPE_TOGGLE;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eSwitchActions = E_CLD_OOSC_ACTION_TOGGLE;
-            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eLocalSwitchMode = E_CLD_OOSC_LOCAL_MODE_FRONT;
-            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eButtonMode = E_CLD_OOSC_BUTTON_MODE_SIMPLE;
+            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eLocalSwitchMode = SWITCH_MODE_FRONT;
+            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eButtonMode = BUTTON_MODE_SIMPLE;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMaxPause = 250;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMinLongPress = 1000;
 #endif
