@@ -138,14 +138,14 @@ PRIVATE void APP_vTaskSwitch(Context * context)
     ApplicationEvent evt;
     if(appEventQueue.receive(&evt))
     {
-        DBG_vPrintf(TRUE, "Processing button message type=%d, button=%d, timeStamp=%d\n", evt.eventType, evt.buttonId, evt.timeStamp);
+        DBG_vPrintf(TRUE, "Processing button message type=%s, button=%d\n", getApplicationEventName(evt.eventType), evt.buttonId);
 
 //        if( == BUTTON_SHORT_PRESS)
 //        {
 //            context->switch1.toggle();
 //        }
 
-        if(evt.eventType == VERY_LONG_PRESS)
+        if(evt.eventType == BUTTON_VERY_LONG_PRESS)
         {
             ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
         }
