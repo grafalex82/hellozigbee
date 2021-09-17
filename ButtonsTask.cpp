@@ -15,8 +15,8 @@ ButtonsTask::ButtonsTask()
     currentState = IDLE;
     currentStateDuration = 0;
 
-    switchType = SWITCH_TYPE_MULTIFUNCTION;
-    switchMode = SWITCH_MODE_DOUBLE;
+    switchType = SWITCH_TYPE_TOGGLE;
+    switchMode = SWITCH_MODE_FRONT;
     maxPause = 30;
     longPressDuration = 100;
 
@@ -83,13 +83,70 @@ void ButtonsTask::switchState(ButtonState state)
     DBG_vPrintf(TRUE, "Switching button state to %s\n", getStateName(state));
 }
 
+void ButtonsTask::buttonStateMachineToggle(bool pressed)
+{
+    // The state machine
+    switch(currentState)
+    {
+        case IDLE:
+            if(pressed)
+            {
+                switchState(PRESSED1);
+                sendButtonEvent(BUTTON_ACTION_SINGLE, 0);
+
+                if(switchMode == SWITCH_MODE_FRONT)
+                    sendButtonEvent(SWITCH_TRIGGER, 0);
+            }
+            break;
+
+        case PRESSED1:
+            if(!pressed)
+                switchState(IDLE);
+
+            break;
+
+        default:
+            switchState(IDLE);  // How did we get here?
+            break;
+    }
+}
+
+void ButtonsTask::buttonStateMachineMomentary(bool pressed)
+{
+    // The state machine
+    switch(currentState)
+    {
+        case IDLE:
+            if(pressed)
+            {
+                switchState(PRESSED1);
+                sendButtonEvent(BUTTON_PRESSED, 0);
+
+                if(switchMode == SWITCH_MODE_FRONT)
+                    sendButtonEvent(SWITCH_ON, 0);
+            }
+            break;
+
+        case PRESSED1:
+            if(!pressed)
+            {
+                switchState(IDLE);
+                sendButtonEvent(BUTTON_RELEASED, 0);
+
+                if(switchMode == SWITCH_MODE_FRONT)
+                    sendButtonEvent(SWITCH_OFF, 0);
+            }
+
+            break;
+
+        default:
+            switchState(IDLE); // How did we get here?
+            break;
+    }
+}
+
 void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
 {
-    // Let at least 20ms to stabilize button value, do not make any early decisions
-    currentStateDuration++;
-    if(currentStateDuration < 2)
-        return;
-
     // The state machine
     switch(currentState)
     {
@@ -204,15 +261,27 @@ void ButtonsTask::timerCallback()
     else
         idleCounter++;
 
-    switch(switchType)
+
+    // Let at least 20ms to stabilize button value, do not make any early decisions
+    // When button state is stabilized - go through the corresponding state machine
+    currentStateDuration++;
+    if(currentStateDuration >= 2)
     {
+        switch(switchType)
+        {
+        case SWITCH_TYPE_TOGGLE:
+            buttonStateMachineToggle(btnState);
+            break;
+        case SWITCH_TYPE_MOMENTARY:
+            buttonStateMachineMomentary(btnState);
+            break;
         case SWITCH_TYPE_MULTIFUNCTION:
             buttonStateMachineMultifunction(btnState);
             break;
         default:
             break;
+        }
     }
-
     startTimer(ButtonPollCycle);
 }
 

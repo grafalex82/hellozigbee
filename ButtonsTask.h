@@ -40,6 +40,8 @@ public:
 protected:
     virtual void timerCallback();
     virtual void switchState(ButtonState state);
+    virtual void buttonStateMachineToggle(bool pressed);
+    virtual void buttonStateMachineMomentary(bool pressed);
     virtual void buttonStateMachineMultifunction(bool pressed);
     void sendButtonEvent(ApplicationEventType evtType, uint8 button);
 
