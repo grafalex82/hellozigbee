@@ -96,13 +96,26 @@ bool SwitchEndpoint::getState() const
 
 void SwitchEndpoint::switchOn()
 {
-    doStateChange(true);
+    bool newValue = true;
+
+    // Invert the value in inverse mode
+    if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
+        newValue = false;
+
+    doStateChange(newValue);
     reportStateChange();
 }
 
 void SwitchEndpoint::switchOff()
 {
-    doStateChange(false);
+    bool newValue = false;
+
+    // Invert the value in inverse mode
+    if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
+        newValue = true;
+
+
+    doStateChange(newValue);
     reportStateChange();
 }
 
