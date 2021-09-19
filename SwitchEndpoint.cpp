@@ -18,6 +18,11 @@ SwitchEndpoint::SwitchEndpoint()
 {
 }
 
+void SwitchEndpoint::setLedPin(uint8 ledPin)
+{
+    blinkTask.init(ledPin);
+}
+
 void SwitchEndpoint::registerServerCluster()
 {
     // Initialize On/Off server cluser

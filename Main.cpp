@@ -21,6 +21,9 @@ extern "C"
 #include "BasicClusterEndpoint.h"
 #include "ZigbeeDevice.h"
 
+const uint8 SWITCH1_LED_PIN = 17;
+const uint8 SWITCH2_LED_PIN = 0;
+
 DeferredExecutor deferredExecutor;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
@@ -171,11 +174,6 @@ PRIVATE void APP_vTaskSwitch(Context * context)
     {
         DBG_vPrintf(TRUE, "Processing button message type=%s, button=%d\n", getApplicationEventName(evt.eventType), evt.buttonId);
 
-//        if( == BUTTON_SHORT_PRESS)
-//        {
-//            context->switch1.toggle();
-//        }
-
         if(evt.eventType == BUTTON_VERY_LONG_PRESS)
         {
             ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
@@ -243,6 +241,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
+    context.switch1.setLedPin(SWITCH1_LED_PIN);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 

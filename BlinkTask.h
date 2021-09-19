@@ -11,9 +11,11 @@ extern "C"
 class BlinkTask : public PeriodicTask
 {
     bool fastBlinking;
+    uint32 ledPinMask;
 
 public:
     BlinkTask();
+    void init(uint8 ledPin);
 
     void setBlinkMode(bool fast);
 

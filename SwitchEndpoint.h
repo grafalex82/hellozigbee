@@ -34,6 +34,7 @@ protected:
 
 public:
     SwitchEndpoint();
+    void setLedPin(uint8 ledPin);
     virtual void init();
 
     bool getState() const;

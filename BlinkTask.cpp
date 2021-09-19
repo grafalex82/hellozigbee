@@ -1,8 +1,5 @@
 #include "BlinkTask.h"
 
-#define BOARD_LED_BIT               (17)
-#define BOARD_LED_PIN               (1UL << BOARD_LED_BIT)
-
 extern "C"
 {
 #include "AppHardwareApi.h"
@@ -14,13 +11,17 @@ extern "C"
 BlinkTask::BlinkTask()
 {
     fastBlinking = false;
+    ledPinMask = 0;
+}
 
-    vAHI_DioSetDirection(0, BOARD_LED_PIN);
+void BlinkTask::init(uint8 ledPin)
+{
+    ledPinMask = 1UL << ledPin;
+    vAHI_DioSetDirection(0, ledPinMask);
 
     PeriodicTask::init();
     startTimer(1000);
 }
-
 
 void BlinkTask::setBlinkMode(bool fast)
 {
@@ -31,7 +32,7 @@ void BlinkTask::timerCallback()
 {
     // toggle LED
     uint32 currentState = u32AHI_DioReadInput();
-    vAHI_DioSetOutput(currentState^BOARD_LED_PIN, currentState&BOARD_LED_PIN);
+    vAHI_DioSetOutput(currentState ^ ledPinMask, currentState & ledPinMask);
 
     //Restart the timer
     startTimer(fastBlinking ? ZTIMER_TIME_MSEC(200) : ZTIMER_TIME_MSEC(1000));
