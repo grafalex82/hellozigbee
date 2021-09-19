@@ -53,6 +53,8 @@ protected:
     virtual void registerClientCluster();
     virtual void registerOnOffConfigServerCluster();
     virtual void registerEndpoint();
+    virtual void restoreConfiguration();
+    virtual void saveConfiguration();
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };

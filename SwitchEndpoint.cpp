@@ -4,12 +4,14 @@
 #include "EndpointManager.h"
 #include "ZigbeeUtils.h"
 #include "ButtonsTask.h"
+#include "PdmIds.h"
 
 extern "C"
 {
     #include "dbg.h"
     #include "string.h"
     #include "zcl_customcommand.h"
+    #include "PDM.h"
 }
 
 SwitchEndpoint::SwitchEndpoint()
@@ -71,6 +73,29 @@ void SwitchEndpoint::registerEndpoint()
     DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Register Basic Cluster. status=%d\n", status);
 }
 
+void SwitchEndpoint::restoreConfiguration()
+{
+    // Read values from PDM
+    uint16 readBytes;
+    PDM_eReadDataFromRecord(getPdmIdForEndpoint(getEndpointId(), 0),
+                            &sOnOffConfigServerCluster,
+                            sizeof(sOnOffConfigServerCluster),
+                            &readBytes);
+
+    // Configure buttons state machine with read values
+    ButtonsTask::getInstance()->setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+    ButtonsTask::getInstance()->setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
+    ButtonsTask::getInstance()->setMaxPause(sOnOffConfigServerCluster.iMaxPause);
+    ButtonsTask::getInstance()->setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
+}
+
+void SwitchEndpoint::saveConfiguration()
+{
+    PDM_eSaveRecordData(getPdmIdForEndpoint(getEndpointId(), 0),
+                        &sOnOffConfigServerCluster,
+                        sizeof(sOnOffConfigServerCluster));
+}
+
 void SwitchEndpoint::init()
 {
     // Register all clusters and endpoint itself
@@ -78,6 +103,9 @@ void SwitchEndpoint::init()
     registerClientCluster();
     registerOnOffConfigServerCluster();
     registerEndpoint();
+
+    // Restore previous configuration from PDM
+    restoreConfiguration();
 
     // Initialize blinking
     // Note: this blinking task represents a relay that would be tied with this switch. That is why blinkTask
@@ -200,6 +228,7 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     uint16 clusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
     uint16 attrId = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
 
+    // Update buttons state machine with received value
     if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION)
     {
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
@@ -214,6 +243,9 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR)
             ButtonsTask::getInstance()->setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
     }
+
+    // Store received values into PDM
+    saveConfiguration();
 }
 
 bool SwitchEndpoint::runsInServerMode() const
