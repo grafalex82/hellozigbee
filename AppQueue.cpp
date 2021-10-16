@@ -6,9 +6,6 @@ const char * getApplicationEventName(ApplicationEventType evtType)
 {
     switch(evtType)
     {
-    case SWITCH_TRIGGER: return "SWITCH_TRIGGER";
-    case SWITCH_ON: return "SWITCH_ON";
-    case SWITCH_OFF: return "SWITCH_OFF";
     case BUTTON_PRESSED: return "BUTTON_PRESSED";
     case BUTTON_RELEASED: return "BUTTON_RELEASED";
     case BUTTON_ACTION_SINGLE: return "BUTTON_ACTION_SINGLE";

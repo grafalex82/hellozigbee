@@ -5,10 +5,6 @@
 
 typedef enum
 {
-    SWITCH_TRIGGER,
-    SWITCH_ON,
-    SWITCH_OFF,
-
     BUTTON_PRESSED,
     BUTTON_RELEASED,
     BUTTON_ACTION_SINGLE,

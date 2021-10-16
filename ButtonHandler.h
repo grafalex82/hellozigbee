@@ -7,9 +7,11 @@
 
 #include <jendefs.h>
 
+class SwitchEndpoint;
+
 class ButtonHandler: public IButtonHandler
 {
-    uint8 endpointId;
+    SwitchEndpoint * endpoint;
 
     uint32 currentStateDuration;
 
@@ -34,7 +36,7 @@ class ButtonHandler: public IButtonHandler
 public:
     ButtonHandler();
 
-    void setEndpointId(uint8 id);
+    void setEndpoint(SwitchEndpoint * ep);
 
     void setSwitchType(SwitchType type);
     void setLocalSwitchMode(LocalSwitchMode mode);

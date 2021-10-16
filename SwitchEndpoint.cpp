@@ -120,8 +120,8 @@ void SwitchEndpoint::init()
     // TODO: restore previous blink mode from PDM
     blinkTask.setBlinkMode(false);
 
-    // Let button handler know about EndpointId so that it can properly send messages to the app queue
-    buttonHandler.setEndpointId(getEndpointId());
+    // Let button handler know about this Endpoint instanct so that it can properly report new states
+    buttonHandler.setEndpoint(this);
 }
 
 bool SwitchEndpoint::getState() const
@@ -151,7 +151,6 @@ void SwitchEndpoint::switchOff()
     // Invert the value in inverse mode
     if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
         newValue = true;
-
 
     doStateChange(newValue);
     reportStateChange();

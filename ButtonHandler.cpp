@@ -1,4 +1,5 @@
 #include "ButtonHandler.h"
+#include "SwitchEndpoint.h"
 
 extern "C"
 {
@@ -8,7 +9,7 @@ extern "C"
 
 ButtonHandler::ButtonHandler()
 {
-    endpointId = 0xff; //Unknown ID
+    endpoint = NULL;
 
     currentState = IDLE;
     currentStateDuration = 0;
@@ -19,15 +20,14 @@ ButtonHandler::ButtonHandler()
     longPressDuration = 100;
 }
 
-void ButtonHandler::setEndpointId(uint8 id)
+void ButtonHandler::setEndpoint(SwitchEndpoint * ep)
 {
-    endpointId = id;
+    endpoint = ep;
 }
 
 inline void ButtonHandler::sendButtonEvent(ApplicationEventType evtType)
 {
-    ApplicationEvent evt = {evtType, endpointId};
-    appEventQueue.send(evt);
+//TODO Handle single/double/tripple/long presses here
 }
 
 const char * ButtonHandler::getStateName(ButtonState state)
@@ -76,7 +76,7 @@ void ButtonHandler::changeState(ButtonState state)
     currentState = state;
     currentStateDuration = 0;
 
-    DBG_vPrintf(TRUE, "Switching button %d state to %s\n", endpointId, getStateName(state));
+    DBG_vPrintf(TRUE, "Switching button %d state to %s\n", endpoint->getEndpointId(), getStateName(state));
 }
 
 void ButtonHandler::buttonStateMachineToggle(bool pressed)
@@ -91,7 +91,7 @@ void ButtonHandler::buttonStateMachineToggle(bool pressed)
                 sendButtonEvent(BUTTON_ACTION_SINGLE);
 
                 if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_TRIGGER);
+                    endpoint->toggle();
             }
             break;
 
@@ -119,7 +119,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
                 sendButtonEvent(BUTTON_PRESSED);
 
                 if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_ON);
+                    endpoint->switchOn();
             }
             break;
 
@@ -130,7 +130,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
                 sendButtonEvent(BUTTON_RELEASED);
 
                 if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_OFF);
+                    endpoint->switchOff();
             }
 
             break;
@@ -152,7 +152,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
                 changeState(PRESSED1);
 
                 if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_TRIGGER);
+                    endpoint->toggle();
             }
             break;
 
@@ -163,7 +163,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
                 sendButtonEvent(BUTTON_PRESSED);
 
                 if(switchMode == SWITCH_MODE_LONG)
-                    sendButtonEvent(SWITCH_TRIGGER);
+                    endpoint->toggle();
             }
 
             if(!pressed)
@@ -180,7 +180,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
                 sendButtonEvent(BUTTON_ACTION_SINGLE);
 
                 if(switchMode == SWITCH_MODE_SINGLE)
-                    sendButtonEvent(SWITCH_TRIGGER);
+                    endpoint->toggle();
             }
 
             if(pressed)
@@ -203,7 +203,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
                 sendButtonEvent(BUTTON_ACTION_DOUBLE);
 
                 if(switchMode == SWITCH_MODE_DOUBLE)
-                    sendButtonEvent(SWITCH_TRIGGER);
+                    endpoint->toggle();
             }
 
             if(pressed)
@@ -219,7 +219,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
                 changeState(IDLE);
 
                 if(switchMode == SWITCH_MODE_TRIPPLE)
-                    sendButtonEvent(SWITCH_TRIGGER);
+                    endpoint->toggle();
 
                 sendButtonEvent(BUTTON_ACTION_TRIPPLE);
             }
