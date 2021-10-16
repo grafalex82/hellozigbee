@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.h
  *
- * DATE:           Mon Jun 28 18:44:26 2021
+ * DATE:           Sat Oct 16 20:47:31 2021
  *
  * AUTHOR:         NXP Zigbee Protocol Stack Configuration Tool
  *
@@ -157,14 +157,16 @@
 /* Endpoints */
 #define HELLOZIGBEE_ZDO_ENDPOINT    (0)
 #define HELLOZIGBEE_BASIC_ENDPOINT    (1)
-#define HELLOZIGBEE_SWITCH_ENDPOINT    (2)
+#define HELLOZIGBEE_SWITCH1_ENDPOINT    (2)
+#define HELLOZIGBEE_SWITCH2_ENDPOINT    (3)
 
 /* Node 'HelloEndDevice' */
 
 /* Endpoints */
 #define HELLOENDDEVICE_ZDO_ENDPOINT    (0)
 #define HELLOENDDEVICE_BASIC_ENDPOINT    (1)
-#define HELLOENDDEVICE_SWITCH_ENDPOINT    (2)
+#define HELLOENDDEVICE_SWITCH1_ENDPOINT    (2)
+#define HELLOENDDEVICE_SWITCH2_ENDPOINT    (3)
 /* Table Sizes */
 #define ZPS_NEIGHBOUR_TABLE_SIZE      (26)
 #define ZPS_ADDRESS_MAP_TABLE_SIZE    (10)

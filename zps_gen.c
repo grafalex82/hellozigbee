@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Mon Jun 28 18:44:26 2021
+ * DATE:           Sat Oct 16 20:47:31 2021
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -501,8 +501,8 @@ PRIVATE MAC_tsMacInterfaceTable g_asMacInterfaceTable =
   g_bIgnoreBroadcast,
   1
 };
-PUBLIC uint8 u8MaxZpsConfigEp = 2 ;
-PUBLIC uint8 au8EpMapPresent[2] = {1 , 2  }; 
+PUBLIC uint8 u8MaxZpsConfigEp = 3 ;
+PUBLIC uint8 au8EpMapPresent[3] = {1 ,2 , 3  }; 
 PUBLIC uint8 u8ZpsConfigStackProfileId = 2;
 PUBLIC const uint32 g_u32ApsFcSaveCountBitShift = 10;
 PUBLIC const uint32 g_u32NwkFcSaveCountBitShift = 10;
@@ -657,12 +657,19 @@ PRIVATE uint8 s_au8Endpoint2InputClusterDiscFlags[1] = { 0x03 };
 PRIVATE const uint16 s_au16Endpoint2OutputClusterList[1] = { 0x0006, };
 PRIVATE uint8 s_au8Endpoint2OutputClusterDiscFlags[1] = { 0x01 };
 
+PRIVATE const uint16 s_au16Endpoint3InputClusterList[2] = { 0x0006, 0x0007, };
+PRIVATE const PDUM_thAPdu s_ahEndpoint3InputClusterAPdus[2] = { apduZCL, apduZCL, };
+PRIVATE uint8 s_au8Endpoint3InputClusterDiscFlags[1] = { 0x03 };
+
+PRIVATE const uint16 s_au16Endpoint3OutputClusterList[1] = { 0x0006, };
+PRIVATE uint8 s_au8Endpoint3OutputClusterDiscFlags[1] = { 0x01 };
+
 PUBLIC void APP_vGenCallback(uint8 u8Endpoint, ZPS_tsAfEvent *psStackEvent);
 tszQueue zps_msgMlmeDcfmInd;
 tszQueue zps_msgMcpsDcfmInd;
 tszQueue zps_TimeEvents;
 tszQueue zps_msgMcpsDcfm;
-PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[3] = {
+PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[4] = {
     {
         {
             0x0000,
@@ -709,6 +716,22 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[3] = {
             s_au8Endpoint2OutputClusterDiscFlags,
         },
         s_ahEndpoint2InputClusterAPdus,
+        1
+    },
+    {
+        {
+            0x0104,
+            0,
+            0,
+            3,
+            2,
+            1,
+            s_au16Endpoint3InputClusterList,
+            s_au16Endpoint3OutputClusterList,
+            s_au8Endpoint3InputClusterDiscFlags,
+            s_au8Endpoint3OutputClusterDiscFlags,
+        },
+        s_ahEndpoint3InputClusterAPdus,
         1
     },
 };
@@ -892,7 +915,7 @@ PRIVATE zps_tsApl s_sApl = {
         NULL,
         &s_sNodeDescriptor,
         &s_sNodePowerDescriptor,
-        3,
+        4,
         s_asSimpleDescConts,
         NULL,
         NULL,

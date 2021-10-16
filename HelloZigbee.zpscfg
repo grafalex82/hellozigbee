@@ -476,7 +476,12 @@
       <InputClusters Cluster="Default" RxAPDU="HelloZigbee->apduZCL" Discoverable="false"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
-    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH">
+    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH1">
+      <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <Endpoints Id="3" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH2">
       <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
@@ -688,8 +693,13 @@
       <InputClusters Cluster="Default" RxAPDU="HelloEndDevice->apduZCL" Discoverable="false"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
     </Endpoints>
-    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH">
+    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH1">
       <InputClusters Cluster="OnOff" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OnOff" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <Endpoints Id="3" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="" Name="SWITCH2">
+      <InputClusters Cluster="OnOff" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="OOSC" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
     </Endpoints>
     <PDUConfiguration NumNPDUs="25" PDUMMutexName="mutexPDUM">

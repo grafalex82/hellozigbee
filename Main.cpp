@@ -26,6 +26,8 @@ const uint8 SWITCH2_LED_PIN = 0;
 
 const uint8 SWITCH1_BTN_BIT = 1;
 const uint32 SWITCH1_BTN_MASK = 1UL << SWITCH1_BTN_BIT;
+const uint8 SWITCH2_BTN_BIT = 3;
+const uint32 SWITCH2_BTN_MASK = 1UL << SWITCH2_BTN_BIT;
 
 
 DeferredExecutor deferredExecutor;
@@ -46,6 +48,7 @@ struct Context
 {
     BasicClusterEndpoint basicEndpoint;
     SwitchEndpoint switch1;
+    SwitchEndpoint switch2;
 };
 
 
@@ -211,8 +214,10 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
     context.switch1.setPins(SWITCH1_LED_PIN, SWITCH1_BTN_MASK);
+    context.switch2.setPins(SWITCH2_LED_PIN, SWITCH2_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &context.switch1);
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &context.switch2);
 
     // Start ZigbeeDevice and rejoin the network (if was joined)
     ZigbeeDevice::getInstance()->rejoinNetwork();

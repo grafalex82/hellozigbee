@@ -49,7 +49,7 @@
 #define ZCL_MANUFACTURER_CODE                                0x1037
 
 /* Sets the number of endpoints that will be created by the ZCL library */
-#define ZCL_NUMBER_OF_ENDPOINTS                             2
+#define ZCL_NUMBER_OF_ENDPOINTS                             3
 
 #define ZCL_ATTRIBUTE_READ_SERVER_SUPPORTED
 #define ZCL_ATTRIBUTE_READ_CLIENT_SUPPORTED
