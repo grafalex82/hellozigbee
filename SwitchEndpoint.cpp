@@ -18,9 +18,11 @@ SwitchEndpoint::SwitchEndpoint()
 {
 }
 
-void SwitchEndpoint::setLedPin(uint8 ledPin)
+void SwitchEndpoint::init(uint8 ledPin, uint32 pinMask)
 {
     blinkTask.init(ledPin);
+
+    ButtonsTask::getInstance()->registerHandler(pinMask, &buttonHandler);
 }
 
 void SwitchEndpoint::registerServerCluster()
@@ -88,10 +90,10 @@ void SwitchEndpoint::restoreConfiguration()
                             &readBytes);
 
     // Configure buttons state machine with read values
-    ButtonsTask::getInstance()->setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
-    ButtonsTask::getInstance()->setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
-    ButtonsTask::getInstance()->setMaxPause(sOnOffConfigServerCluster.iMaxPause);
-    ButtonsTask::getInstance()->setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
+    buttonHandler.setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+    buttonHandler.setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
+    buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);
+    buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
 }
 
 void SwitchEndpoint::saveConfiguration()
@@ -237,16 +239,16 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION)
     {
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
-            ButtonsTask::getInstance()->setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+            buttonHandler.setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
 
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE)
-            ButtonsTask::getInstance()->setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
+            buttonHandler.setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
 
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE)
-            ButtonsTask::getInstance()->setMaxPause(sOnOffConfigServerCluster.iMaxPause);
+            buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);
 
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR)
-            ButtonsTask::getInstance()->setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
+            buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
     }
 
     // Store received values into PDM

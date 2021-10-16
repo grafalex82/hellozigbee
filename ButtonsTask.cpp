@@ -1,10 +1,7 @@
 #include "ButtonsTask.h"
+#include "IButtonHandler.h"
 #include "AppQueue.h"
 
-#define BOARD_BTN_BIT               (1)
-#define BOARD_BTN_PIN               (1UL << BOARD_BTN_BIT)
-
-static const uint32 ButtonPollCycle = 10;
 
 // Note: Object constructors are not executed by CRT if creating a global var of this object :(
 // So has to be created explicitely in vAppMain() otherwise VTABLE will not be initialized properly
@@ -12,19 +9,11 @@ static const uint32 ButtonPollCycle = 10;
 ButtonsTask::ButtonsTask()
 {
     idleCounter = 0;
-    currentState = IDLE;
-    currentStateDuration = 0;
+    longPressCounter = 0;
 
-    switchType = SWITCH_TYPE_TOGGLE;
-    switchMode = SWITCH_MODE_FRONT;
-    maxPause = 30;
-    longPressDuration = 100;
+    buttonsMask = 0;
 
-    // Set up GPIO for the button
-    vAHI_DioSetDirection(BOARD_BTN_PIN, 0);
-    vAHI_DioSetPullup(BOARD_BTN_PIN, 0);
-    vAHI_DioInterruptEdge(0, BOARD_BTN_PIN);
-    vAHI_DioWakeEnable(BOARD_BTN_PIN, 0);
+    numHandlers = 0;
 
     PeriodicTask::init();
     startTimer(1000);
@@ -38,7 +27,7 @@ ButtonsTask * ButtonsTask::getInstance()
 
 bool ButtonsTask::handleDioInterrupt(uint32 dioStatus)
 {
-    if(dioStatus & BOARD_BTN_PIN)
+    if(dioStatus & buttonsMask)
     {
         idleCounter = 0;
         return true;
@@ -52,261 +41,63 @@ bool ButtonsTask::canSleep() const
     return idleCounter > 5000 / ButtonPollCycle; // 500 cycles * 10 ms = 5 sec
 }
 
-inline void ButtonsTask::sendButtonEvent(ApplicationEventType evtType, uint8 button)
+void ButtonsTask::registerHandler(uint32 pinMask, IButtonHandler * handler)
 {
-    ApplicationEvent evt = {evtType, button};
-    appEventQueue.send(evt);
-}
+    DBG_vPrintf(TRUE, "ButtonsTask::registerHandler(): Registering a handler for mask=%08x\n", pinMask);
 
-const char * ButtonsTask::getStateName(ButtonState state)
-{
-    switch(state)
-    {
-    case IDLE: return "IDLE";
-    case PRESSED1: return "PRESSED1";
-    case PAUSE1: return "PAUSE1";
-    case PRESSED2: return "PRESSED2";
-    case PAUSE2: return "PAUSE2";
-    case PRESSED3: return "PRESSED3";
-    case LONG_PRESS: return "LONG_PRESS";
-    }
+    // Store the handler pointer
+    handlers[numHandlers].pinMask = pinMask;
+    handlers[numHandlers].handler = handler;
+    numHandlers++;
 
-    // Should never happen
-    return "";
-}
+    // Update the pin mask for all buttons
+    buttonsMask |= pinMask;
 
-void ButtonsTask::setSwitchType(SwitchType type)
-{
-    switchType = type;
-    changeState(IDLE);
-}
-
-void ButtonsTask::setLocalSwitchMode(LocalSwitchMode mode)
-{
-    switchMode = mode;
-    changeState(IDLE);
-}
-
-void ButtonsTask::setMaxPause(uint16 value)
-{
-    maxPause = value/ButtonPollCycle;
-    changeState(IDLE);
-}
-
-void ButtonsTask::setMinLongPress(uint16 value)
-{
-    longPressDuration = value/ButtonPollCycle;
-    changeState(IDLE);
-}
-
-
-void ButtonsTask::changeState(ButtonState state)
-{
-    currentState = state;
-    currentStateDuration = 0;
-
-    DBG_vPrintf(TRUE, "Switching button state to %s\n", getStateName(state));
-}
-
-void ButtonsTask::buttonStateMachineToggle(bool pressed)
-{
-    // The state machine
-    switch(currentState)
-    {
-        case IDLE:
-            if(pressed)
-            {
-                changeState(PRESSED1);
-                sendButtonEvent(BUTTON_ACTION_SINGLE, 0);
-
-                if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_TRIGGER, 0);
-            }
-            break;
-
-        case PRESSED1:
-            if(!pressed)
-                changeState(IDLE);
-
-            break;
-
-        default:
-            changeState(IDLE);  // How did we get here?
-            break;
-    }
-}
-
-void ButtonsTask::buttonStateMachineMomentary(bool pressed)
-{
-    // The state machine
-    switch(currentState)
-    {
-        case IDLE:
-            if(pressed)
-            {
-                changeState(PRESSED1);
-                sendButtonEvent(BUTTON_PRESSED, 0);
-
-                if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_ON, 0);
-            }
-            break;
-
-        case PRESSED1:
-            if(!pressed)
-            {
-                changeState(IDLE);
-                sendButtonEvent(BUTTON_RELEASED, 0);
-
-                if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_OFF, 0);
-            }
-
-            break;
-
-        default:
-            changeState(IDLE); // How did we get here?
-            break;
-    }
-}
-
-void ButtonsTask::buttonStateMachineMultifunction(bool pressed)
-{
-    // The state machine
-    switch(currentState)
-    {
-        case IDLE:
-            if(pressed)
-            {
-                changeState(PRESSED1);
-
-                if(switchMode == SWITCH_MODE_FRONT)
-                    sendButtonEvent(SWITCH_TRIGGER, 0);
-            }
-            break;
-
-        case PRESSED1:
-            if(pressed && currentStateDuration > longPressDuration)
-            {
-                changeState(LONG_PRESS);
-                sendButtonEvent(BUTTON_PRESSED, 0);
-
-                if(switchMode == SWITCH_MODE_LONG)
-                    sendButtonEvent(SWITCH_TRIGGER, 0);
-            }
-
-            if(!pressed)
-            {
-                changeState(PAUSE1);
-            }
-
-            break;
-
-        case PAUSE1:
-            if(!pressed && currentStateDuration > maxPause)
-            {
-                changeState(IDLE);
-                sendButtonEvent(BUTTON_ACTION_SINGLE, 0);
-
-                if(switchMode == SWITCH_MODE_SINGLE)
-                    sendButtonEvent(SWITCH_TRIGGER, 0);
-            }
-
-            if(pressed)
-                changeState(PRESSED2);
-
-            break;
-
-        case PRESSED2:
-            if(!pressed)
-            {
-                changeState(PAUSE2);
-            }
-
-            break;
-
-        case PAUSE2:
-            if(!pressed && currentStateDuration > maxPause)
-            {
-                changeState(IDLE);
-                sendButtonEvent(BUTTON_ACTION_DOUBLE, 0);
-
-                if(switchMode == SWITCH_MODE_DOUBLE)
-                    sendButtonEvent(SWITCH_TRIGGER, 0);
-            }
-
-            if(pressed)
-            {
-                changeState(PRESSED3);
-            }
-
-            break;
-
-        case PRESSED3:
-            if(!pressed)
-            {
-                changeState(IDLE);
-
-                if(switchMode == SWITCH_MODE_TRIPPLE)
-                    sendButtonEvent(SWITCH_TRIGGER, 0);
-
-                sendButtonEvent(BUTTON_ACTION_TRIPPLE, 0);
-            }
-
-            break;
-
-        case LONG_PRESS:
-            if(!pressed)
-            {
-                changeState(IDLE);
-
-                sendButtonEvent(BUTTON_RELEASED, 0);
-            }
-
-            break;
-
-        default: break;
-    }
+    // Set up GPIO for the button
+    vAHI_DioSetDirection(pinMask, 0);
+    vAHI_DioSetPullup(pinMask, 0);
+    vAHI_DioInterruptEdge(0, pinMask);
+    vAHI_DioWakeEnable(pinMask, 0);
 }
 
 void ButtonsTask::timerCallback()
 {
     uint32 input = u32AHI_DioReadInput();
-    bool pressed = (input & BOARD_BTN_PIN) == 0;
+    bool someButtonPressed = false;
 
-    // Reset the idle counter when user interacts with the button
-    if(pressed)
-        idleCounter = 0;
-    else
-        idleCounter++;
-
-
-    // Let at least 20ms to stabilize button value, do not make any early decisions
-    // When button state is stabilized - go through the corresponding state machine
-    currentStateDuration++;
-    if(currentStateDuration >= 2)
+    //DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): input=%08x\n", input);
+    for(uint8 h = 0; h < numHandlers; h++)
     {
-        switch(switchType)
-        {
-        case SWITCH_TYPE_TOGGLE:
-            buttonStateMachineToggle(pressed);
-            break;
-        case SWITCH_TYPE_MOMENTARY:
-            buttonStateMachineMomentary(pressed);
-            break;
-        case SWITCH_TYPE_MULTIFUNCTION:
-            buttonStateMachineMultifunction(pressed);
-            break;
-        default:
-            break;
-        }
+        bool pressed = ((input & handlers[h].pinMask) == 0);
+        //DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): handler pinMask=%08x (pressed=%d)\n", handlers[h].pinMask, pressed);
+        handlers[h].handler->handleButtonState(pressed);
+
+        if(pressed)
+            someButtonPressed = true;
+    }
+
+    // Reset the idle counter when user interacts with a button
+    if(someButtonPressed)
+    {
+        idleCounter = 0;
+        longPressCounter++;
+    }
+    else
+    {
+        idleCounter++;
+        longPressCounter = 0;
     }
 
     // Process a very long press to join/leave the network
-    if(pressed && currentStateDuration > 5000/ButtonPollCycle)
+    if(longPressCounter > 5000/ButtonPollCycle)
     {
-        sendButtonEvent(BUTTON_VERY_LONG_PRESS, 0);
-        changeState(IDLE);
+        ApplicationEvent evt = {BUTTON_VERY_LONG_PRESS, 0};
+        appEventQueue.send(evt);
+
+        for(uint8 h = 0; h < numHandlers; h++)
+            handlers[h].handler->resetButtonStateMachine();
+
+        longPressCounter = 0;
     }
 
     startTimer(ButtonPollCycle);

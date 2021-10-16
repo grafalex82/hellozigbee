@@ -24,6 +24,10 @@ extern "C"
 const uint8 SWITCH1_LED_PIN = 17;
 const uint8 SWITCH2_LED_PIN = 0;
 
+const uint8 SWITCH1_BTN_BIT = 1;
+const uint32 SWITCH1_BTN_MASK = 1UL << SWITCH1_BTN_BIT;
+
+
 DeferredExecutor deferredExecutor;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
@@ -241,7 +245,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
-    context.switch1.setLedPin(SWITCH1_LED_PIN);
+    context.switch1.init(SWITCH1_LED_PIN, SWITCH1_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 

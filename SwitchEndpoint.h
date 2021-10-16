@@ -10,6 +10,7 @@ extern "C"
 
 #include "Endpoint.h"
 #include "BlinkTask.h"
+#include "ButtonHandler.h"
 
 // List of cluster instances (descriptor objects) that are included into the endpoint
 struct OnOffClusterInstances
@@ -31,10 +32,11 @@ protected:
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
 
     BlinkTask blinkTask;
+    ButtonHandler buttonHandler;
 
 public:
     SwitchEndpoint();
-    void setLedPin(uint8 ledPin);
+    void init(uint8 ledPin, uint32 pinMask);
     virtual void init();
 
     bool getState() const;
