@@ -18,7 +18,7 @@ SwitchEndpoint::SwitchEndpoint()
 {
 }
 
-void SwitchEndpoint::init(uint8 ledPin, uint32 pinMask)
+void SwitchEndpoint::setPins(uint8 ledPin, uint32 pinMask)
 {
     blinkTask.init(ledPin);
 
@@ -119,6 +119,9 @@ void SwitchEndpoint::init()
     // is a property of SwitchEndpoint, and not the global task object
     // TODO: restore previous blink mode from PDM
     blinkTask.setBlinkMode(false);
+
+    // Let button handler know about EndpointId so that it can properly send messages to the app queue
+    buttonHandler.setEndpointId(getEndpointId());
 }
 
 bool SwitchEndpoint::getState() const

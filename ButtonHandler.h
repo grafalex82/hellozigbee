@@ -9,6 +9,8 @@
 
 class ButtonHandler: public IButtonHandler
 {
+    uint8 endpointId;
+
     uint32 currentStateDuration;
 
     SwitchType switchType;
@@ -32,6 +34,8 @@ class ButtonHandler: public IButtonHandler
 public:
     ButtonHandler();
 
+    void setEndpointId(uint8 id);
+
     void setSwitchType(SwitchType type);
     void setLocalSwitchMode(LocalSwitchMode mode);
     void setMaxPause(uint16 value);
@@ -45,7 +49,7 @@ protected:
     virtual void buttonStateMachineToggle(bool pressed);
     virtual void buttonStateMachineMomentary(bool pressed);
     virtual void buttonStateMachineMultifunction(bool pressed);
-    void sendButtonEvent(ApplicationEventType evtType, uint8 button);
+    void sendButtonEvent(ApplicationEventType evtType);
 
     const char * getStateName(ButtonState state);
 };

@@ -140,17 +140,17 @@ PUBLIC void wakeCallBack(void)
     DBG_vPrintf(TRUE, "=-=-=- wakeCallBack()\n");
 }
 
-PRIVATE SwitchEndpoint * getSwitchEndpointForButton(Context * context, uint8 button)
+PRIVATE SwitchEndpoint * getSwitchEndpointById(Context * context, uint8 ep)
 {
-    if(button == 0)
+    if(ep == HELLOENDDEVICE_SWITCH_ENDPOINT)
         return &context->switch1;
 
     return NULL;
 }
 
-PRIVATE void handleButtonEvent(Context * context, ApplicationEventType eventType, uint8 buttonId)
+PRIVATE void handleButtonEvent(Context * context, ApplicationEventType eventType, uint8 ep)
 {
-    SwitchEndpoint * endpoint = getSwitchEndpointForButton(context, buttonId);
+    SwitchEndpoint * endpoint = getSwitchEndpointById(context, ep);
 
     switch(eventType)
     {
@@ -245,7 +245,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
-    context.switch1.init(SWITCH1_LED_PIN, SWITCH1_BTN_MASK);
+    context.switch1.setPins(SWITCH1_LED_PIN, SWITCH1_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH_ENDPOINT, &context.switch1);
 
