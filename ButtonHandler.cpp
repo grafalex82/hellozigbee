@@ -90,7 +90,7 @@ void ButtonHandler::buttonStateMachineToggle(bool pressed)
                 changeState(PRESSED1);
                 sendButtonEvent(BUTTON_ACTION_SINGLE);
 
-                if(switchMode == SWITCH_MODE_FRONT)
+                if(switchMode != SWITCH_MODE_UNLINKED)
                     endpoint->toggle();
             }
             break;
@@ -118,7 +118,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
                 changeState(PRESSED1);
                 sendButtonEvent(BUTTON_PRESSED);
 
-                if(switchMode == SWITCH_MODE_FRONT)
+                if(switchMode != SWITCH_MODE_UNLINKED)
                     endpoint->switchOn();
             }
             break;
@@ -129,7 +129,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
                 changeState(IDLE);
                 sendButtonEvent(BUTTON_RELEASED);
 
-                if(switchMode == SWITCH_MODE_FRONT)
+                if(switchMode != SWITCH_MODE_UNLINKED)
                     endpoint->switchOff();
             }
 
