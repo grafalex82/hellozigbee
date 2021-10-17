@@ -8,6 +8,7 @@ extern "C"
     #include "zcl.h"
     #include "OnOff.h"
     #include "OOSC.h"
+    #include "MultistateInputBasic.h"
 }
 
 #include "Endpoint.h"
@@ -20,6 +21,7 @@ struct OnOffClusterInstances
     tsZCL_ClusterInstance sOnOffClient;
     tsZCL_ClusterInstance sOnOffServer;
     tsZCL_ClusterInstance sOnOffConfigServer;
+    tsZCL_ClusterInstance sMultistateInputServer;
 } __attribute__ ((aligned(4)));
 
 
@@ -32,6 +34,7 @@ protected:
     tsCLD_OnOff sOnOffServerCluster;
     tsCLD_OOSC sOnOffConfigServerCluster;
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
+    tsCLD_MultistateInputBasic sMultistateInputServerCluster;
 
     BlinkTask blinkTask;
     ButtonHandler buttonHandler;
@@ -57,6 +60,7 @@ protected:
     virtual void registerServerCluster();
     virtual void registerClientCluster();
     virtual void registerOnOffConfigServerCluster();
+    virtual void registerMultistateInputServerCluster();
     virtual void registerEndpoint();
     virtual void restoreConfiguration();
     virtual void saveConfiguration();

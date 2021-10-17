@@ -64,6 +64,19 @@ void SwitchEndpoint::registerOnOffConfigServerCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create OnOff config server cluster instance. status=%d\n", status);
 }
 
+void SwitchEndpoint::registerMultistateInputServerCluster()
+{
+    // Initialize Multistate Input server cluser
+    teZCL_Status status = eCLD_MultistateInputBasicCreateMultistateInputBasic(
+                &sClusterInstance.sMultistateInputServer,
+                TRUE,                              // Server
+                &sCLD_MultistateInputBasic,
+                &sMultistateInputServerCluster,
+                &au8MultistateInputBasicAttributeControlBits[0]);
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Multistate Input server cluster instance. status=%d\n", status);
+}
+
 void SwitchEndpoint::registerEndpoint()
 {
     // Initialize endpoint structure
@@ -110,6 +123,7 @@ void SwitchEndpoint::init()
     registerServerCluster();
     registerClientCluster();
     registerOnOffConfigServerCluster();
+    registerMultistateInputServerCluster();
     registerEndpoint();
 
     // Restore previous configuration from PDM
