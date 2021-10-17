@@ -43,6 +43,7 @@ public:
     void rejoinNetwork();
     void leaveNetwork();
     void joinOrLeaveNetwork();
+    bool isJoined();
 
     void pollParent();
     bool canSleep() const;

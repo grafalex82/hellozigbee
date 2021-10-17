@@ -116,6 +116,11 @@ void ZigbeeDevice::joinOrLeaveNetwork()
         joinNetwork();
 }
 
+bool ZigbeeDevice::isJoined()
+{
+    return connectionState == JOINED;
+}
+
 void ZigbeeDevice::handleNetworkJoinAndRejoin()
 {
     DBG_vPrintf(TRUE, "== Device now is on the network\n");

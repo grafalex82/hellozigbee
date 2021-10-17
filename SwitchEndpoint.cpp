@@ -3,6 +3,7 @@
 #include "DumpFunctions.h"
 #include "EndpointManager.h"
 #include "ZigbeeUtils.h"
+#include "ZigbeeDevice.h"
 #include "ButtonsTask.h"
 #include "PdmIds.h"
 
@@ -212,6 +213,12 @@ void SwitchEndpoint::sendCommandToBoundDevices()
 
 void SwitchEndpoint::reportStateChange()
 {
+    if(!ZigbeeDevice::getInstance()->isJoined())
+    {
+        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore reporting the change.\n");
+        return;
+    }
+
     if(runsInServerMode())
         reportState();
     else

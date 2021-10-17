@@ -3,6 +3,8 @@
 
 extern "C"
 {
+    #include "jendefs.h"
+    #include "zps_gen.h"
     #include "zcl.h"
     #include "OnOff.h"
     #include "OOSC.h"
