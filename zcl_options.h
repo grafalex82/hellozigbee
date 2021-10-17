@@ -90,6 +90,10 @@
 #define MAX_NUM_BIND_QUEUE_BUFFERS 4
 #define MAX_PDU_BIND_QUEUE_PAYLOAD_SIZE 100
 
+#define CLD_MULTISTATE_INPUT_BASIC
+#define MULTISTATE_INPUT_BASIC_SERVER
+#define CLD_MULTISTATE_INPUT_BASIC_ATTR_NUMBER_OF_STATES 255
+
 
 /****************************************************************************/
 /*             Basic Cluster - Optional Attributes                          */

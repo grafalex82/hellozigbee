@@ -79,6 +79,7 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyServerCommands.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/MultistateInputBasic.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOff.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommandHandler.c
@@ -97,6 +98,7 @@ TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
         ${SDK_PREFIX}/Components/BDB/Source/NwkSteering
         ${SDK_PREFIX}/Components/PWRM/Include
 	${SDK_PREFIX}/Components/MicroSpecific/Include
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source
 
         ${SDK_PREFIX}/Components/ZCIF/Source
 

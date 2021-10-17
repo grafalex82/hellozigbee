@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Sat Oct 16 20:47:31 2021
+ * DATE:           Sun Oct 17 17:42:41 2021
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -650,16 +650,16 @@ PRIVATE uint8 s_au8Endpoint1InputClusterDiscFlags[1] = { 0x01 };
 PRIVATE const uint16 s_au16Endpoint1OutputClusterList[1] = { 0x0000, };
 PRIVATE uint8 s_au8Endpoint1OutputClusterDiscFlags[1] = { 0x01 };
 
-PRIVATE const uint16 s_au16Endpoint2InputClusterList[2] = { 0x0006, 0x0007, };
-PRIVATE const PDUM_thAPdu s_ahEndpoint2InputClusterAPdus[2] = { apduZCL, apduZCL, };
-PRIVATE uint8 s_au8Endpoint2InputClusterDiscFlags[1] = { 0x03 };
+PRIVATE const uint16 s_au16Endpoint2InputClusterList[3] = { 0x0006, 0x0007, 0x0012, };
+PRIVATE const PDUM_thAPdu s_ahEndpoint2InputClusterAPdus[3] = { apduZCL, apduZCL, apduZCL, };
+PRIVATE uint8 s_au8Endpoint2InputClusterDiscFlags[1] = { 0x07 };
 
 PRIVATE const uint16 s_au16Endpoint2OutputClusterList[1] = { 0x0006, };
 PRIVATE uint8 s_au8Endpoint2OutputClusterDiscFlags[1] = { 0x01 };
 
-PRIVATE const uint16 s_au16Endpoint3InputClusterList[2] = { 0x0006, 0x0007, };
-PRIVATE const PDUM_thAPdu s_ahEndpoint3InputClusterAPdus[2] = { apduZCL, apduZCL, };
-PRIVATE uint8 s_au8Endpoint3InputClusterDiscFlags[1] = { 0x03 };
+PRIVATE const uint16 s_au16Endpoint3InputClusterList[3] = { 0x0006, 0x0007, 0x0012, };
+PRIVATE const PDUM_thAPdu s_ahEndpoint3InputClusterAPdus[3] = { apduZCL, apduZCL, apduZCL, };
+PRIVATE uint8 s_au8Endpoint3InputClusterDiscFlags[1] = { 0x07 };
 
 PRIVATE const uint16 s_au16Endpoint3OutputClusterList[1] = { 0x0006, };
 PRIVATE uint8 s_au8Endpoint3OutputClusterDiscFlags[1] = { 0x01 };
@@ -708,7 +708,7 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[4] = {
             0,
             0,
             2,
-            2,
+            3,
             1,
             s_au16Endpoint2InputClusterList,
             s_au16Endpoint2OutputClusterList,
@@ -724,7 +724,7 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[4] = {
             0,
             0,
             3,
-            2,
+            3,
             1,
             s_au16Endpoint3InputClusterList,
             s_au16Endpoint3OutputClusterList,
