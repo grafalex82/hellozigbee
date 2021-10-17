@@ -16,8 +16,8 @@ ButtonHandler::ButtonHandler()
 
     switchType = SWITCH_TYPE_TOGGLE;
     switchMode = SWITCH_MODE_FRONT;
-    maxPause = 30;
-    longPressDuration = 100;
+    maxPause = 250/ButtonPollCycle;
+    longPressDuration = 1000/ButtonPollCycle;
 }
 
 void ButtonHandler::setEndpoint(SwitchEndpoint * ep)
