@@ -141,7 +141,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
     }
 }
 
-void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
+void ButtonHandler::buttonStateMachineMultistate(bool pressed)
 {
     // The state machine
     switch(currentState)
@@ -257,7 +257,7 @@ void ButtonHandler::handleButtonState(bool pressed)
         buttonStateMachineMomentary(pressed);
         break;
     case SWITCH_TYPE_MULTIFUNCTION:
-        buttonStateMachineMultifunction(pressed);
+        buttonStateMachineMultistate(pressed);
         break;
     default:
         break;
