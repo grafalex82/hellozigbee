@@ -41,7 +41,13 @@ extern "C"
 }
 
 
-ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
+// 5 timers are:
+// - 1 in ButtonTask
+// - 2 in SwitchEndpoints
+// - 1 in PollTask
+// - 1 in DeferredExecutor (TODO: Do we still need it)
+// Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
+ZTIMER_tsTimer timers[5 + BDB_ZTIMER_STORAGE];
 
 
 struct Context
