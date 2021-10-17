@@ -50,6 +50,8 @@ public:
     void toggle();
     bool runsInServerMode() const;
 
+    void reportAction(ButtonActionType action);
+
 protected:
     void doStateChange(bool state);
     void reportState();

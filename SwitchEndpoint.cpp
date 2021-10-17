@@ -225,6 +225,36 @@ void SwitchEndpoint::sendCommandToBoundDevices()
     DBG_vPrintf(TRUE, "Sending On/Off command status: %02x\n", status);
 }
 
+void SwitchEndpoint::reportAction(ButtonActionType action)
+{
+    // Store new value in the cluster
+    sMultistateInputServerCluster.u16PresentValue = (zuint16)action;
+
+    // Prevent bothering Zigbee API if not connected
+    if(!ZigbeeDevice::getInstance()->isJoined())
+    {
+        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore reporting the change.\n");
+        return;
+    }
+
+    // Destination address - 0x0000 (coordinator)
+    tsZCL_Address addr;
+    addr.uAddress.u16DestinationAddress = 0x0000;
+    addr.eAddressMode = E_ZCL_AM_SHORT;
+
+    // Send the report
+    DBG_vPrintf(TRUE, "Reporting multistate action EP=%d value=%d... ", getEndpointId(), sMultistateInputServerCluster.u16PresentValue);
+    PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
+    teZCL_Status status = eZCL_ReportAttribute(&addr,
+                                               GENERAL_CLUSTER_ID_MULTISTATE_INPUT_BASIC,
+                                               E_CLD_MULTISTATE_INPUT_BASIC_ATTR_ID_PRESENT_VALUE,
+                                               getEndpointId(),
+                                               1,
+                                               myPDUM_thAPduInstance);
+    PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
+    DBG_vPrintf(TRUE, "status: %02x\n", status);
+}
+
 void SwitchEndpoint::reportStateChange()
 {
     if(!ZigbeeDevice::getInstance()->isJoined())

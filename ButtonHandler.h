@@ -9,6 +9,16 @@
 
 class SwitchEndpoint;
 
+typedef enum
+{
+    BUTTON_RELEASED 		= 0,
+    BUTTON_ACTION_SINGLE 	= 1,
+    BUTTON_ACTION_DOUBLE	= 2,
+    BUTTON_ACTION_TRIPPLE	= 3, 
+    BUTTON_PRESSED		= 255
+} ButtonActionType;
+
+
 class ButtonHandler: public IButtonHandler
 {
     SwitchEndpoint * endpoint;

@@ -5,12 +5,6 @@
 
 typedef enum
 {
-    BUTTON_PRESSED,
-    BUTTON_RELEASED,
-    BUTTON_ACTION_SINGLE,
-    BUTTON_ACTION_DOUBLE,
-    BUTTON_ACTION_TRIPPLE,
-
     BUTTON_VERY_LONG_PRESS
 } ApplicationEventType;
 

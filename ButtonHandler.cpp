@@ -88,7 +88,7 @@ void ButtonHandler::buttonStateMachineToggle(bool pressed)
             if(pressed)
             {
                 changeState(PRESSED1);
-                sendButtonEvent(BUTTON_ACTION_SINGLE);
+                endpoint->reportAction(BUTTON_ACTION_SINGLE);
 
                 if(switchMode != SWITCH_MODE_UNLINKED)
                     endpoint->toggle();
@@ -116,7 +116,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
             if(pressed)
             {
                 changeState(PRESSED1);
-                sendButtonEvent(BUTTON_PRESSED);
+                endpoint->reportAction(BUTTON_PRESSED);
 
                 if(switchMode != SWITCH_MODE_UNLINKED)
                     endpoint->switchOn();
@@ -127,7 +127,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
             if(!pressed)
             {
                 changeState(IDLE);
-                sendButtonEvent(BUTTON_RELEASED);
+                endpoint->reportAction(BUTTON_RELEASED);
 
                 if(switchMode != SWITCH_MODE_UNLINKED)
                     endpoint->switchOff();
@@ -160,7 +160,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
             if(pressed && currentStateDuration > longPressDuration)
             {
                 changeState(LONG_PRESS);
-                sendButtonEvent(BUTTON_PRESSED);
+                endpoint->reportAction(BUTTON_PRESSED);
 
                 if(switchMode == SWITCH_MODE_LONG)
                     endpoint->toggle();
@@ -177,7 +177,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
             if(!pressed && currentStateDuration > maxPause)
             {
                 changeState(IDLE);
-                sendButtonEvent(BUTTON_ACTION_SINGLE);
+                endpoint->reportAction(BUTTON_ACTION_SINGLE);
 
                 if(switchMode == SWITCH_MODE_SINGLE)
                     endpoint->toggle();
@@ -200,7 +200,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
             if(!pressed && currentStateDuration > maxPause)
             {
                 changeState(IDLE);
-                sendButtonEvent(BUTTON_ACTION_DOUBLE);
+                endpoint->reportAction(BUTTON_ACTION_DOUBLE);
 
                 if(switchMode == SWITCH_MODE_DOUBLE)
                     endpoint->toggle();
@@ -221,7 +221,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
                 if(switchMode == SWITCH_MODE_TRIPPLE)
                     endpoint->toggle();
 
-                sendButtonEvent(BUTTON_ACTION_TRIPPLE);
+                endpoint->reportAction(BUTTON_ACTION_TRIPPLE);
             }
 
             break;
@@ -231,7 +231,7 @@ void ButtonHandler::buttonStateMachineMultifunction(bool pressed)
             {
                 changeState(IDLE);
 
-                sendButtonEvent(BUTTON_RELEASED);
+                endpoint->reportAction(BUTTON_RELEASED);
             }
 
             break;
