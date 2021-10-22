@@ -64,7 +64,7 @@ const fromZigbeeConverter = {
             result[`max_pause_${ep_name}`] = msg.data['65282'];
         }
 
-        // Munimal duration for the long press
+        // Minimal duration for the long press
         if(msg.data.hasOwnProperty('65283')) {
             result[`min_long_press_${ep_name}`] = msg.data['65283'];
         }
@@ -155,6 +155,7 @@ function genEndpoint(epName) {
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
         exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
         exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
+        e.action(['single', 'double', 'triple', 'hold', 'release']).withEndpoint(epName)
     ]
 }
 
@@ -188,7 +189,6 @@ const my_on_off = {
             meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() has endpoint [${model.hasOwnProperty('endpoint')}]`);
 
             const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
-//            const property = `state_${ep_name}`
 
             const property = utils.postfixWithEndpointName('state', msg, model);
             meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() property=[${property}]`);
@@ -200,18 +200,44 @@ const my_on_off = {
     }
 }
 
+const fromZigbeeConverter_MultistateInput = {
+    cluster: 'genMultistateInput',
+    type: ['attributeReport', 'readResponse'],
+
+    convert: (model, msg, publish, options, meta) => {
+        const actionLookup = {0: 'release', 1: 'single', 2: 'double', 3: 'tripple', 255: 'hold'};
+        const value = msg.data['presentValue'];
+        const action = actionLookup[value];
+
+        const result = {action: utils.postfixWithEndpointName(action, msg, model)};
+        meta.logger.debug(`+_+_+_ Multistate::fromZigbee() result=[${JSON.stringify(result)}]`);
+        return result;
+    },
+}
+
+
 
 const device = {
     zigbeeModel: ['Hello Zigbee Switch'],
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [tz.on_off, fromZigbeeConverter],
+    fromZigbee: [fz.on_off, fromZigbeeConverter, fromZigbeeConverter_MultistateInput],
     toZigbee: [tz.on_off, toZigbeeConverter],
-//    exposes: [ e.battery() /*, e.action(['*_single', '*_double', '*_triple', '*_quadruple', '*_release'])*/].concat(genEndpoints(1)),
-    exposes: genEndpoints(1),
+    configure: async (device, coordinatorEndpoint, logger) => {
+        device.endpoints.forEach(async (ep) => {
+            await ep.read('genOnOff', ['onOff']);
+            await ep.read('genOnOffSwitchCfg', ['switchActions']);
+            await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283], manufacturerOptions.jennic);
+        });
+    },
+    exposes: genEndpoints(2),
+    //    exposes: [ /*, e.action(['*_single', '*_double', '*_triple', '*_hold', '*_release'])*/].concat(genEndpoints(2)),
     endpoint: (device) => {
-        return {button_1: 2};
+        return {
+            button_1: 2,
+            button_2: 3
+        };
     },
     meta: {multiEndpoint: true},
 };
