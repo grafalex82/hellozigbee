@@ -87,7 +87,7 @@ const toZigbee_OnOffSwitchCfg = {
         }
         else {
             const lookup = {
-                switch_type: 65280,
+                switch_mode: 65280,
                 relay_mode: 65281,
                 max_pause: 65282,
                 min_long_press: 65283
@@ -147,28 +147,39 @@ const toZigbee_OnOffSwitchCfg = {
 }
 
 
-function genEndpoint(epName) {
+function genSwitchEndpoint(epName) {
     return [
         e.switch().withEndpoint(epName),
         exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
         exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
-        exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName)
+        exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
     ]
 }
 
-function genEndpoints(endpoinsCount) {
+function genSwitchEndpoints(endpoinsCount) {
     let features = [];
 
     for (let i = 1; i <= endpoinsCount; i++) {
         const epName = `button_${i}`;
-        features.push(...genEndpoint(epName));
+        features.push(...genSwitchEndpoint(epName));
     }
 
     return features;
 }
 
+
+function genSwitchActions(endpoinsCount) {
+    let actions = [];
+
+    for (let i = 1; i <= endpoinsCount; i++) {
+        const epName = `button_${i}`;
+        actions.push(... ['single', 'double', 'triple', 'hold', 'release'].map(action => action + "_" + epName));
+    }
+
+    return actions;
+}
 
 const fromZigbee_MultistateInput = {
     cluster: 'genMultistateInput',
@@ -201,8 +212,10 @@ const device = {
             await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283], manufacturerOptions.jennic);
         });
     },
-    exposes: genEndpoints(2),
-    //    exposes: [ /*, e.action(['*_single', '*_double', '*_triple', '*_hold', '*_release'])*/].concat(genEndpoints(2)),
+    exposes: [
+        e.action(genSwitchActions(2)),
+        ...genSwitchEndpoints(2)
+    ],
     endpoint: (device) => {
         return {
             button_1: 2,
