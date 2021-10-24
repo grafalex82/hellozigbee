@@ -28,7 +28,7 @@ const getKey = (object, value) => {
     }
 };
 
-const fromZigbeeConverter = {
+const fromZigbee_OnOffSwitchCfg = {
     cluster: 'genOnOffSwitchCfg',
     type: ['attributeReport', 'readResponse'],
 
@@ -75,7 +75,7 @@ const fromZigbeeConverter = {
 }
 
 
-const toZigbeeConverter = {
+const toZigbee_OnOffSwitchCfg = {
     key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press'],
 
     convertGet: async (entity, key, meta) => {
@@ -170,36 +170,7 @@ function genEndpoints(endpoinsCount) {
 }
 
 
-const my_on_off = {
-    cluster: 'genOnOff',
-    type: ['attributeReport', 'readResponse'],
-    convert: (model, msg, publish, options, meta) => {
-        if (msg.data.hasOwnProperty('onOff')) {
-
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() model=[${JSON.stringify(model)}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() msg=[${JSON.stringify(msg)}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() publish=[${JSON.stringify(publish)}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() options=[${JSON.stringify(options)}]`);
-
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() has meta [${model.hasOwnProperty('meta')}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() has multiEndpoint [${meta.hasOwnProperty('multiEndpoint')}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() multiEndpoint=[${meta.multiEndpoint}]`);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() has endpoint [${model.hasOwnProperty('endpoint')}]`);
-
-            const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
-
-            const property = utils.postfixWithEndpointName('state', msg, model);
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() property=[${property}]`);
-
-            const result = {[property]: msg.data['onOff'] === 1 ? 'ON' : 'OFF'};
-            meta.logger.debug(`+_+_+_ my_on_off::fromZigbee() result=[${JSON.stringify(result)}]`);
-            return result;
-        }
-    }
-}
-
-const fromZigbeeConverter_MultistateInput = {
+const fromZigbee_MultistateInput = {
     cluster: 'genMultistateInput',
     type: ['attributeReport', 'readResponse'],
 
@@ -221,8 +192,8 @@ const device = {
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [fz.on_off, fromZigbeeConverter, fromZigbeeConverter_MultistateInput],
-    toZigbee: [tz.on_off, toZigbeeConverter],
+    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput],
+    toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         device.endpoints.forEach(async (ep) => {
             await ep.read('genOnOff', ['onOff']);
