@@ -13,7 +13,7 @@ const DataType = {
     enum8: 0x30,
 }
 
-const switchTypeValues = ['toggle', 'momentary', 'multifunction'];
+const switchModeValues = ['toggle', 'momentary', 'multifunction'];
 const switchActionValues = ['onOff', 'offOn', 'toggle'];
 const relayModeValues = ['unlinked', 'front', 'single', 'double', 'tripple', 'long'];
 
@@ -45,7 +45,7 @@ const fromZigbeeConverter = {
 
         // switch type
         if(msg.data.hasOwnProperty('65280')) {
-            result[`switch_type_${ep_name}`] = switchTypeValues[msg.data['65280']];
+            result[`switch_mode_${ep_name}`] = switchModeValues[msg.data['65280']];
         }
 
         // switch action
@@ -76,7 +76,7 @@ const fromZigbeeConverter = {
 
 
 const toZigbeeConverter = {
-    key: ['switch_type', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press'],
+    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press'],
 
     convertGet: async (entity, key, meta) => {
         meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
@@ -105,8 +105,8 @@ const toZigbeeConverter = {
         let newValue = value;
 
         switch(key) {
-            case 'switch_type':
-                newValue = switchTypeValues.indexOf(value);
+            case 'switch_mode':
+                newValue = switchModeValues.indexOf(value);
                 payload = {65280: {'value': newValue, 'type': DataType.enum8}};
                 meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
@@ -150,12 +150,11 @@ const toZigbeeConverter = {
 function genEndpoint(epName) {
     return [
         e.switch().withEndpoint(epName),
-        exposes.enum('switch_type', ea.ALL, switchTypeValues).withEndpoint(epName),
+        exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
         exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
-        exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
-        e.action(['single', 'double', 'triple', 'hold', 'release']).withEndpoint(epName)
+        exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName)
     ]
 }
 
