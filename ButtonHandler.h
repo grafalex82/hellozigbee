@@ -25,8 +25,8 @@ class ButtonHandler: public IButtonHandler
 
     uint32 currentStateDuration;
 
-    SwitchType switchType;
-    LocalSwitchMode switchMode;
+    SwitchMode switchMode;
+    RelayMode relayMode;
     uint16 maxPause;
     uint16 longPressDuration;
 
@@ -48,8 +48,8 @@ public:
 
     void setEndpoint(SwitchEndpoint * ep);
 
-    void setSwitchType(SwitchType type);
-    void setLocalSwitchMode(LocalSwitchMode mode);
+    void setSwitchMode(SwitchMode mode);
+    void setRelayMode(RelayMode mode);
     void setMaxPause(uint16 value);
     void setMinLongPress(uint16 value);
 
@@ -60,7 +60,7 @@ protected:
     virtual void changeState(ButtonState state);
     virtual void buttonStateMachineToggle(bool pressed);
     virtual void buttonStateMachineMomentary(bool pressed);
-    virtual void buttonStateMachineMultifunction(bool pressed);
+    virtual void buttonStateMachineMultistate(bool pressed);
     void sendButtonEvent(ApplicationEventType evtType);
 
     const char * getStateName(ButtonState state);

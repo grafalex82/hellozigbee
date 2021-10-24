@@ -76,13 +76,13 @@ typedef enum
 
     // Custom attributes
     E_CLD_OOSC_ATTR_ID_SWITCH_MODE              = 0xff00,
-    E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE        = 0xff01,
+    E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE        = 0xff01,
     E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE         = 0xff02,
     E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff03
 } teCLD_OOSC_ClusterID;
 
 
-/* On/Off switch types */
+/* On/Off switch types (modes) */
 typedef enum 
 {
     E_CLD_OOSC_TYPE_TOGGLE,
@@ -104,11 +104,11 @@ typedef enum
 typedef struct
 {
 #ifdef OOSC_SERVER    
-    zenum8                  eSwitchType;                /* Mandatory */
+    zenum8                  eSwitchMode;                /* Mandatory */
     zenum8                  eSwitchActions;             /* Mandatory */
 
     // Custom attrs
-    zenum8                  eLocalSwitchMode;
+    zenum8                  eRelayMode;
     zuint16                 iMaxPause;
     zuint16                 iMinLongPress;
 #endif    

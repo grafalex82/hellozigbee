@@ -14,8 +14,8 @@ ButtonHandler::ButtonHandler()
     currentState = IDLE;
     currentStateDuration = 0;
 
-    switchType = SWITCH_TYPE_TOGGLE;
-    switchMode = SWITCH_MODE_FRONT;
+    switchMode = SWITCH_MODE_TOGGLE;
+    relayMode = RELAY_MODE_FRONT;
     maxPause = 250/ButtonPollCycle;
     longPressDuration = 1000/ButtonPollCycle;
 }
@@ -47,15 +47,15 @@ const char * ButtonHandler::getStateName(ButtonState state)
     return "";
 }
 
-void ButtonHandler::setSwitchType(SwitchType type)
+void ButtonHandler::setSwitchMode(SwitchMode mode)
 {
-    switchType = type;
+    switchMode = mode;
     changeState(IDLE);
 }
 
-void ButtonHandler::setLocalSwitchMode(LocalSwitchMode mode)
+void ButtonHandler::setRelayMode(RelayMode mode)
 {
-    switchMode = mode;
+    relayMode = mode;
     changeState(IDLE);
 }
 
@@ -90,7 +90,7 @@ void ButtonHandler::buttonStateMachineToggle(bool pressed)
                 changeState(PRESSED1);
                 endpoint->reportAction(BUTTON_ACTION_SINGLE);
 
-                if(switchMode != SWITCH_MODE_UNLINKED)
+                if(relayMode != RELAY_MODE_UNLINKED)
                     endpoint->toggle();
             }
             break;
@@ -118,7 +118,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
                 changeState(PRESSED1);
                 endpoint->reportAction(BUTTON_PRESSED);
 
-                if(switchMode != SWITCH_MODE_UNLINKED)
+                if(relayMode != RELAY_MODE_UNLINKED)
                     endpoint->switchOn();
             }
             break;
@@ -129,7 +129,7 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
                 changeState(IDLE);
                 endpoint->reportAction(BUTTON_RELEASED);
 
-                if(switchMode != SWITCH_MODE_UNLINKED)
+                if(relayMode != RELAY_MODE_UNLINKED)
                     endpoint->switchOff();
             }
 
@@ -151,7 +151,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             {
                 changeState(PRESSED1);
 
-                if(switchMode == SWITCH_MODE_FRONT)
+                if(relayMode == RELAY_MODE_FRONT)
                     endpoint->toggle();
             }
             break;
@@ -162,7 +162,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 changeState(LONG_PRESS);
                 endpoint->reportAction(BUTTON_PRESSED);
 
-                if(switchMode == SWITCH_MODE_LONG)
+                if(relayMode == RELAY_MODE_LONG)
                     endpoint->toggle();
             }
 
@@ -179,7 +179,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 changeState(IDLE);
                 endpoint->reportAction(BUTTON_ACTION_SINGLE);
 
-                if(switchMode == SWITCH_MODE_SINGLE)
+                if(relayMode == RELAY_MODE_SINGLE)
                     endpoint->toggle();
             }
 
@@ -202,7 +202,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 changeState(IDLE);
                 endpoint->reportAction(BUTTON_ACTION_DOUBLE);
 
-                if(switchMode == SWITCH_MODE_DOUBLE)
+                if(relayMode == RELAY_MODE_DOUBLE)
                     endpoint->toggle();
             }
 
@@ -218,7 +218,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             {
                 changeState(IDLE);
 
-                if(switchMode == SWITCH_MODE_TRIPPLE)
+                if(relayMode == RELAY_MODE_TRIPPLE)
                     endpoint->toggle();
 
                 endpoint->reportAction(BUTTON_ACTION_TRIPPLE);
@@ -248,15 +248,15 @@ void ButtonHandler::handleButtonState(bool pressed)
     if(currentStateDuration < 2)
         return;
 
-    switch(switchType)
+    switch(switchMode)
     {
-    case SWITCH_TYPE_TOGGLE:
+    case SWITCH_MODE_TOGGLE:
         buttonStateMachineToggle(pressed);
         break;
-    case SWITCH_TYPE_MOMENTARY:
+    case SWITCH_MODE_MOMENTARY:
         buttonStateMachineMomentary(pressed);
         break;
-    case SWITCH_TYPE_MULTIFUNCTION:
+    case SWITCH_MODE_MULTIFUNCTION:
         buttonStateMachineMultistate(pressed);
         break;
     default:

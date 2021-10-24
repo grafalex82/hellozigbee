@@ -104,8 +104,8 @@ void SwitchEndpoint::restoreConfiguration()
                             &readBytes);
 
     // Configure buttons state machine with read values
-    buttonHandler.setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
-    buttonHandler.setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
+    buttonHandler.setSwitchMode((SwitchMode)sOnOffConfigServerCluster.eSwitchMode);
+    buttonHandler.setRelayMode((RelayMode)sOnOffConfigServerCluster.eRelayMode);
     buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);
     buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
 }
@@ -292,10 +292,10 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION)
     {
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
-            buttonHandler.setSwitchType((SwitchType)sOnOffConfigServerCluster.eSwitchType);
+            buttonHandler.setSwitchMode((SwitchMode)sOnOffConfigServerCluster.eSwitchMode);
 
-        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE)
-            buttonHandler.setLocalSwitchMode((LocalSwitchMode)sOnOffConfigServerCluster.eLocalSwitchMode);
+        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE)
+            buttonHandler.setRelayMode((RelayMode)sOnOffConfigServerCluster.eRelayMode);
 
         if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE)
             buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);

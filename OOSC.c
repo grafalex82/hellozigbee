@@ -78,12 +78,12 @@
 /****************************************************************************/
 const tsZCL_AttributeDefinition asCLD_OOSCClusterAttributeDefinitions[] = {
 #ifdef OOSC_SERVER
-    {E_CLD_OOSC_ATTR_ID_SWITCH_TYPE,            E_ZCL_AF_RD,                            E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eSwitchType),0},    /* Mandatory */
+    {E_CLD_OOSC_ATTR_ID_SWITCH_TYPE,            E_ZCL_AF_RD,                            E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eSwitchMode),0},    /* Mandatory */
     {E_CLD_OOSC_ATTR_ID_SWITCH_ACTIONS,         (E_ZCL_AF_RD|E_ZCL_AF_WR),              E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eSwitchActions),0}, /* Mandatory */
 
     // Custom attributes
-    {E_CLD_OOSC_ATTR_ID_SWITCH_MODE,            (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eSwitchType),0},
-    {E_CLD_OOSC_ATTR_ID_SWITCH_LOCAL_MODE,      (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eLocalSwitchMode),0},
+    {E_CLD_OOSC_ATTR_ID_SWITCH_MODE,            (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eSwitchMode),0},
+    {E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE,      (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eRelayMode),0},
     {E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE,       (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_UINT16,   (uint32)(&((tsCLD_OOSC*)(0))->iMaxPause),0},
     {E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR,  (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_UINT16,   (uint32)(&((tsCLD_OOSC*)(0))->iMinLongPress),0},
 
@@ -149,9 +149,9 @@ PUBLIC  teZCL_Status eCLD_OOSCCreateOnOffSwitchConfig(
         {
 #ifdef OOSC_SERVER            
             /* Set attribute defaults */
-            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eSwitchType = E_CLD_OOSC_TYPE_TOGGLE;
+            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eSwitchMode = E_CLD_OOSC_TYPE_TOGGLE;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eSwitchActions = E_CLD_OOSC_ACTION_TOGGLE;
-            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eLocalSwitchMode = SWITCH_MODE_FRONT;
+            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eRelayMode = RELAY_MODE_FRONT;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMaxPause = 250;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMinLongPress = 1000;
 #endif
