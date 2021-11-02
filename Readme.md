@@ -73,3 +73,4 @@ All this code is explained in very detail in the following articles (in Russian)
 - https://habr.com/ru/post/550660/ - Getting started with Zigbee network concepts. SDK structure and event handling explained.
 - https://habr.com/ru/post/561280/ - Correct network joining and rejoining using BDB component. End devices explained. Firmware architecture and porting to C++.
 - https://habr.com/ru/post/568316/ - Binding. Reports vs commands, Server vs client clusters explained. 
+- https://habr.com/ru/post/585860/ - Custom clusters, zigbee2mqtt external converters explained
