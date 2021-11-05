@@ -7,20 +7,18 @@ extern "C"
 {
     #include "zcl.h"
     #include "Basic.h"
+    #include "OTA.h"
+    } // Missed '}' in OTA.h
 }
 
 // List of cluster instances (descriptor objects) that are included into an Endpoint
 struct BasicClusterInstances
 {
     // All devices have basic mandatory clusters
-    #if (defined CLD_BASIC) && (defined BASIC_SERVER)
-        tsZCL_ClusterInstance sBasicServer;
-    #endif
+    tsZCL_ClusterInstance sBasicServer;
 
     // Zigbee device may have also OTA optional clusters for the client
-    #if (defined CLD_OTA) && (defined OTA_CLIENT)
-        tsZCL_ClusterInstance sOTAClient;
-    #endif
+    tsZCL_ClusterInstance sOTAClient;
 } __attribute__ ((aligned(4)));
 
 class BasicClusterEndpoint : public Endpoint
@@ -31,17 +29,9 @@ class BasicClusterEndpoint : public Endpoint
     BasicClusterInstances clusterInstances;
 
     // Value storage for endpoint's clusters
-    #if (defined CLD_BASIC) && (defined BASIC_SERVER)
-        // Basic Cluster - Server
-        tsCLD_Basic sBasicServerCluster;
-    #endif
-
-    // On Off light device 2 optional clusters for the client
-    #if (defined CLD_OTA) && (defined OTA_CLIENT)
-        // OTA cluster - Client
-        tsCLD_AS_Ota sCLD_OTA;
-        tsOTA_Common sCLD_OTA_CustomDataStruct;
-    #endif
+    tsCLD_Basic sBasicServerCluster;
+    tsCLD_AS_Ota sOTAClientCluster;
+    tsOTA_Common sOTACustomDataStruct;
 
 public:
     BasicClusterEndpoint();

@@ -94,6 +94,19 @@
 #define MULTISTATE_INPUT_BASIC_SERVER
 #define CLD_MULTISTATE_INPUT_BASIC_ATTR_NUMBER_OF_STATES 255
 
+#define CLD_OTA
+#define OTA_CLIENT
+#define OTA_NO_CERTIFICATE
+#define OTA_CLD_ATTR_FILE_OFFSET
+#define OTA_CLD_ATTR_CURRENT_FILE_VERSION
+#define OTA_CLD_ATTR_CURRENT_ZIGBEE_STACK_VERSION
+#define OTA_CLD_MANF_ID
+#define OTA_MAX_BLOCK_SIZE 48
+#define OTA_TIME_INTERVAL_BETWEEN_RETRIES 10
+#define OTA_STRING_COMPARE
+#define OTA_UPGRADE_VOLTAGE_CHECK
+
+
 
 /****************************************************************************/
 /*             Basic Cluster - Optional Attributes                          */

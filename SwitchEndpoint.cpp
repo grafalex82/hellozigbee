@@ -91,7 +91,7 @@ void SwitchEndpoint::registerEndpoint()
 
     // Register the endpoint with all the clusters in it
     teZCL_Status status = eZCL_Register(&sEndPoint);
-    DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Register Basic Cluster. status=%d\n", status);
+    DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Register Switch Endpoint. status=%d\n", status);
 }
 
 void SwitchEndpoint::restoreConfiguration()

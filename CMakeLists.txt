@@ -26,6 +26,7 @@ ADD_DEFINITIONS(
         -DJENNIC_MAC_MiniMacShim
 
 #        -DTRACE_ZCL=TRUE
+        -DTRACE_OTA_DEBUG=TRUE
 #        -DDEBUG_BDB
 #        -DDEBUG_CLD_ONOFF
 #        -DDEBUG_ZQUEUE
@@ -86,6 +87,13 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Scenes.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/ScenesCommandHandler.c
 
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_client.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_ClientUpgradeManager.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_common.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_CustomCommandHandler.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_CustomReceiveCommands.c
+
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_fr.c
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_start.c
         ${SDK_PREFIX}/Components/BDB/Source/Common/bdb_state_machine.c
@@ -99,6 +107,7 @@ TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
         ${SDK_PREFIX}/Components/PWRM/Include
 	${SDK_PREFIX}/Components/MicroSpecific/Include
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Include
 
         ${SDK_PREFIX}/Components/ZCIF/Source
 
@@ -136,6 +145,7 @@ INCLUDE_DIRECTORIES(
 
     ${SDK_PREFIX}/Components/ZCIF/Include
     ${SDK_PREFIX}/Components/ZCL/Clusters/General/Include
+    ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Include
     ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Include
     ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Include
     ${SDK_PREFIX}/Components/ZigbeeCommon/Include
