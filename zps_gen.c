@@ -6,7 +6,7 @@
  *
  * COMPONENT:      zps_gen.c
  *
- * DATE:           Sun Oct 17 17:42:41 2021
+ * DATE:           Fri Nov  5 21:05:39 2021
  *
  * AUTHOR:         Jennic Zigbee Protocol Stack Configuration Tool
  *
@@ -647,8 +647,8 @@ PRIVATE const uint16 s_au16Endpoint1InputClusterList[2] = { 0x0000, 0xffff, };
 PRIVATE const PDUM_thAPdu s_ahEndpoint1InputClusterAPdus[2] = { apduZCL, apduZCL, };
 PRIVATE uint8 s_au8Endpoint1InputClusterDiscFlags[1] = { 0x01 };
 
-PRIVATE const uint16 s_au16Endpoint1OutputClusterList[1] = { 0x0000, };
-PRIVATE uint8 s_au8Endpoint1OutputClusterDiscFlags[1] = { 0x01 };
+PRIVATE const uint16 s_au16Endpoint1OutputClusterList[2] = { 0x0000, 0x0019, };
+PRIVATE uint8 s_au8Endpoint1OutputClusterDiscFlags[1] = { 0x03 };
 
 PRIVATE const uint16 s_au16Endpoint2InputClusterList[3] = { 0x0006, 0x0007, 0x0012, };
 PRIVATE const PDUM_thAPdu s_ahEndpoint2InputClusterAPdus[3] = { apduZCL, apduZCL, apduZCL, };
@@ -693,7 +693,7 @@ PRIVATE zps_tsAplAfSimpleDescCont s_asSimpleDescConts[4] = {
             0,
             1,
             2,
-            1,
+            2,
             s_au16Endpoint1InputClusterList,
             s_au16Endpoint1OutputClusterList,
             s_au8Endpoint1InputClusterDiscFlags,

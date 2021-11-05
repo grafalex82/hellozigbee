@@ -476,6 +476,7 @@
       <InputClusters Cluster="Basic" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Default" RxAPDU="HelloZigbee->apduZCL" Discoverable="false"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OTA" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
     <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH1">
       <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
@@ -695,6 +696,7 @@
       <InputClusters Cluster="Basic" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Default" RxAPDU="HelloEndDevice->apduZCL" Discoverable="false"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OTA" TxAPDUs="HelloEndDevice->apduZCL" Discoverable="true"/>
     </Endpoints>
     <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH1">
       <InputClusters Cluster="OnOff" RxAPDU="HelloEndDevice->apduZCL" Discoverable="true"/>
