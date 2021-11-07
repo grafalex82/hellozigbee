@@ -42,6 +42,8 @@ protected:
     virtual void registerBasicCluster();
     virtual void registerOtaCluster();
     virtual void registerEndpoint();
+
+    virtual void initOTA();
 };
 
 #endif // BASICCLUSTERENDPOINT_H

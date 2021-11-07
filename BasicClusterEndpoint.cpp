@@ -37,8 +37,7 @@ void BasicClusterEndpoint::registerOtaCluster()
                                       &sOTACustomDataStruct);
 
     if(status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster instance. status=%d\n", status);
-}
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster instance. status=%d\n", status);}
 
 void BasicClusterEndpoint::registerEndpoint()
 {
@@ -57,6 +56,30 @@ void BasicClusterEndpoint::registerEndpoint()
     DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Register Basic Cluster Endpoint. status=%d\n", status);
 }
 
+void BasicClusterEndpoint::initOTA()
+{
+    // Reset attributes to their default value
+    teZCL_Status status = eOTA_UpdateClientAttributes(getEndpointId(), 0);
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster attributes. status=%d\n", status);
+
+    // Restore previous values
+
+
+    tsOTA_ImageHeader          sOTAHeader;
+    eOTA_GetCurrentOtaHeader(getEndpointId(), FALSE, &sOTAHeader);
+    DBG_vPrintf(TRUE, "\n\nCurrent Image Details \n");
+    DBG_vPrintf(TRUE, "File ID = 0x%08x\n",sOTAHeader.u32FileIdentifier);
+    DBG_vPrintf(TRUE, "Header Ver ID = 0x%04x\n",sOTAHeader.u16HeaderVersion);
+    DBG_vPrintf(TRUE, "Header Length ID = 0x%04x\n",sOTAHeader.u16HeaderLength);
+    DBG_vPrintf(TRUE, "Header Control Field = 0x%04x\n",sOTAHeader.u16HeaderControlField);
+    DBG_vPrintf(TRUE, "Manufac Code = 0x%04x\n",sOTAHeader.u16ManufacturerCode);
+    DBG_vPrintf(TRUE, "Image Type = 0x%04x\n",sOTAHeader.u16ImageType);
+    DBG_vPrintf(TRUE, "File Ver = 0x%08x\n",sOTAHeader.u32FileVersion);
+    DBG_vPrintf(TRUE, "Stack Ver = 0x%04x\n",sOTAHeader.u16StackVersion);
+    DBG_vPrintf(TRUE, "Image Len = 0x%08x\n\n\n",sOTAHeader.u32TotalImage);
+}
+
 void BasicClusterEndpoint::init()
 {
     registerBasicCluster();
@@ -69,4 +92,7 @@ void BasicClusterEndpoint::init()
     memcpy(sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
     memcpy(sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
+
+    // Initialize OTA
+    initOTA();
 }
