@@ -13,6 +13,8 @@ extern "C"
     void vDisplayNeighbourTable();
     void vDisplayBindTable();
     void vDisplayAddressMap();
+
+    void vDumpCurrentImageOTAHeader(uint8 otaEp);
 }
 
 

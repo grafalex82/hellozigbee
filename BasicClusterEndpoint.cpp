@@ -2,6 +2,7 @@
 #include "EndpointManager.h"
 #include "PersistedValue.h"
 #include "PdmIds.h"
+#include "DumpFunctions.h"
 
 extern "C"
 {
@@ -103,19 +104,8 @@ void BasicClusterEndpoint::initOTA()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
 
 
-    // Just dump OTA data
-    tsOTA_ImageHeader          sOTAHeader;
-    eOTA_GetCurrentOtaHeader(getEndpointId(), FALSE, &sOTAHeader);
-    DBG_vPrintf(TRUE, "\n\nCurrent Image Details \n");
-    DBG_vPrintf(TRUE, "File ID = 0x%08x\n",sOTAHeader.u32FileIdentifier);
-    DBG_vPrintf(TRUE, "Header Ver ID = 0x%04x\n",sOTAHeader.u16HeaderVersion);
-    DBG_vPrintf(TRUE, "Header Length ID = 0x%04x\n",sOTAHeader.u16HeaderLength);
-    DBG_vPrintf(TRUE, "Header Control Field = 0x%04x\n",sOTAHeader.u16HeaderControlField);
-    DBG_vPrintf(TRUE, "Manufac Code = 0x%04x\n",sOTAHeader.u16ManufacturerCode);
-    DBG_vPrintf(TRUE, "Image Type = 0x%04x\n",sOTAHeader.u16ImageType);
-    DBG_vPrintf(TRUE, "File Ver = 0x%08x\n",sOTAHeader.u32FileVersion);
-    DBG_vPrintf(TRUE, "Stack Ver = 0x%04x\n",sOTAHeader.u16StackVersion);
-    DBG_vPrintf(TRUE, "Image Len = 0x%08x\n\n\n",sOTAHeader.u32TotalImage);
+    // Just dump current image OTA header
+    vDumpCurrentImageOTAHeader(getEndpointId());
 }
 
 void BasicClusterEndpoint::init()
