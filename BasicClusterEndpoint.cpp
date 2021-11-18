@@ -76,7 +76,20 @@ void BasicClusterEndpoint::initOTA()
     if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to restore OTA data. status=%d\n", status);
 
+    // Remap flash memory
+    if (u32REG_SysRead(REG_SYS_FLASH_REMAP) & 0xf)
+    {
+        vREG_SysWrite(REG_SYS_FLASH_REMAP,  0xfedcba98);
+        vREG_SysWrite(REG_SYS_FLASH_REMAP2, 0x76543210);
+    }
 
+    // Initialize flash memory for storing downloaded firmwares
+    tsNvmDefs sNvmDefs;
+    sNvmDefs.u32SectorSize = 32*1024; // Sector Size = 32K
+    sNvmDefs.u8FlashDeviceType = E_FL_CHIP_INTERNAL;
+    vOTA_FlashInit(NULL, &sNvmDefs);
+
+    // Just dump OTA data
     tsOTA_ImageHeader          sOTAHeader;
     eOTA_GetCurrentOtaHeader(getEndpointId(), FALSE, &sOTAHeader);
     DBG_vPrintf(TRUE, "\n\nCurrent Image Details \n");
