@@ -4,7 +4,8 @@
 //#include "jendefs.h"
 #include "stdint.h"
 
-const uint8 PDM_ID_NODE_STATE = 1;
+const uint8 PDM_ID_NODE_STATE 	= 1;
+const uint8 PDM_ID_OTA_DATA 	= 2;
 
 const uint8 PDM_ID_EP_DATA_BASE = 0x10;
 

@@ -1,5 +1,7 @@
 #include "BasicClusterEndpoint.h"
 #include "EndpointManager.h"
+#include "PersistedValue.h"
+#include "PdmIds.h"
 
 extern "C"
 {
@@ -7,6 +9,10 @@ extern "C"
     #include "string.h"
 }
 
+void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
+{
+    memset(persistedData, 0, sizeof(tsOTA_PersistedData));
+}
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {
@@ -64,6 +70,11 @@ void BasicClusterEndpoint::initOTA()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster attributes. status=%d\n", status);
 
     // Restore previous values
+    PersistedValue<tsOTA_PersistedData, PDM_ID_OTA_DATA> sPersistedData;
+    sPersistedData.init(resetPersistedOTAData);
+    status = eOTA_RestoreClientData( getEndpointId(), &sPersistedData, TRUE);
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to restore OTA data. status=%d\n", status);
 
 
     tsOTA_ImageHeader          sOTAHeader;
