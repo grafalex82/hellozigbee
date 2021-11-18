@@ -89,6 +89,20 @@ void BasicClusterEndpoint::initOTA()
     sNvmDefs.u8FlashDeviceType = E_FL_CHIP_INTERNAL;
     vOTA_FlashInit(NULL, &sNvmDefs);
 
+    // Fill some OTA related records for the endpoint
+    uint8 au8CAPublicKey[22] = {0};
+    uint8 u8StartSector[1] = {8};
+    status = eOTA_AllocateEndpointOTASpace(
+                            getEndpointId(),
+                            u8StartSector,
+                            OTA_MAX_IMAGES_PER_ENDPOINT,
+                            8,                                 // max sectors per image
+                            FALSE,
+                            au8CAPublicKey);
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
+
+
     // Just dump OTA data
     tsOTA_ImageHeader          sOTAHeader;
     eOTA_GetCurrentOtaHeader(getEndpointId(), FALSE, &sOTAHeader);
