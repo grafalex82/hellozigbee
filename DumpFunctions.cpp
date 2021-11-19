@@ -6,10 +6,8 @@ extern "C"
     #include "zcl_customcommand.h"
     #include "OTA.h"
     } // Missed '}' in OTA.h
-
     #include "bdb_api.h"
-    // missed '}' in appZpsBeaconHandler.h
-    }
+    }// missed '}' in appZpsBeaconHandler.h
 }
 
 PRIVATE void vPrintAddr(ZPS_tuAddress addr, uint8 mode)

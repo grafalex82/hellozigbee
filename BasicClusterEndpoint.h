@@ -2,6 +2,7 @@
 #define BASICCLUSTERENDPOINT_H
 
 #include "Endpoint.h"
+#include "OTAHandlers.h"
 
 extern "C"
 {
@@ -33,6 +34,8 @@ class BasicClusterEndpoint : public Endpoint
     tsCLD_AS_Ota sOTAClientCluster;
     tsOTA_Common sOTACustomDataStruct;
 
+    OTAHandlers otaHandlers;
+
 public:
     BasicClusterEndpoint();
 
@@ -42,8 +45,6 @@ protected:
     virtual void registerBasicCluster();
     virtual void registerOtaCluster();
     virtual void registerEndpoint();
-
-    virtual void initOTA();
 };
 
 #endif // BASICCLUSTERENDPOINT_H

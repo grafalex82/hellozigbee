@@ -1,18 +1,10 @@
 #include "BasicClusterEndpoint.h"
 #include "EndpointManager.h"
-#include "PersistedValue.h"
-#include "PdmIds.h"
-#include "DumpFunctions.h"
 
 extern "C"
 {
     #include "dbg.h"
     #include "string.h"
-}
-
-void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
-{
-    memset(persistedData, 0, sizeof(tsOTA_PersistedData));
 }
 
 BasicClusterEndpoint::BasicClusterEndpoint()
@@ -63,51 +55,6 @@ void BasicClusterEndpoint::registerEndpoint()
     DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Register Basic Cluster Endpoint. status=%d\n", status);
 }
 
-void BasicClusterEndpoint::initOTA()
-{
-    // Reset attributes to their default value
-    teZCL_Status status = eOTA_UpdateClientAttributes(getEndpointId(), 0);
-    if(status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster attributes. status=%d\n", status);
-
-    // Restore previous values
-    PersistedValue<tsOTA_PersistedData, PDM_ID_OTA_DATA> sPersistedData;
-    sPersistedData.init(resetPersistedOTAData);
-    status = eOTA_RestoreClientData( getEndpointId(), &sPersistedData, TRUE);
-    if(status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to restore OTA data. status=%d\n", status);
-
-    // Remap flash memory
-    if (u32REG_SysRead(REG_SYS_FLASH_REMAP) & 0xf)
-    {
-        vREG_SysWrite(REG_SYS_FLASH_REMAP,  0xfedcba98);
-        vREG_SysWrite(REG_SYS_FLASH_REMAP2, 0x76543210);
-    }
-
-    // Initialize flash memory for storing downloaded firmwares
-    tsNvmDefs sNvmDefs;
-    sNvmDefs.u32SectorSize = 32*1024; // Sector Size = 32K
-    sNvmDefs.u8FlashDeviceType = E_FL_CHIP_INTERNAL;
-    vOTA_FlashInit(NULL, &sNvmDefs);
-
-    // Fill some OTA related records for the endpoint
-    uint8 au8CAPublicKey[22] = {0};
-    uint8 u8StartSector[1] = {8};
-    status = eOTA_AllocateEndpointOTASpace(
-                            getEndpointId(),
-                            u8StartSector,
-                            OTA_MAX_IMAGES_PER_ENDPOINT,
-                            8,                                 // max sectors per image
-                            FALSE,
-                            au8CAPublicKey);
-    if(status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
-
-
-    // Just dump current image OTA header
-    vDumpCurrentImageOTAHeader(getEndpointId());
-}
-
 void BasicClusterEndpoint::init()
 {
     registerBasicCluster();
@@ -122,5 +69,5 @@ void BasicClusterEndpoint::init()
     sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
 
     // Initialize OTA
-    initOTA();
+    otaHandlers.initOTA(getEndpointId());
 }

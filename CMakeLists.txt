@@ -188,6 +188,7 @@ SET(SOURCES
         ZigbeeDevice.cpp
         BasicClusterEndpoint.cpp
 	OOSC.c
+        OTAHandlers.cpp
         Main.cpp
 )
 
