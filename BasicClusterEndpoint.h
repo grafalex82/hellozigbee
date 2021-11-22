@@ -8,8 +8,6 @@ extern "C"
 {
     #include "zcl.h"
     #include "Basic.h"
-    #include "OTA.h"
-    } // Missed '}' in OTA.h
 }
 
 // List of cluster instances (descriptor objects) that are included into an Endpoint
@@ -45,6 +43,8 @@ protected:
     virtual void registerBasicCluster();
     virtual void registerOtaCluster();
     virtual void registerEndpoint();
+
+    virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
 };
 
 #endif // BASICCLUSTERENDPOINT_H

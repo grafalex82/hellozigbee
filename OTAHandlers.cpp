@@ -7,9 +7,6 @@ extern "C"
 {
     #include "dbg.h"
     #include "string.h"
-
-    #include "OTA.h"
-    } // Missed '}' in OTA.h
 }
 
 void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
@@ -50,7 +47,7 @@ void OTAHandlers::restoreOTAAttributes()
 
 void OTAHandlers::initFlash()
 {
-    // Remap flash memory
+    // Fix and streamline possible incorrect or non-contiguous flash remapping
     if (u32REG_SysRead(REG_SYS_FLASH_REMAP) & 0xf)
     {
         vREG_SysWrite(REG_SYS_FLASH_REMAP,  0xfedcba98);
@@ -75,4 +72,19 @@ void OTAHandlers::initFlash()
                             au8CAPublicKey);
     if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "OTAHandlers::initFlash(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
+}
+
+void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
+{
+    DBG_vPrintf(TRUE, "OTA Callback Message: evt=%d\n", pMsg->eEventId);
+    DBG_vPrintf(TRUE, "OTA Callback Message: fnPointer=0x%08x\n", pMsg->sPersistedData.u32FunctionPointer);
+
+    switch(pMsg->eEventId)
+    {
+    case E_CLD_OTA_COMMAND_IMAGE_NOTIFY:
+    case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
+    case E_CLD_OTA_INTERNAL_COMMAND_POLL_REQUIRED:
+    default:
+        DBG_vPrintf(TRUE, "OTA Callback Message: Unknown event type evt=%d\n", pMsg->eEventId);
+    }
 }

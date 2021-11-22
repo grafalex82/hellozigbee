@@ -71,3 +71,15 @@ void BasicClusterEndpoint::init()
     // Initialize OTA
     otaHandlers.initOTA(getEndpointId());
 }
+
+void BasicClusterEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    // This function handles only OTA messages
+    if(psEvent->uMessage.sClusterCustomMessage.u16ClusterId != OTA_CLUSTER_ID)
+        return;
+
+    // Parse and process OTA message
+    tsOTA_CallBackMessage *psCallBackMessage = (tsOTA_CallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    otaHandlers.handleOTAMessage(psCallBackMessage);
+}
+
