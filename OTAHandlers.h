@@ -23,6 +23,7 @@ public:
 private:
     void restoreOTAAttributes();
     void initFlash();
+    void vDumpOverridenMacAddress();
 };
 
 #endif // OTAHANDLERS_H

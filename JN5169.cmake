@@ -96,7 +96,7 @@ FUNCTION(ADD_HEX_BIN_TARGETS TARGET)
       SET(FILENAME "${TARGET}")
     ENDIF()
     ADD_CUSTOM_TARGET(${TARGET}.hex DEPENDS ${TARGET} COMMAND ${CMAKE_OBJCOPY} -Oihex ${FILENAME} ${FILENAME}.hex)
-    ADD_CUSTOM_TARGET(${TARGET}.bin DEPENDS ${TARGET} COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers  -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -S -O binary ${FILENAME} ${FILENAME}.bin)
+    ADD_CUSTOM_TARGET(${TARGET}.bin DEPENDS ${TARGET} COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers  -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -j .ro_mac_address -j .ro_ota_header -S -O binary ${FILENAME} ${FILENAME}.bin)
 ENDFUNCTION()
 
 FUNCTION(ADD_DUMP_TARGET TARGET)

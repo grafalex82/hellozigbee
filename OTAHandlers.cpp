@@ -26,8 +26,9 @@ void OTAHandlers::initOTA(uint8 ep)
     restoreOTAAttributes();
     initFlash();
 
-    // Just dump current image OTA header
+    // Just dump current image OTA header and MAC address
     vDumpCurrentImageOTAHeader(otaEp);
+    vDumpOverridenMacAddress();
 }
 
 void OTAHandlers::restoreOTAAttributes()
@@ -87,4 +88,16 @@ void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
     default:
         DBG_vPrintf(TRUE, "OTA Callback Message: Unknown event type evt=%d\n", pMsg->eEventId);
     }
+}
+
+void OTAHandlers::vDumpOverridenMacAddress()
+{
+    static uint8 au8MacAddress[]  __attribute__ ((section (".ro_mac_address"))) = {
+                      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+    };
+
+    DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", au8MacAddress);
+    for (int i=0; i<8; i++)
+        DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
+    DBG_vPrintf(TRUE, "\n\n");
 }
