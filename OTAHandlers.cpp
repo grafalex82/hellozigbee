@@ -75,21 +75,6 @@ void OTAHandlers::initFlash()
         DBG_vPrintf(TRUE, "OTAHandlers::initFlash(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
 }
 
-void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
-{
-    DBG_vPrintf(TRUE, "OTA Callback Message: evt=%d\n", pMsg->eEventId);
-    DBG_vPrintf(TRUE, "OTA Callback Message: fnPointer=0x%08x\n", pMsg->sPersistedData.u32FunctionPointer);
-
-    switch(pMsg->eEventId)
-    {
-    case E_CLD_OTA_COMMAND_IMAGE_NOTIFY:
-    case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
-    case E_CLD_OTA_INTERNAL_COMMAND_POLL_REQUIRED:
-    default:
-        DBG_vPrintf(TRUE, "OTA Callback Message: Unknown event type evt=%d\n", pMsg->eEventId);
-    }
-}
-
 void OTAHandlers::vDumpOverridenMacAddress()
 {
     static uint8 au8MacAddress[]  __attribute__ ((section (".ro_mac_address"))) = {
@@ -101,3 +86,18 @@ void OTAHandlers::vDumpOverridenMacAddress()
         DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
     DBG_vPrintf(TRUE, "\n\n");
 }
+
+void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
+{
+    vDumpOTAMessage(pMsg);
+
+    switch(pMsg->eEventId)
+    {
+    case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
+        // TODO: handle saving context
+        break;
+    default:
+        break;
+    }
+}
+

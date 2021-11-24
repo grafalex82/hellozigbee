@@ -6,7 +6,11 @@ extern "C"
     #include "jendefs.h"
 
     #include "OTA.h"
-    } // Missing '}' in OTA.h
+
+    #ifndef OTA_H_FIXED
+    #define OTA_H_FIXED
+    } // Missed '}' in OTA.h
+    #endif //OTA_H_FIXED
 }
 
 

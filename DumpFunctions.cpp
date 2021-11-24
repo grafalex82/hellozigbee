@@ -4,10 +4,12 @@ extern "C"
 {
     #include "dbg.h"
     #include "zcl_customcommand.h"
-    #include "OTA.h"
-    } // Missed '}' in OTA.h
     #include "bdb_api.h"
+
+    #ifndef _appZpsBeaconHandler_h_fixed_
+    #define _appZpsBeaconHandler_h_fixed_
     }// missed '}' in appZpsBeaconHandler.h
+    #endif //_appZpsBeaconHandler_h_fixed_
 }
 
 PRIVATE void vPrintAddr(ZPS_tuAddress addr, uint8 mode)
@@ -461,4 +463,44 @@ void vDumpCurrentImageOTAHeader(uint8 otaEp)
     DBG_vPrintf(TRUE, "  File Ver = 0x%08x\n",sOTAHeader.u32FileVersion);
     DBG_vPrintf(TRUE, "  Stack Ver = 0x%04x\n",sOTAHeader.u16StackVersion);
     DBG_vPrintf(TRUE, "  Image Len = 0x%08x\n\n",sOTAHeader.u32TotalImage);
+}
+
+
+void vDumpImageNotifyMessage(tsOTA_ImageNotifyCommand * pMsg)
+{
+    DBG_vPrintf(TRUE, "OTA Image Notify: QueryJitter=%d", pMsg->u8QueryJitter);
+
+    if(pMsg->ePayloadType != E_CLD_OTA_QUERY_JITTER)
+        DBG_vPrintf(TRUE, ", manuID=%04x", pMsg->u16ManufacturerCode);
+
+    if(pMsg->ePayloadType == E_CLD_OTA_ITYPE_MDID_JITTER || pMsg->ePayloadType == E_CLD_OTA_ITYPE_MDID_FVERSION_JITTER)
+        DBG_vPrintf(TRUE, ", ImageType=%d", pMsg->u16ImageType);
+
+    if(pMsg->ePayloadType == E_CLD_OTA_ITYPE_MDID_FVERSION_JITTER)
+        DBG_vPrintf(TRUE, ", FileVersion=%d", pMsg->u32NewFileVersion);
+
+    DBG_vPrintf(TRUE, "\n");
+}
+
+void vDumpOTAMessage(tsOTA_CallBackMessage * pMsg)
+{
+    DBG_vPrintf(TRUE, "OTA Callback Message: fnPointer=0x%08x, ", pMsg->sPersistedData.u32FunctionPointer);
+
+    switch(pMsg->eEventId)
+    {
+    case E_CLD_OTA_COMMAND_IMAGE_NOTIFY:
+        vDumpImageNotifyMessage(&pMsg->uMessage.sImageNotifyPayload);
+        break;
+
+    case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
+        DBG_vPrintf(TRUE, "OTA Save Context (Internal)\n");
+        break;
+
+    case E_CLD_OTA_INTERNAL_COMMAND_POLL_REQUIRED:
+        DBG_vPrintf(TRUE, "OTA Poll Required (Internal)\n");
+        break;
+
+    default:
+        DBG_vPrintf(TRUE, "Unknown event type evt=%d\n", pMsg->eEventId);
+    }
 }

@@ -3,6 +3,16 @@
 
 extern "C"
 {
+    #include "OTA.h"
+
+    #ifndef OTA_H_FIXED
+    #define OTA_H_FIXED
+    } // Missed '}' in OTA.h
+    #endif //OTA_H_FIXED
+}
+
+extern "C"
+{
     #include "zcl.h"
 
     void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent);
@@ -15,6 +25,7 @@ extern "C"
     void vDisplayAddressMap();
 
     void vDumpCurrentImageOTAHeader(uint8 otaEp);
+    void vDumpOTAMessage(tsOTA_CallBackMessage * pMsg);
 }
 
 
