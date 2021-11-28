@@ -482,8 +482,64 @@ void vDumpImageNotifyMessage(tsOTA_ImageNotifyCommand * pMsg)
     DBG_vPrintf(TRUE, "\n");
 }
 
+void vDumpQueryImageResponseMessage(tsOTA_QueryImageResponse * pMsg)
+{
+    DBG_vPrintf(TRUE, "OTA Query Image Resp: imageSize=%d, fileVersion=%d, imageType=%d, manufId=%04x, status=%02x\n",
+                pMsg->u32ImageSize,
+                pMsg->u32FileVersion,
+                pMsg->u16ImageType,
+                pMsg->u16ManufacturerCode,
+                pMsg->u8Status
+                );
+}
+
+void vDumpBlockResponseMessage(tsOTA_ImageBlockResponsePayload * pMsg)
+{
+    switch(pMsg->u8Status)
+    {
+        case OTA_STATUS_SUCCESS:
+            DBG_vPrintf(TRUE, "OTA Image Block Resp: fileOffset=%d, dataSize=%d, fileVersion=%d, imageType=%d, manufID=%04x\n",
+                        pMsg->uMessage.sBlockPayloadSuccess.u32FileOffset,
+                        pMsg->uMessage.sBlockPayloadSuccess.u8DataSize,
+                        pMsg->uMessage.sBlockPayloadSuccess.u32FileVersion,
+                        pMsg->uMessage.sBlockPayloadSuccess.u16ImageType,
+                        pMsg->uMessage.sBlockPayloadSuccess.u16ManufacturerCode
+                        );
+            break;
+
+        //case OTA_STATUS_ABORT:
+        //case OTA_STATUS_WAIT_FOR_DATA:
+        default:
+            DBG_vPrintf(TRUE, "OTA Image Block Resp: unknown status=%02x\n", pMsg->u8Status);
+            break;
+    }
+}
+
+void vDumpUpgradeEndResponseMessage(tsOTA_UpgradeEndResponsePayload * pMsg)
+{
+    DBG_vPrintf(TRUE, "OTA Block Resp: upgradeTime=%d, currentTime=%d, fileVersion=%d, imageType=%d, manufID=%04x\n",
+                pMsg->u32UpgradeTime,
+                pMsg->u32CurrentTime,
+                pMsg->u32FileVersion,
+                pMsg->u16ImageType,
+                pMsg->u16ManufacturerCode
+                );
+}
+
+
 void vDumpOTAMessage(tsOTA_CallBackMessage * pMsg)
 {
+    // Ignore these noisy messages
+    switch(pMsg->eEventId)
+    {
+    case E_CLD_OTA_INTERNAL_COMMAND_LOCK_FLASH_MUTEX:
+    case E_CLD_OTA_INTERNAL_COMMAND_FREE_FLASH_MUTEX:
+    case E_CLD_OTA_INTERNAL_COMMAND_POLL_REQUIRED:
+        return;
+    default:
+        break;
+    }
+
     DBG_vPrintf(TRUE, "OTA Callback Message: fnPointer=0x%08x, ", pMsg->sPersistedData.u32FunctionPointer);
 
     switch(pMsg->eEventId)
@@ -492,12 +548,42 @@ void vDumpOTAMessage(tsOTA_CallBackMessage * pMsg)
         vDumpImageNotifyMessage(&pMsg->uMessage.sImageNotifyPayload);
         break;
 
+    case E_CLD_OTA_COMMAND_QUERY_NEXT_IMAGE_RESPONSE:
+        vDumpQueryImageResponseMessage(&pMsg->uMessage.sQueryImageResponsePayload);
+        break;
+
+    case E_CLD_OTA_COMMAND_BLOCK_RESPONSE:
+        vDumpBlockResponseMessage(&pMsg->uMessage.sImageBlockResponsePayload);
+        break;
+
+    case E_CLD_OTA_COMMAND_UPGRADE_END_RESPONSE:
+        vDumpUpgradeEndResponseMessage(&pMsg->uMessage.sUpgradeResponsePayload);
+        break;
+
+    case E_CLD_OTA_INTERNAL_COMMAND_VERIFY_IMAGE_VERSION:
+        DBG_vPrintf(TRUE, "OTA Verify image version (Internal)\n");
+        break;
+
+    case E_CLD_OTA_INTERNAL_COMMAND_VERIFY_STRING:
+        DBG_vPrintf(TRUE, "OTA Verify string (Internal)\n");
+        break;
+
     case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
         DBG_vPrintf(TRUE, "OTA Save Context (Internal)\n");
         break;
 
-    case E_CLD_OTA_INTERNAL_COMMAND_POLL_REQUIRED:
-        DBG_vPrintf(TRUE, "OTA Poll Required (Internal)\n");
+    case E_CLD_OTA_INTERNAL_COMMAND_OTA_DL_ABORTED:
+        DBG_vPrintf(TRUE, "OTA Download aborted (Internal)\n");
+        break;
+
+    case E_CLD_OTA_INTERNAL_COMMAND_SWITCH_TO_UPGRADE_DOWNGRADE:
+        DBG_vPrintf(TRUE, "OTA Switch to new image (Internal): oldVer=%d newVer=%d\n",
+                    &pMsg->uMessage.sUpgradeDowngradeVerify.u32CurrentImageVersion,
+                    &pMsg->uMessage.sUpgradeDowngradeVerify.u32DownloadImageVersion);
+        break;
+
+    case E_CLD_OTA_INTERNAL_COMMAND_RESET_TO_UPGRADE:
+        DBG_vPrintf(TRUE, "OTA Reset to upgrade (Internal)\n");
         break;
 
     default:
