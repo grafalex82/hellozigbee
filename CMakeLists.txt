@@ -191,6 +191,7 @@ SET(SOURCES
         BasicClusterEndpoint.cpp
 	OOSC.c
         OTAHandlers.cpp
+        ZCLTimer.cpp
         Main.cpp
 )
 

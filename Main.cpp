@@ -20,6 +20,7 @@ extern "C"
 #include "EndpointManager.h"
 #include "BasicClusterEndpoint.h"
 #include "ZigbeeDevice.h"
+#include "ZCLTimer.h"
 
 const uint8 SWITCH1_LED_PIN = 17;
 const uint8 SWITCH2_LED_PIN = 0;
@@ -41,13 +42,14 @@ extern "C"
 }
 
 
-// 5 timers are:
+// 6 timers are:
 // - 1 in ButtonTask
 // - 2 in SwitchEndpoints
 // - 1 in PollTask
-// - 1 in DeferredExecutor (TODO: Do we still need it)
+// - 1 in DeferredExecutor (TODO: Do we still need it?)
+// - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
-ZTIMER_tsTimer timers[5 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
 
 
 struct Context
@@ -209,9 +211,12 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
     appEventQueue.init();
 
-    // Initialize deferred executor
-    DBG_vPrintf(TRUE, "vAppMain(): Initialize deferred executor...\n");
+    // Initialize periodic tasks
+    DBG_vPrintf(TRUE, "vAppMain(): Initialize periodic tasks...\n");
     deferredExecutor.init();
+    ZCLTimer zclTimer;
+    zclTimer.init();
+    zclTimer.startTimer(1000);
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
