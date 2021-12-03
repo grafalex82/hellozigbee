@@ -578,8 +578,8 @@ void vDumpOTAMessage(tsOTA_CallBackMessage * pMsg)
 
     case E_CLD_OTA_INTERNAL_COMMAND_SWITCH_TO_UPGRADE_DOWNGRADE:
         DBG_vPrintf(TRUE, "OTA Switch to new image (Internal): oldVer=%d newVer=%d\n",
-                    &pMsg->uMessage.sUpgradeDowngradeVerify.u32CurrentImageVersion,
-                    &pMsg->uMessage.sUpgradeDowngradeVerify.u32DownloadImageVersion);
+                    pMsg->uMessage.sUpgradeDowngradeVerify.u32CurrentImageVersion,
+                    pMsg->uMessage.sUpgradeDowngradeVerify.u32DownloadImageVersion);
         break;
 
     case E_CLD_OTA_INTERNAL_COMMAND_RESET_TO_UPGRADE:
