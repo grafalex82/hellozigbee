@@ -24,9 +24,9 @@ public:
         }
 
         if(sizeof(T) <= 4)
-            DBG_vPrintf(TRUE, "PersistedValue::init(): Status %d, value %d\n", status, value);
+            DBG_vPrintf(TRUE, "PersistedValue::init(): size %d, Status %d, value %d\n", sizeof(T), status, value);
         else
-            DBG_vPrintf(TRUE, "PersistedValue::init(): Status %d\n", status);
+            DBG_vPrintf(TRUE, "PersistedValue::init(): size %d, Status %d\n", sizeof(T), status);
     }
 
     void init(void(*initFunc)(T*))
@@ -40,9 +40,9 @@ public:
         }
 
         if(sizeof(T) <= 4)
-            DBG_vPrintf(TRUE, "PersistedValue::init(): Status %d, value %d\n", status, value);
+            DBG_vPrintf(TRUE, "PersistedValue::init(): size %d, Status %d, value %d\n", sizeof(T), status, value);
         else
-            DBG_vPrintf(TRUE, "PersistedValue::init(): Status %d\n", status);
+            DBG_vPrintf(TRUE, "PersistedValue::init(): size %d, Status %d\n", sizeof(T), status);
     }
 
     T getValue() const
