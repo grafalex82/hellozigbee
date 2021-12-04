@@ -1,7 +1,5 @@
 #include "OTAHandlers.h"
 #include "DumpFunctions.h"
-#include "PersistedValue.h"
-#include "PdmIds.h"
 
 extern "C"
 {
@@ -39,7 +37,6 @@ void OTAHandlers::restoreOTAAttributes()
         DBG_vPrintf(TRUE, "OTAHandlers::restoreOTAAttributes(): Failed to create OTA Cluster attributes. status=%d\n", status);
 
     // Restore previous values
-    PersistedValue<tsOTA_PersistedData, PDM_ID_OTA_DATA> sPersistedData;
     sPersistedData.init(resetPersistedOTAData);
     status = eOTA_RestoreClientData(otaEp, &sPersistedData, TRUE);
     if(status != E_ZCL_SUCCESS)
@@ -87,6 +84,33 @@ void OTAHandlers::vDumpOverridenMacAddress()
     DBG_vPrintf(TRUE, "\n\n");
 }
 
+void OTAHandlers::saveOTAContext()
+{
+    DBG_vPrintf(TRUE, "Saving OTA Context... ");
+
+    // Get the OTA cluster data record
+    tsZCL_ClusterInstance *psClusterInstance;
+    teZCL_Status status = eZCL_SearchForClusterEntry(1, OTA_CLUSTER_ID, FALSE, &psClusterInstance);
+    if(status  != E_ZCL_SUCCESS)
+    {
+        DBG_vPrintf(TRUE, "Search OTA entry failed with status %02x\n", status);
+        return;
+    }
+
+    // Check the data pointer
+    tsOTA_Common * pOTACustomData = (tsOTA_Common *)psClusterInstance->pvEndPointCustomStructPtr;
+    if(pOTACustomData == NULL)
+    {
+        DBG_vPrintf(TRUE, "No OTA data pointer\n");
+        return;
+    }
+
+    // Store the data
+    sPersistedData = pOTACustomData->sOTACallBackMessage.sPersistedData;
+
+    DBG_vPrintf(TRUE, "Done\n");
+}
+
 void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
 {
     vDumpOTAMessage(pMsg);
@@ -94,7 +118,7 @@ void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
     switch(pMsg->eEventId)
     {
     case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
-        // TODO: handle saving context
+        saveOTAContext();
         break;
     default:
         break;

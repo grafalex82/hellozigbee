@@ -1,6 +1,9 @@
 #ifndef OTAHANDLERS_H
 #define OTAHANDLERS_H
 
+#include "PersistedValue.h"
+#include "PdmIds.h"
+
 extern "C"
 {
     #include "jendefs.h"
@@ -17,6 +20,7 @@ extern "C"
 class OTAHandlers
 {
     uint8 otaEp;
+    PersistedValue<tsOTA_PersistedData, PDM_ID_OTA_DATA> sPersistedData;
 
 public:
     OTAHandlers();
@@ -28,6 +32,7 @@ private:
     void restoreOTAAttributes();
     void initFlash();
     void vDumpOverridenMacAddress();
+    void saveOTAContext();
 };
 
 #endif // OTAHANDLERS_H
