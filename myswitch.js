@@ -4,6 +4,13 @@ const exposes = require('zigbee-herdsman-converters/lib/exposes');
 const reporting = require('zigbee-herdsman-converters/lib/reporting');
 const utils = require('zigbee-herdsman-converters/lib/utils');
 
+const ota = require('zigbee-herdsman-converters/lib/ota')
+const otacommon = require('zigbee-herdsman-converters/lib/ota/common')
+const assert = require('assert');
+const fs = require('fs');
+const crypto = require('crypto');
+const path = require('path');
+
 const e = exposes.presets;
 const ea = exposes.access;
 
@@ -196,7 +203,59 @@ const fromZigbee_MultistateInput = {
     },
 }
 
+async function getImageMeta(current, logger, device) {
+    logger.debug(`My getImageMeta()`);
+    logger.debug(`device='${JSON.stringify(device)}'`);
+    logger.debug(`current='${JSON.stringify(current)}'`);
 
+    const modelId = device.modelID;
+
+    const fileName = '/app/data/HelloZigbee.ota';
+    const buffer = fs.readFileSync(fileName);
+    const parsed = otacommon.parseImage(buffer);
+
+    const hash = crypto.createHash('sha512');
+    hash.update(buffer);
+
+    const ret = {
+        fileVersion: parsed.header.fileVersion,
+        fileSize: parsed.header.totalImageSize,
+        url: fileName,
+        sha512: hash.digest('hex'),
+    };
+
+    logger.debug(`My getImageMeta(): ret='${JSON.stringify(ret)}'`);
+    return ret;
+}
+
+async function getNewImage(current, logger, device, getImageMeta, downloadImage) {
+    const meta = await getImageMeta(current, logger, device);
+    logger.debug(`getNewImage for '${device.ieeeAddr}', meta ${JSON.stringify(meta)}`);
+
+    const fileName = '/app/data/HelloZigbee.ota';
+    const buffer = fs.readFileSync(fileName);
+    const image = otacommon.parseImage(buffer);
+
+    logger.debug(`getNewImage for '${device.ieeeAddr}', image header ${JSON.stringify(image.header)}`);
+
+    if ('minimumHardwareVersion' in image.header && 'maximumHardwareVersion' in image.header) {
+        assert(image.header.minimumHardwareVersion <= device.hardwareVersion &&
+            device.hardwareVersion <= image.header.maximumHardwareVersion, 'Hardware version mismatch');
+    }
+    return image;
+}
+
+const MyOta = {
+    isUpdateAvailable: async (device, logger, requestPayload=null) => {
+        logger.debug(`My isUpdateAvailable()`);
+        return otacommon.isUpdateAvailable(device, logger, otacommon.isNewImageAvailable, requestPayload, getImageMeta);
+    },
+
+    updateToLatest: async (device, logger, onProgress) => {
+        logger.debug(`My updateToLatest()`);
+        return otacommon.updateToLatest(device, logger, onProgress, getNewImage, getImageMeta);
+    }
+}
 
 const device = {
     zigbeeModel: ['Hello Zigbee Switch'],
@@ -223,6 +282,7 @@ const device = {
         };
     },
     meta: {multiEndpoint: true},
+    ota: MyOta
 };
 
 module.exports = device;
