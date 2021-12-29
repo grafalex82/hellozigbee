@@ -70,7 +70,10 @@ public:
     {
         value = newValue;
         PDM_teStatus status = PDM_eSaveRecordData(id, &value, sizeof(T));
-        DBG_vPrintf(TRUE, "PersistedValue::setValue() Status %d, value %d\n", status, value);
+        if(sizeof(T) <= 4)
+            DBG_vPrintf(TRUE, "PersistedValue::setValue() Status %d, value %d\n", status, value);
+        else
+            DBG_vPrintf(TRUE, "PersistedValue::setValue() Status %d\n", status);
     }
 };
 
