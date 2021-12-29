@@ -38,6 +38,14 @@ void OTAHandlers::restoreOTAAttributes()
 
     // Restore previous values
     sPersistedData.init(resetPersistedOTAData);
+
+    // Correct retry timer to force retry in 10 seconds
+    if((&sPersistedData)->u32RequestBlockRequestTime != 0)
+    {
+        DBG_vPrintf(TRUE, "OTAHandlers::restoreOTAAttriutes(): Will retry current operation in 10 seconds (old value %d)\n", (&sPersistedData)->u32RequestBlockRequestTime);
+        (&sPersistedData)->u32RequestBlockRequestTime = 10;
+    }
+
     status = eOTA_RestoreClientData(otaEp, &sPersistedData, TRUE);
     if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "OTAHandlers::restoreOTAAttributes(): Failed to restore OTA data. status=%d\n", status);
