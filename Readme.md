@@ -7,7 +7,7 @@ exposes an On/Off entity to the coordinator. On a button press, or on a network 
 
 Basically the code is almost independent of the hardware (assuming it is based on JN5169). I am using a simple schematics based on a cheap EBYTE E75-2G4M10S module.
 
-![Schematics](Schematics.png)
+![Schematics](doc/Schematics.png)
 
 # How to build
 
