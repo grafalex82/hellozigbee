@@ -119,7 +119,7 @@ INCLUDE_DIRECTORIES(
     ${SDK_PREFIX}/Components/BDB/Include
 
     ${SDK_PREFIX}/Components/Common/Include
-    ${SDK_PREFIX}/Components/Dbg/Include
+    ${SDK_PREFIX}/Components/DBG/Include
     ${SDK_PREFIX}/Components/HardwareAPI/Include
     ${SDK_PREFIX}/Components/MAC/Include
     ${SDK_PREFIX}/Components/MicroSpecific/Include
