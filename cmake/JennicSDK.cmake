@@ -40,24 +40,82 @@ function(DUMP_COMPILER_SETTINGS)
      message(STATUS "  CMAKE_DEBUGER = ${CMAKE_DEBUGER}")
      message(STATUS "  CMAKE_CPPFILT = ${CMAKE_CPPFILT}")
 
-     MESSAGE(STATUS "======================")
-     MESSAGE(STATUS "Compiler flags:")
+     message(STATUS "======================")
+     message(STATUS "Compiler flags:")
 
-     MESSAGE(STATUS "  CMAKE_C_FLAGS = ${CMAKE_C_FLAGS}")
-     MESSAGE(STATUS "  CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
-     MESSAGE(STATUS "  CMAKE_ASM_FLAGS = ${CMAKE_ASM_FLAGS}")
-     MESSAGE(STATUS "  CMAKE_EXE_LINKER_FLAGS = ${CMAKE_EXE_LINKER_FLAGS}")
-     MESSAGE(STATUS "  CMAKE_MODULE_LINKER_FLAGS = ${CMAKE_MODULE_LINKER_FLAGS}")
-     MESSAGE(STATUS "  CMAKE_SHARED_LINKER_FLAGS = ${CMAKE_SHARED_LINKER_FLAGS}")
+     message(STATUS "  CMAKE_C_FLAGS = ${CMAKE_C_FLAGS}")
+     message(STATUS "  CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+     message(STATUS "  CMAKE_ASM_FLAGS = ${CMAKE_ASM_FLAGS}")
+     message(STATUS "  CMAKE_EXE_LINKER_FLAGS = ${CMAKE_EXE_LINKER_FLAGS}")
+     message(STATUS "  CMAKE_MODULE_LINKER_FLAGS = ${CMAKE_MODULE_LINKER_FLAGS}")
+     message(STATUS "  CMAKE_SHARED_LINKER_FLAGS = ${CMAKE_SHARED_LINKER_FLAGS}")
 
-     MESSAGE(STATUS "  CMAKE_C_FLAGS_DEBUG = ${CMAKE_C_FLAGS_DEBUG}")
-     MESSAGE(STATUS "  CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
-     MESSAGE(STATUS "  CMAKE_ASM_FLAGS_DEBUG = ${CMAKE_ASM_FLAGS_DEBUG}")
-     MESSAGE(STATUS "  CMAKE_EXE_LINKER_FLAGS_DEBUG = ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
-     MESSAGE(STATUS "  CMAKE_C_FLAGS_RELEASE = ${CMAKE_C_FLAGS_RELEASE}")
-     MESSAGE(STATUS "  CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
-     MESSAGE(STATUS "  CMAKE_ASM_FLAGS_RELEASE = ${CMAKE_ASM_FLAGS_RELEASE}")
-     MESSAGE(STATUS "  CMAKE_EXE_LINKER_FLAGS_RELEASE = ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+     message(STATUS "  CMAKE_C_FLAGS_DEBUG = ${CMAKE_C_FLAGS_DEBUG}")
+     message(STATUS "  CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
+     message(STATUS "  CMAKE_ASM_FLAGS_DEBUG = ${CMAKE_ASM_FLAGS_DEBUG}")
+     message(STATUS "  CMAKE_EXE_LINKER_FLAGS_DEBUG = ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
+     message(STATUS "  CMAKE_C_FLAGS_RELEASE = ${CMAKE_C_FLAGS_RELEASE}")
+     message(STATUS "  CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
+     message(STATUS "  CMAKE_ASM_FLAGS_RELEASE = ${CMAKE_ASM_FLAGS_RELEASE}")
+     message(STATUS "  CMAKE_EXE_LINKER_FLAGS_RELEASE = ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
      message(STATUS "======================")
      message(STATUS "")
+endfunction()
+
+function(ADD_HEX_BIN_TARGETS TARGET)
+    if(RUNTIME_OUTPUT_DIRECTORY)
+      set(FILENAME "${RUNTIME_OUTPUT_DIRECTORY}/${TARGET}")
+    else()
+      set(FILENAME "${TARGET}")
+    endif()
+    add_custom_target(OUTPUT "${TARGET}.hex"
+        DEPENDS ${TARGET}
+        COMMAND ${CMAKE_OBJCOPY} -Oihex ${FILENAME} ${FILENAME}.hex
+    )
+    add_custom_target("${TARGET}.bin"
+        DEPENDS ${TARGET}
+        COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -j .ro_mac_address -j .ro_ota_header -j .pad -S -O binary ${FILENAME} ${FILENAME}.tmp.bin
+        COMMAND "${SDK_PREFIX}\\Tools\\OTAUtils\\JET.exe" -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n 1 -t 1 -u 0x1037 -j "HelloZigbee2021                 " -o ${FILENAME}.bin
+    )
+endfunction()
+
+function(ADD_OTA_BIN_TARGETS TARGET)
+    if(RUNTIME_OUTPUT_DIRECTORY)
+      set(FILENAME "${RUNTIME_OUTPUT_DIRECTORY}/${TARGET}")
+    else()
+      set(FILENAME "${TARGET}")
+    endif()
+    add_custom_target(${TARGET}.ota
+        DEPENDS ${TARGET}.bin
+	# HACK/TODO: setting file version to 2 (-n 2), so that OTA image is always newer than current version
+        COMMAND "${SDK_PREFIX}\\Tools\\OTAUtils\\JET.exe" -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n 2 -t 1 -u 0x1037 -j "HelloZigbee2021                 " -o ${FILENAME}.bin
+        COMMAND "${SDK_PREFIX}\\Tools\\OTAUtils\\JET.exe" -m otamerge --ota -v JN516x -n 2 -t 1 -u 0x1037 -p 1 -c ${FILENAME}.bin -o ${FILENAME}.ota
+    )
+endfunction()
+
+function(ADD_DUMP_TARGET TARGET)
+    if(RUNTIME_OUTPUT_DIRECTORY)
+      set(FILENAME "${RUNTIME_OUTPUT_DIRECTORY}/${TARGET}")
+    else()
+      set(FILENAME "${TARGET}")
+    endif()
+    add_custom_target(${TARGET}.dump DEPENDS ${TARGET} COMMAND ${CMAKE_OBJDUMP} -x -D -S -s ${FILENAME} | ${CMAKE_CPPFILT} > ${FILENAME}.dump)
+endfunction()
+
+function(PRINT_SIZE_OF_TARGETS TARGET)
+    if(RUNTIME_OUTPUT_DIRECTORY)
+      set(FILENAME "${RUNTIME_OUTPUT_DIRECTORY}/${TARGET}")
+    else()
+      set(FILENAME "${TARGET}")
+    endif()
+    add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_SIZE} ${FILENAME})
+endfunction()
+
+function(FLASH_FIRMWARE_TARGET TARGET)
+    if(RUNTIME_OUTPUT_DIRECTORY)
+      set(FILENAME "${RUNTIME_OUTPUT_DIRECTORY}/${TARGET}")
+    else()
+      set(FILENAME "${TARGET}")
+    endif()
+    add_custom_target(${TARGET}.flash DEPENDS ${TARGET}.bin COMMAND "C:\\NXP\\ProductionFlashProgrammer\\JN51xxProgrammer.exe" -V 0 -s COM3 -f ${FILENAME}.bin)
 endfunction()
