@@ -1,20 +1,8 @@
-
 ################################
 # Common settings
 
 ADD_DEFINITIONS(
-	-DJENNIC_CHIP_NAME=_JN5169
-	-DJENNIC_CHIP_FAMILY_NAME=_JN516x
-	-DJENNIC_CHIP_FAMILY_JN516x
-	-DJENNIC_CHIP_FAMILY=JN516x
-	-DJN516x=5160
-	-DDBG_ENABLE
-	-DEMBEDDED
-	-DPDM_NO_RTOS
-        -DJENNIC_MAC_MiniMacShim
         -DOTA_INTERNAL_STORAGE
-
-
 #        -DTRACE_ZCL=TRUE
         -DTRACE_OTA_DEBUG=TRUE
 #        -DDEBUG_BDB
@@ -37,8 +25,8 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/appZpsBeaconHandler.c
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZTimer.c
 	${SDK_PREFIX}/Components/ZigbeeCommon/Source/ZQueue.c
-	${SDK_PREFIX}/Components/ZigbeeCommon/Source/portasm_JN516x.S
-        ${SDK_PREFIX}/Components/ZigbeeCommon/Source/port_JN516x.c
+	${SDK_PREFIX}/Components/ZigbeeCommon/Source/portasm_${JENNIC_CHIP_FAMILY}.S
+        ${SDK_PREFIX}/Components/ZigbeeCommon/Source/port_${JENNIC_CHIP_FAMILY}.c
 
         ${SDK_PREFIX}/Components/ZCIF/Source/dlist.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl.c
@@ -155,7 +143,7 @@ INCLUDE_DIRECTORIES(
 
 LINK_DIRECTORIES(
 	${SDK_PREFIX}/Components/Library
-	${SDK_PREFIX}/Chip/JN5169/Build
+	${SDK_PREFIX}/Chip/${JENNIC_CHIP}/Build
 	${SDK_PREFIX}/Platform/DK4/Library
 )
 
@@ -199,27 +187,25 @@ TARGET_LINK_LIBRARIES(HelloZigbee
 
 	ZigBee	
 
-        Aes_JN516x
-        AES_SW_JN516x
-#        AppApi_JN5169
-        Boot_JN516x
-        DBG_JN516x
-        HardwareApi_JN5169
-        JPT_JN5169
-#        MAC_JN5169
-        MicroSpecific_JN516x
-        MiniMac_JN5169
-        MiniMacShim_JN516x
-        MMAC_JN5169
-        PDM_EEPROM_NO_RTOS_JN516x
-        PDUM_JN516x
-        Random_JN516x
-        PWRM_JN516x
-        ZPSAPL_JN516x
-        ZPSAPL_ZCP-GU_JN516x
-        ZPSMAC_Mini_SOC_JN516x
-        ZPSNWK_JN516x
-        ZPSTSV_JN516x
+        Aes_${JENNIC_CHIP_FAMILY}
+        AES_SW_${JENNIC_CHIP_FAMILY}
+        Boot_${JENNIC_CHIP_FAMILY}
+        DBG_${JENNIC_CHIP_FAMILY}
+        HardwareApi_${JENNIC_CHIP}
+        JPT_${JENNIC_CHIP}
+        MicroSpecific_${JENNIC_CHIP_FAMILY}
+        MiniMac_${JENNIC_CHIP}
+        MiniMacShim_${JENNIC_CHIP_FAMILY}
+        MMAC_${JENNIC_CHIP}
+        PDM_EEPROM_NO_RTOS_${JENNIC_CHIP_FAMILY}
+        PDUM_${JENNIC_CHIP_FAMILY}
+        Random_${JENNIC_CHIP_FAMILY}
+        PWRM_${JENNIC_CHIP_FAMILY}
+        ZPSAPL_${JENNIC_CHIP_FAMILY}
+        ZPSAPL_ZCP-GU_${JENNIC_CHIP_FAMILY}
+        ZPSMAC_Mini_SOC_${JENNIC_CHIP_FAMILY}
+        ZPSNWK_${JENNIC_CHIP_FAMILY}
+        ZPSTSV_${JENNIC_CHIP_FAMILY}
 
         -Wl,--end-group
 )

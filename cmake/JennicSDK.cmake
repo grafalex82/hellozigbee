@@ -18,9 +18,26 @@ set(CMAKE_MODULE_PATH ${JENNIC_CMAKE_DIR} ${CMAKE_MODULE_PATH})
 if(JENNIC_CHIP STREQUAL "JN5169")
     set(CMAKE_TOOLCHAIN_FILE ${JENNIC_CMAKE_DIR}/${JENNIC_CHIP}.cmake)     
     message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+
+    set(JENNIC_CHIP_FAMILY "JN516x")
 else()
     message(FATAL_ERROR "Unsupported target chip - ${JENNIC_CHIP}")
 endif()
+
+
+# Set build parameters common for the app and Zigbee library
+ADD_DEFINITIONS(
+	-DJENNIC_CHIP_NAME=_${JENNIC_CHIP}
+	-DJENNIC_CHIP_FAMILY_NAME=_${JENNIC_CHIP_FAMILY}
+	-DJENNIC_CHIP_FAMILY_${JENNIC_CHIP_FAMILY}
+	-DJENNIC_CHIP_FAMILY=${JENNIC_CHIP_FAMILY}
+	-DJN516x=5160
+	-DDBG_ENABLE
+	-DEMBEDDED
+	-DPDM_NO_RTOS
+    -DJENNIC_MAC_MiniMacShim
+)
+
 
 # Set up paths to JET, PDUMConfig, and ZPSConfig
 find_package(Python3 COMPONENTS Interpreter)
@@ -97,8 +114,8 @@ function(generate_zps_and_pdum_targets ZPSCFG_FILE)
                 -f ${ZPSCFG_FILE}
                 -o ${CMAKE_CURRENT_BINARY_DIR}
                 -t ${JENNIC_CHIP}
-                -l ${SDK_PREFIX}/Components/Library/libZPSNWK_JN516x.a
-                -a ${SDK_PREFIX}/Components/Library/libZPSAPL_JN516x.a
+                -l ${SDK_PREFIX}/Components/Library/libZPSNWK_${JENNIC_CHIP_FAMILY}.a
+                -a ${SDK_PREFIX}/Components/Library/libZPSAPL_${JENNIC_CHIP_FAMILY}.a
                 -c ${TOOLCHAIN_PREFIX}
         DEPENDS ${ZPSCFG_FILE}
     )
