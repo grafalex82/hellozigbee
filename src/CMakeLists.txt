@@ -109,6 +109,20 @@ TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
 ################################
 # Hello World
 
+# Generate some sources
+ADD_CUSTOM_COMMAND(
+    OUTPUT zps_gen.c
+    COMMAND ${ZPS_CONFIG}
+            -n ${PROJECT_NAME}
+            -f ${HelloZigbee_SOURCE_DIR}/src/HelloZigbee.zpscfg
+            -o ${CMAKE_CURRENT_BINARY_DIR}
+            -t ${JENNIC_CHIP}
+            -l ${SDK_PREFIX}/Components/Library/libZPSNWK_JN516x.a
+            -a ${SDK_PREFIX}/Components/Library/libZPSAPL_JN516x.a
+            -c ${TOOLCHAIN_PREFIX}
+    DEPENDS HelloZigbee.zpscfg
+)
+
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}
 
@@ -145,6 +159,9 @@ INCLUDE_DIRECTORIES(
 
     # Zigbee sources reference zcl_options.h
     ${PROJECT_SOURCE_DIR}/src
+
+    # Generated files
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 LINK_DIRECTORIES(
@@ -159,7 +176,6 @@ SET(SOURCES
 	irq_JN516x.S
         pdum_gen.c
         pdum_apdu.S
-        zps_gen.c
         Queue.h
         Timer.h
         PeriodicTask.h
@@ -183,6 +199,9 @@ SET(SOURCES
         OTAHandlers.cpp
         ZCLTimer.cpp
         Main.cpp
+
+        # Generated sources
+        zps_gen.c
 )
 
 ADD_EXECUTABLE(HelloZigbee ${SOURCES})
