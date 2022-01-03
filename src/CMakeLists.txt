@@ -123,6 +123,15 @@ ADD_CUSTOM_COMMAND(
     DEPENDS HelloZigbee.zpscfg
 )
 
+ADD_CUSTOM_COMMAND(
+    OUTPUT pdum_gen.c
+    COMMAND ${PDUM_CONFIG}
+            -z ${PROJECT_NAME}
+            -f ${HelloZigbee_SOURCE_DIR}/src/HelloZigbee.zpscfg
+            -o ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS HelloZigbee.zpscfg
+)
+
 INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}
 
@@ -174,7 +183,6 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T${HelloZigbee_SOURCE_DIR
 
 SET(SOURCES
 	irq_JN516x.S
-        pdum_gen.c
         pdum_apdu.S
         Queue.h
         Timer.h
@@ -202,6 +210,7 @@ SET(SOURCES
 
         # Generated sources
         zps_gen.c
+        pdum_gen.c
 )
 
 ADD_EXECUTABLE(HelloZigbee ${SOURCES})
