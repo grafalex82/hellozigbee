@@ -86,6 +86,39 @@ function(DUMP_COMPILER_SETTINGS)
     message(STATUS "")
 endfunction()
 
+# Every Zigbee application would need zps_gen.c and pdum_gen.c generated files
+function(generate_zps_and_pdum_targets ZPSCFG_FILE)
+    add_custom_command(
+        OUTPUT
+            zps_gen.c
+            zps_gen.h
+        COMMAND ${ZPS_CONFIG}
+                -n ${PROJECT_NAME}
+                -f ${ZPSCFG_FILE}
+                -o ${CMAKE_CURRENT_BINARY_DIR}
+                -t ${JENNIC_CHIP}
+                -l ${SDK_PREFIX}/Components/Library/libZPSNWK_JN516x.a
+                -a ${SDK_PREFIX}/Components/Library/libZPSAPL_JN516x.a
+                -c ${TOOLCHAIN_PREFIX}
+        DEPENDS ${ZPSCFG_FILE}
+    )
+
+    add_custom_command(
+        OUTPUT
+            pdum_gen.c
+            pdum_gen.h
+        COMMAND ${PDUM_CONFIG}
+                -z ${PROJECT_NAME}
+                -f ${ZPSCFG_FILE}
+                -o ${CMAKE_CURRENT_BINARY_DIR}
+        DEPENDS ${ZPSCFG_FILE}
+    )
+
+    # Add path to generated headers globally (not using target_include_directories)
+    # as generated files are also included from Zigbee sources
+    include_directories(${CMAKE_CURRENT_BINARY_DIR})   
+endfunction()
+
 function(set_target_filename TARGET)
     if(RUNTIME_OUTPUT_DIRECTORY)
         set(FILENAME "${RUNTIME_OUTPUT_DIRECTORY}/${TARGET}" PARENT_SCOPE)
