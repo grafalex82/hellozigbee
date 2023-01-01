@@ -64,12 +64,12 @@ When this is done I can easily port this to the real Xiaomi hardware. Moreover t
 After some experimenting, and having some progress on the project, I can now define a plan.
 
 **Stage 1** — get a working device using E75–2G4M10S module as a standalone device
-- Solder a simple circuit with a few buttons and LEDs (Done)
-- Set up the toolchain, that can compile the firmware (Done)
-- Write a simple application, e.g. LED blinker (Done)
-- Get understanding of how to flash the device (Done)
-- Learn basic peripherals, that could be used in the project e.g. GPIO and UART (Done)
-- Use watchdog timers (Done)
+- Solder a simple circuit with a few buttons and LEDs ([Article](part1_bring_up.md))
+- Set up the toolchain, that can compile the firmware ([Article](part1_bring_up.md))
+- Write a simple application, e.g. LED blinker ([Article](part1_bring_up.md))
+- Get understanding of how to flash the device ([Article](part1_bring_up.md))
+- Learn basic peripherals, that could be used in the project e.g. GPIO and UART ([Article](part1_bring_up.md))
+- Use watchdog timers ([Article](part1_bring_up.md))
 - Understand building blocks provided by SDK, e.g. software timers and message queues (Done)
 - Understand power saving options and sleep modes (Done)
 
