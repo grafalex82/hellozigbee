@@ -70,8 +70,8 @@ After some experimenting, and having some progress on the project, I can now def
 - Get understanding of how to flash the device ([Article](part1_bring_up.md))
 - Learn basic peripherals, that could be used in the project e.g. GPIO and UART ([Article](part1_bring_up.md))
 - Use watchdog timers ([Article](part1_bring_up.md))
-- Understand building blocks provided by SDK, e.g. software timers and message queues (Done)
-- Understand power saving options and sleep modes (Done)
+- Understand building blocks provided by SDK, e.g. software timers and message queues ([Article](part2_timers_queues.md))
+- Understand power saving options and sleep modes ([Article](part3_sleep_modes.md))
 
 **Stage 2** — get a working device as a Zigbee network node
 - Get basic understanding of Zigbee Network and SDK (Done)
