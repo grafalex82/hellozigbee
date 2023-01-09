@@ -227,7 +227,7 @@ PUBLIC void wakeCallBack(void)
 
 This is how the device falls asleep by long pressing the button, periodically waking up by the alarm clock, and finally waking up by the button.
 
-![](console2.png)
+![](images/console2.png)
 
 ## Hello Deep Sleep
 

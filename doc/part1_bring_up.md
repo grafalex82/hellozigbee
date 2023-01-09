@@ -1,6 +1,6 @@
 # Hello Zigbee World, Part 1 — Bringing up NXP JN5169 MCU
 
-![](E75–2G4M10S.png)
+![](images/E75–2G4M10S.png)
 
 In the [previous article](part0_plan.md) I described some plans to develop alternative firmware for some Xiaomi ZigBee devices. But there is a problem: I have never worked with NXP JN5169 microcontrollers, which are used in Xiaomi devices. NXP provides an IDE, several thousand pages of documentation, a \$650 development board, and several megabytes of complicated sample code. But there was no intelligible step-by-step tutorial on the Internet on how to build an application.
 
@@ -23,13 +23,13 @@ I’m pretty sure that it’s possible to figure it all out over time, but most 
 
 Spending $650 on an official development board just to blink an LED is too much. Fortunately, EBYTE released a cheap module E75–2G4M10S (on the picture above), and I am going to experiment with it. For this I soldered a simple circuit.
 
-![](Schematics.png)
+![](images/Schematics.png)
 
 In the circuit has one user button and one LED. The GPIO pins are randomly chosen. It is possible to flash the module via UART. To do this the SPI_MISO pin shall be tied to the ground during reset. That is why 2 additional buttons were added as well.
 
 Here is the assembly on the breadboard (red board is an USB-UART adapter).
 
-![](devboard.jpg)
+![](images/devboard.jpg)
 
 That is it for hardware. It is time to switch to a firmware part.
 
@@ -370,7 +370,7 @@ Please note that the SDK libraries had to be pushed into the group. The linker w
 
 The size of the binary has increased noticeably, and now we can see the treasured lines in the console.
 
-![](console1.png)
+![](images/console1.png)
 
 ## Hello Watchdog
 

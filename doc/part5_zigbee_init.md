@@ -29,14 +29,14 @@ In this article series we will go in completely opposite way - write a minimum a
 
 So, let's try to mold something from the knowledge gained. I won't describe the agonizing process of how I was searching my way millimeter-by-millimeter for several weeks to get something compileable. Instead, I will describe in detail how I would do it now, as I already understand how everything works. BTW, I eventually found the building approach in the documentation, I just had to read up to page 471 :)
 
-![](build_process.png)
+![](images/build_process.png)
 <p><figcaption align = "center"><i>A picture from ZigBee 3.0 Stack User Guide JN-UG-3113 document</i></figcaption></p>
 
 The first step is to configure the device. This is done in the Zigbee3ConfigEditor application that comes with the SDK. This is a graphical configurator that allows you to set the parameters of ZigBee devices. Moreover, you can describe several devices on the network in the same configuration file, and even set up connections between these devices.
 
 But without a deep understanding of ZigBee the application is almost useless - just a set of parameters and values. Moreover, you cannot create a new project and fill in only what you need - by default you'll get an empty project, and a dozen of parameters must be added manually. If you do not know what you are doing you will definitely set something wrong, or you will forget to add an important parameter. So I ended up with a creative copy-paste approach based on app.zpscfg file from the NXP example.
 
-![](Zigbee3ConfigEditor.png)
+![](images/Zigbee3ConfigEditor.png)
 
 The output of the Zigbee3ConfigEditor program is a .zpscfg file, which in fact is just an XML representation of what is visible on the screen.
 
@@ -149,7 +149,7 @@ The build process also revealed the need for another option file - bdb_options.h
 ## Initialization
 Now we can start working on the code, but first let's look at the instructions first. Section 5.1 “Forming and Joining a Network” recommends that we initialize the device as follows.
 
-![](init_instruction.png)
+![](images/init_instruction.png)
 
 Of course, I did not find anything similar in the example code. Instead, the initialization was spread out over several files and a dozen functions. It took me superhuman effort to find all these parts. I even had to draw a call tree to understand the order of called functions. Moreover, some of these functions are actually implemented in the ZigBee framework, and some functions in the user code are executed as a callback. Some of the functions in the example are executed in a different order, compared to the documentation. But since the example works, then, apparently, this order is not so important. Though my implementation will be based primarily on the documentation.
 
@@ -226,7 +226,7 @@ Now it is time to initialize the application layer (Application Framework) by ca
 
 The next step of the algorithm is the call to BDB_vInit(). Here I stop a little bit because this function is not so simple. Here's what the ZigBee 3.0 Devices User Guide JN-UG-3114 says.
 
-![](init_instruction2.png)
+![](images/init_instruction2.png)
 
 From this text we understand that the `BDB_vInit()` and `BDB_vStart()` calls are very important. They initialize the Base Device Behavior (BDB) component, which is responsible for the general behavior of the device as a network node. Moreover, if something important happens, we will be notified through the `APP_vBdbCallback()` callback.
 
@@ -245,7 +245,7 @@ extern "C" PUBLIC void vAppMain(void)
 
 But that's not all. The document ZigBee 3.0 Stack User Guide JN-UG-3113 mentions in section 5.9.1.2 (which is basically about message queues) that any ZigBee device must declare 3 more queues for ZigBee stack needs. There is no clear description of these queues. We are simply asked to copy-paste the necessary code to our application.
 
-![](init_instruction3.png)
+![](images/init_instruction3.png)
 
 Well, okay, they ask, we do. Unfortunately I didn't really understand how exactly these queues are used in the stack. In the generated zsp_gen.c file pointers to these queues are casted to a void* and passed to the Zigbee stack. Moreover, zsp_gen.c file declares 4 queues, not 3. The example code also initializes 4 queues. Anyhow, let's just copy the initialization code for four queues from the example.
 
@@ -387,7 +387,7 @@ I had to deal with the project files a little bit in order to add only those SDK
 
 Let's run the code.
 
-![](console3.png)
+![](images/console3.png)
 
 Nothing exploded, and there are no error lines in the log. The device starts up normally and blinks its LED (this functionality is still there since previous articles). In the logs, we see that the initialization was successful, and the device is operational.
 

@@ -5,7 +5,7 @@ Many years ago I was reading Bill Gates' "The Road Ahead" book. The book describ
 
 The situation changed around 2018, when I found a youtube video presenting Xiaomi Aqara smart home kit. I was an experienced engineer by that time, and possibly could create some Arduino based solutions for smart homes, but this required a lot of work. At the same time Xiaomi devices provided a ready to use solution out of the box. Unlike Arduino based devices that looked like a clew of wires, Aqara ones had a pretty nice design, and devices were factory produced. Moreover the starting kit did cost less than $100.
 
-![](aqara_QBKG12LM.jpg)
+![](images/aqara_QBKG12LM.jpg)
 <p><figcaption align = "center"><i>Xiaomi Aqara QBKG12LM smart switch</i></figcaption></p>
 
 I bought a couple of Xiaomi Aqara switches and several sensors, and I began to enjoy life in a slightly smarter apartment. Later I switched to [zigbee2mqtt](https://www.zigbee2mqtt.io/) plus a CC2538 stick, which allowed me to integrate devices from other manufacturers to my system. Overall, I was inspired with confidence in the future of the technology. When moving to a bigger apartment, I ordered a dozen more Xiaomi Aqara switches and looked forward to how cool it would work on a scale. I was naive...
@@ -42,7 +42,7 @@ The QBKG12LM switch is a quite complex device. It has a lot of on board circuits
 
 I was also looking at a development board based on the same NXP JN5169 microcontroller. But the [https://www.nxp.com/products/wireless/zigbee/zigbee-evaluation-kit-with-nfc-commissioning:JN5169HA](official development board from NXP) costs \$650, which is too expensive for experiments. Fortunately there is a E75-2G4M10S module from EBYTE that costs just a few dollars. I bought several modules for around \$3 each. So it is quite cheap for experiments, and I would not get upset if I burn a few. The only problem is it is just a module, and requires some soldering to make a circuit. But this is not a big deal.
 
-![](E75-2G4M10S.jpg)
+![](images/E75-2G4M10S.jpg)
 <p><figcaption align = "center"><i>EBYTE E75-2G4M10S module</i></figcaption></p>
 
 Next big problem is that the examples provided by NXP are too complicated for a newbie, and poorly described in the documentation. Usually when I learn a new technology I am working in small increments, attacking one problem at a time. Moreover the best approach to get a deep understanding of a technology is to start a simple project from scratch, and add features one by one. This allows me to control each step, and quickly get back to a previous step if something goes wrong.

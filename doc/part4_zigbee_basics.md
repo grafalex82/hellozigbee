@@ -23,7 +23,7 @@ The ZigBee network is quite standardized
 - Different manufacturers interpret the standard differently, which is why not all devices may work correctly in a generic network
 - ZigBee does not have a mandatory certification like Z-Wave. Zigbee devices are cheaper, but no one guarantees their correct operation in non-native networks (in native networks too, however)
 
-![](network_example.png)
+![](images/network_example.png)
 <p><figcaption align = "center"><i>A picture from the JN-UG-3113 ZigBee 3.0 Stack User Guide document shows an example of a ZigBee network with different types of devices.</i></figcaption></p>
 
 Basically, this knowledge is quite enough for an ordinary consumer, including advanced users who build a smart home system on their own. A large knowledge base has been collected regarding the capabilities, tricky cases, features, and bugs of certain device models. But for some reason there is very little information on how to make your device. Because of this, the learning curve is quite steep - you need to read a whole bunch of documentation and example code before you start getting some understanding how this really works.
@@ -32,7 +32,7 @@ Basically, this knowledge is quite enough for an ordinary consumer, including ad
 
 I'll try to explain in simple terms how it all works from the technical side.
 
-![](zigbee_stack.png)
+![](images/zigbee_stack.png)
 <p><figcaption align = "center"><i>A picture from the JN-UG-3113 ZigBee 3.0 Stack User Guide document describing high level architecture of the Zigbee protocol stack</i></figcaption></p>
 
 Let's look at this picture from the bottom up.
@@ -83,7 +83,7 @@ This can't be fully applied to ZigBee. The nodes communicate with each other wit
 
 But the radio is not a very reliable transmission medium and some packets may simply not reach the recipient. In this case, after some timeout, the sender needs to organize a retransmission, and possibly even search for a new route. And while the sender is waiting for a response, a million other things can happen in the network - some nodes will communicate with each other, a node will want to join the network, the coordinator may come with a request, or the neighboring end device will wake up and start transmitting data through our device. From the point of view of a “linear” programmer, all this turns into terrible chaos.
 
-![](network_communication.png)
+![](images/network_communication.png)
 <p><figcaption align = "center"><i>An example of communication in a ZigBee network. Black color indicates the path of some request and the corresponding response. Messages not related to this request are marked in gray</i></figcaption></p>
 
 But it is not all that bad. NXP provides us with a whole bunch of code that will streamline all this and turn it into a kind of event stream for which we will need to write handlers. If an incoming message comes in it will be processed in a handler. If the network drops - device reconnects and reports back with an event. If you need to send some important data - send it over the network and start a timer waiting for a response. Thus turns the firmware into a set of handlers for a specific event. But in case of a complex communication those handlers must be grouped into a bigger structure, possibly a state machine.
@@ -94,7 +94,7 @@ The last point of the theoretical educational program is how data packets are co
 
 If we need to transmit bytes over the network, we cannot just send them to the radio channel directly - the receivers will not figure out what kind of packet it is, to whom it is addressed, whether it needs to be processed, or it is supposed to be passed along the network to some other node. Therefore, smart people came up with the OSI model and gave each layer its own purpose. Each layer has its own packet format and adds its service data to the packet. Let's take a look at the picture.
 
-![](zigbee_packet.png)
+![](images/zigbee_packet.png)
 <p><figcaption align = "center"><i>Picture from JN51xx Core Utilities User Guide JN-UG-3116 document</i></figcaption></p>
 
 Suppose an application wants to send a block of data. It passes this block to the next (network) layer, which adds a header to the packet. This header describes who is the sender of the packet, and what network device the packet is addressed to. The final recipient may be quite far from the sender, and the packet will actually be sent over an intermediate node. So the MAC layer adds its own header setting the intermediate node as a recipient for this particular packet, asking to retransmit this packet further. The PHY layer also adds some of its own data. Thus our payload bytes are wrapped in several wrappers, each with its own purpose.
