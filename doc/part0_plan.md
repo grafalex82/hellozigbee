@@ -74,8 +74,8 @@ After some experimenting, and having some progress on the project, I can now def
 - Understand power saving options and sleep modes ([Article](part3_sleep_modes.md))
 
 **Stage 2** — get a working device as a Zigbee network node
-- Get basic understanding of Zigbee Network and SDK (Done)
-- Initialize Zigbee stack (Code ready, article pending)
+- Get basic understanding of Zigbee Network and SDK ([Article](part4_zigbee_basics.md))
+- Initialize Zigbee stack ([Article](part5_zigbee_init.md))
 - Join the network (Code ready, article pending)
 - Register device in zigbee2mqtt (Code ready, article pending)
 - Implement a basic Zigbee smart switch functionality (Code ready, article pending)
