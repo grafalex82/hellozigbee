@@ -92,6 +92,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Using C++ in the project (Code ready, article pending)
 - Extendable structure of the project codebase (Code ready, article pending)
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
+- Explore Identify, Groups, and Scenes functionality
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
 - Reverse engineer the schematics (Done, article pending)
