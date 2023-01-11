@@ -251,13 +251,13 @@ Trying to re-compile and take off and... nothing happens. That is because we hav
    ZPS_eAplAibSetApsUseExtendedPanId(0);
 ```
 
-Yes, the device will reconnect to the network on every boot, but we will deal with this later. By the way, on the zigbee2mqtt side, you also need to remove the device from the network by sending a message to the `zigbee2mqtt/bridge/request/device/remote` topic with the content `{“id”:”0x00158d0002b501a7”, “force”:true}` (or delete the device via the Z2M dashboard, checking the ‘force remove' box)
+Yes, the device will reconnect to the network on every boot, but we will deal with this later. By the way, on the zigbee2mqtt side, you also need to remove the device from the network by sending a message to the `zigbee2mqtt/bridge/request/device/remote` topic with the content `{"id":"0x00158d0002b501a7", "force":true}` (or delete the device via the Z2M dashboard, checking the ‘force remove' box)
 
 After some polishing, the network joining process looks something like this.
 
 ![](images/console6.png)
 
-Let’s find out what’s going on here.
+Let's find out what's going on here.
 
 First of all, we are told that the device has joined the network. Then it is followed by a series of `DATA_CONFIRM` and `DATA_ACK` events. If we look at the documentation we can learn that
 
@@ -265,11 +265,11 @@ First of all, we are told that the device has joined the network. Then it is fol
 - The packet then is transmitted to the final recipient (probably the packet has to jump over the several hops to the recipient).
 - When the packet reaches the final recipient, it confirms data reception with the `DATA_ACK` event (ACK packet was delivered by the reverse route through several intermediate nodes)
 
-So we see confirmation of sending some messages (our device sends some data), but we don’t see the messages themselves. Moreover, we do not see events that are processed by the ZigBee stack. they didn’t even get to the application level — just processed internally by the Zigbee layer, and we see only confirming the answers.
+So we see confirmation of sending some messages (our device sends some data), but we don't see the messages themselves. Moreover, we do not see events that are processed by the ZigBee stack. they didn't even get to the application level - just processed internally by the Zigbee layer, and we see only confirming the answers.
 
 ## Sniffing Zigbee
 
-Let’s uncover the sniffer — it will reveal real data transferred between nodes. Also seeing real packets allows much better understanding of how Zigbee network works. I am using an old CC2531 dongle, [whsniff](https://github.com/homewsn/whsniff) or [ZBOSS](https://www.zigbee2mqtt.io/advanced/zigbee/04_sniff_zigbee_traffic.html) for packet capture, and [wireshark](https://www.wireshark.org/) for analysis. Let’s repeat the network joining process and see how it looks on the packet level.
+Let's uncover the sniffer - it will reveal real data transferred between nodes. Also seeing real packets allows much better understanding of how Zigbee network works. I am using an old CC2531 dongle, [whsniff](https://github.com/homewsn/whsniff) or [ZBOSS](https://www.zigbee2mqtt.io/advanced/zigbee/04_sniff_zigbee_traffic.html) for packet capture, and [wireshark](https://www.wireshark.org/) for analysis. Let's repeat the network joining process and see how it looks on the packet level.
 
 Zigbee operates with short messages between network nodes. Each node has a 16-bit network address, so it is easy to identify who is the sender, and who is the receiver. The node that is about to join does not have a network address, and can only send broadcast messages.
 
@@ -288,7 +288,7 @@ There are several important things happening here.
 - The device sends an Association request. By this time, our device does not yet have a 16-bit network logical address, so it uses the full MAC address (0x00158d0002b501a7). Typically the joining device selects the nearest router with the best signal strength. In this case it selected a router with address 0x2528.
 - The router responds with an Association Response message, and assigns the address 0xcfc2 to our device
 - The router sends several messages to the coordinator: there is a new route to the new device 0xcfc2, and the device 0xcfc2 has joined the network (Update device)
-- At this point, encryption is not yet enabled, so the coordinator sends the network transport key to the new device. Moreover, this message is not direct, but goes through a 2-hop route — 0x0000 -> 0x2528 -> 0xcfc2 (the sniffer sees both messages)
+- At this point, encryption is not yet enabled, so the coordinator sends the network transport key to the new device. Moreover, this message is not direct, but goes through a 2-hop route - 0x0000 -> 0x2528 -> 0xcfc2 (the sniffer sees both messages)
 - Then a wave of messages begins between all routers on the network informing that a route to the new device has been found, and the route tables need to be updated (there were a lot of these messages, I did not take a screenshot)
 - Then another wave of Device Announcement messages rolls through the network, indicating device type and device capabilities (for example, the device is a Fully Functional Device with a constant power)
 
@@ -298,7 +298,7 @@ With the last message the Zigbee network becomes aware of the new device, Techni
 
 ![](images/sniffer4.png)
 
-And here we see 3 requests from the coordinator, and 3 corresponding responses. These are the messages that we saw confirmations in the console — Node Descriptor, Active Endpoint, and Simple Descriptor. We’ll take a detailed look at them in the next article. Processing of these requests happens automatically, and no specific code needed from the firmware side.
+And here we see 3 requests from the coordinator, and 3 corresponding responses. These are the messages that we saw confirmations in the console - Node Descriptor, Active Endpoint, and Simple Descriptor. We'll take a detailed look at them in the next article. Processing of these requests happens automatically, and no specific code needed from the firmware side.
 
 ## Summary
 
