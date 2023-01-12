@@ -77,7 +77,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Get basic understanding of Zigbee Network and SDK ([Article](part4_zigbee_basics.md))
 - Initialize Zigbee stack ([Article](part5_zigbee_init.md))
 - Join the network ([Article](part6_join_zigbee_network.md))
-- Register device in zigbee2mqtt (Code ready, article pending)
+- Register device in zigbee2mqtt ([Article](part7_zigbee_descriptors.md))
 - Implement a basic Zigbee smart switch functionality (Code ready, article pending)
 - Handle re-joining the network in case of network loss (Code ready, article pending)
 - Make a multi-channel device (Code ready, article pending)
