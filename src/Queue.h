@@ -55,13 +55,16 @@ public:
     }
 };
 
-template<class T, uint32 size>
-class Queue : public QueueBase<T, size, QueueHandleIntStorage >
+extern const tszQueue dummyQueue;
+
+template<class T, uint32 size, const tszQueue * handle = &dummyQueue>
+class Queue : public QueueBase<T, size, QueueHandleExtStorage<handle> >
 {};
 
-template<class T, uint32 size, tszQueue * handle>
-class QueueExt : public QueueBase<T, size, QueueHandleExtStorage<handle> >
+template<class T, uint32 size>
+class Queue<T, size> : public QueueBase<T, size, QueueHandleIntStorage >
 {};
+
 
 
 

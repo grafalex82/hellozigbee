@@ -24,10 +24,10 @@ extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
 extern PUBLIC tszQueue zps_TimeEvents;
 extern PUBLIC tszQueue zps_msgMcpsDcfm;
 
-QueueExt<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
-QueueExt<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
-QueueExt<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
-QueueExt<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
+Queue<MAC_tsMlmeVsDcfmInd, 10, &zps_msgMlmeDcfmInd> msgMlmeDcfmIndQueue;
+Queue<MAC_tsMcpsVsDcfmInd, 24, &zps_msgMcpsDcfmInd> msgMcpsDcfmIndQueue;
+Queue<MAC_tsMcpsVsCfmData, 5, &zps_msgMcpsDcfm> msgMcpsDcfmQueue;
+Queue<zps_tsTimeEvent, 8, &zps_TimeEvents> timeEventQueue;
 
 ZigbeeDevice::ZigbeeDevice()
 {

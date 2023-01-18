@@ -185,5 +185,5 @@ endfunction()
 function(FLASH_FIRMWARE_TARGET TARGET)
     set_target_filename(${TARGET})
 
-    add_custom_target(${TARGET}.flash DEPENDS ${TARGET}.bin COMMAND "C:\\NXP\\ProductionFlashProgrammer\\JN51xxProgrammer.exe" -V 0 -s COM3 -f ${FILENAME}.bin)
+    add_custom_target(${TARGET}.flash DEPENDS ${TARGET}.bin COMMAND "C:\\NXP\\ProductionFlashProgrammer\\JN51xxProgrammer.exe" -V 0 -s COM5 -f ${FILENAME}.bin)
 endfunction()
