@@ -6,6 +6,7 @@ extern "C"
 #include "dbg.h"
 }
 
+
 static const uint32 FAST_BLINK_PERIOD = ZTIMER_TIME_MSEC(200);
 static const uint32 SLOW_BLINK_PERIOD = ZTIMER_TIME_MSEC(1000);
 
@@ -13,13 +14,11 @@ static const uint32 SLOW_BLINK_PERIOD = ZTIMER_TIME_MSEC(1000);
 // So has to be created explicitely in vAppMain() otherwise VTABLE will not be initialized properly
 BlinkTask::BlinkTask()
 {
-    ledPinMask = 0;
 }
 
 void BlinkTask::init(uint8 ledPin)
 {
-    ledPinMask = 1UL << ledPin;
-    vAHI_DioSetDirection(0, ledPinMask);
+    pin.init(ledPin);
 
     PeriodicTask::init(SLOW_BLINK_PERIOD);
     startTimer(1000);
@@ -32,7 +31,5 @@ void BlinkTask::setBlinkMode(bool fast)
 
 void BlinkTask::timerCallback()
 {
-    // toggle LED
-    uint32 currentState = u32AHI_DioReadInput();
-    vAHI_DioSetOutput(currentState ^ ledPinMask, currentState & ledPinMask);
+    pin.toggle();
 }

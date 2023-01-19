@@ -2,6 +2,7 @@
 #define BLINKTASK_H
 
 #include "PeriodicTask.h"
+#include "GPIOPin.h"
 
 extern "C"
 {
@@ -10,7 +11,7 @@ extern "C"
 
 class BlinkTask : public PeriodicTask
 {
-    uint32 ledPinMask;
+    GPIOPin pin;
 
 public:
     BlinkTask();

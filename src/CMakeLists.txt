@@ -158,6 +158,7 @@ SET(SOURCES
         PersistedValue.h
         ButtonModes.h
         PdmIds.h
+        GPIOPin.h
         AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp
