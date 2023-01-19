@@ -8,14 +8,15 @@ extern "C"
 
 ZCLTimer::ZCLTimer()
 {
+}
 
+void ZCLTimer::init()
+{
+    PeriodicTask::init(1000);
 }
 
 void ZCLTimer::timerCallback()
 {
-    // Restart the timer
-    startTimer(1000);
-
     DBG_vPrintf(TRUE, "ZCLTimer::timerCallback(): Tick\n");
 
     // Process ZCL timers

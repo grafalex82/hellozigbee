@@ -15,7 +15,7 @@ ButtonsTask::ButtonsTask()
 
     numHandlers = 0;
 
-    PeriodicTask::init();
+    PeriodicTask::init(ButtonPollCycle);
     startTimer(1000);
 }
 
@@ -99,8 +99,6 @@ void ButtonsTask::timerCallback()
 
         longPressCounter = 0;
     }
-
-    startTimer(ButtonPollCycle);
 }
 
 

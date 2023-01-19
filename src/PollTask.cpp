@@ -10,13 +10,12 @@ extern "C"
 
 PollTask::PollTask()
 {
-    pollPeriod = 0;
-    PeriodicTask::init();
+    PeriodicTask::init(0);
 }
 
 void PollTask::startPoll(int period)
 {
-    pollPeriod = period;
+    setPeriod(period);
     startTimer(period);
 }
 
@@ -28,7 +27,4 @@ void PollTask::stopPoll()
 void PollTask::timerCallback()
 {
     ZPS_eAplZdoPoll();
-
-    // Restart the timer
-    startTimer(pollPeriod);
 }

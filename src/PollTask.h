@@ -5,8 +5,6 @@
 
 class PollTask : public PeriodicTask
 {
-    int pollPeriod;
-
 public:    
     PollTask();
 

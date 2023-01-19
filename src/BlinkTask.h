@@ -10,7 +10,6 @@ extern "C"
 
 class BlinkTask : public PeriodicTask
 {
-    bool fastBlinking;
     uint32 ledPinMask;
 
 public:
