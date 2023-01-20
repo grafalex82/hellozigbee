@@ -11,11 +11,11 @@ extern "C"
 
 class BlinkTask : public PeriodicTask
 {
-    GPIOPin pin;
+    GPIOOutput ledPin;
 
 public:
     BlinkTask();
-    void init(uint8 ledPin);
+    void init(uint8 pin);
 
     void setBlinkMode(bool fast);
 
