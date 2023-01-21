@@ -89,7 +89,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Handle single/double/long button presses. Support in zigbee2mqtt (Code ready, article pending)
 
 **Stage 3** — nice to have stuff
-- Using C++ in the project (Code ready, article pending)
+- Using C++ in the project ([Article](part9_cpp_building_blocks.md))
 - Extendable structure of the project codebase (Code ready, article pending)
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
 - Explore Identify, Groups, and Scenes functionality
