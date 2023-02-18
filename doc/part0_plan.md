@@ -92,7 +92,7 @@ After some experimenting, and having some progress on the project, I can now def
 
 **Stage 3** — nice to have stuff
 - Using C++ in the project ([Article](part9_cpp_building_blocks.md))
-- Extendable structure of the project codebase (Code ready, article pending)
+- Extendable structure of the project codebase ([Article](part13_project_cpp_structure.md))
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
 - Explore Identify, Groups, and Scenes functionality
 
