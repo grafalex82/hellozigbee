@@ -185,7 +185,7 @@ There are a few edge cases related to joining and rejoining the device, which wi
   - [JN-UG-3076 ZigBee Home Automation User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3076.pdf)
   - [JN-UG-3101 ZigBee PRO Stack User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3101.pdf)
   - [Zigbee Base Device Behavior Specification](https://zigbeealliance.org/wp-content/uploads/2019/12/docs-13-0402-13-00zi-Base-Device-Behavior-Specification-2-1.pdf)
-- Code  
+- Code
   - [Project on github](https://github.com/grafalex82/hellozigbee/tree/hello_zigbee_end_device)
   - JN-AN-1220-Zigbee-3–0-Sensors example (recommended)
   - JN-AN-1219-Zigbee-3–0-Controller-and-Switch example (somewhat sophisticated for learning purposes)
