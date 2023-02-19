@@ -82,10 +82,11 @@ After some experimenting, and having some progress on the project, I can now def
 - Handle re-joining the network in case of network loss ([Article](part10_joining_rejoining.md))
 - Developing an end device ([Article](part11_end_device.md))
 - Handle join/rejoin for the end device ([Article](part12_end_device_rejoin.md))
+- Implement direct binding to other devices ([Article](part14_reports_binding.md))
+- Understand the difference between reports and commands (Code ready, article pending)
 - Make a multi-channel device (Code ready, article pending)
 - Create a custom Zigbee cluster in order to expose device settings (Code ready, article pending)
 - Make a custom zigbee2mqtt external converter to handle the custom cluster (Code ready, article pending)
-- Implement direct binding to other devices (Code ready, article pending)
 - Implement OTA firmware update from the device side (Code ready, article pending)
 - Add support for OTA firmware update for DIY devices in zigbee2mqtt (Code ready, article pending)
 - Handle single/double/long button presses. Support in zigbee2mqtt (Code ready, article pending)
@@ -95,6 +96,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Extendable structure of the project codebase ([Article](part13_project_cpp_structure.md))
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
 - Explore Identify, Groups, and Scenes functionality
+- Explore Find-And-Bind approach
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
 - Reverse engineer the schematics (Done, article pending)
