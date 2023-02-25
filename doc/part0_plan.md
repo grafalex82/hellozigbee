@@ -83,7 +83,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Developing an end device ([Article](part11_end_device.md))
 - Handle join/rejoin for the end device ([Article](part12_end_device_rejoin.md))
 - Implement direct binding to other devices ([Article](part14_reports_binding.md))
-- Understand the difference between reports and commands (Code ready, article pending)
+- Understand the difference between reports and commands ([Article](part15_commands_binding.md))
 - Make a multi-channel device (Code ready, article pending)
 - Create a custom Zigbee cluster in order to expose device settings (Code ready, article pending)
 - Make a custom zigbee2mqtt external converter to handle the custom cluster (Code ready, article pending)
