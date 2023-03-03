@@ -84,19 +84,18 @@ After some experimenting, and having some progress on the project, I can now def
 - Handle join/rejoin for the end device ([Article](part12_end_device_rejoin.md))
 - Implement direct binding to other devices ([Article](part14_reports_binding.md))
 - Understand the difference between reports and commands ([Article](part15_commands_binding.md))
-- Make a multi-channel device (Code ready, article pending)
+- Handle single/double/long button presses using Multistate Input cluster ([Article](part16_multistate_action.md))
 - Create a custom Zigbee cluster in order to expose device settings (Code ready, article pending)
 - Make a custom zigbee2mqtt external converter to handle the custom cluster (Code ready, article pending)
 - Implement OTA firmware update from the device side (Code ready, article pending)
 - Add support for OTA firmware update for DIY devices in zigbee2mqtt (Code ready, article pending)
-- Handle single/double/long button presses. Support in zigbee2mqtt (Code ready, article pending)
 
 **Stage 3** — nice to have stuff
 - Using C++ in the project ([Article](part9_cpp_building_blocks.md))
 - Extendable structure of the project codebase ([Article](part13_project_cpp_structure.md))
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
-- Explore Identify, Groups, and Scenes functionality
-- Explore Find-And-Bind approach
+- Explore Identify, Groups, Scenes, and Level Control functionality
+- Explore Touchlink, Find-And-Bind, and ZLL Commisioning
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
 - Reverse engineer the schematics (Done, article pending)
