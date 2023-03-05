@@ -4,7 +4,7 @@ Zigbee devices operate in a Zigbee network. But in order to get to the network, 
 
 Overall this article is a part of the [Hello Zigbee series](part0_plan.md), describing building a Zigbee device firmware from scratch. By this time we have a [working LED blinker](part1_bring_up.md), ready to be integrated with Zigbee. The firmware [performs Zigbee stack initialization](part5_zigbee_init.md), and is ready to communicate with the Zigbee network.
 
-The hardware setup is described in the [very first article](part0_plan.md), and is based on the EBYTE E75–2G4M10S module (NXP 5169 microcontroller). The toolchain and basic MCU peripherals were also described in the article.
+The hardware setup is described in the [very first article](part1_bring_up.md), and is based on the EBYTE E75–2G4M10S module (NXP 5169 microcontroller). The toolchain and basic MCU peripherals were also described in the article.
 
 ## Joining the network
 
