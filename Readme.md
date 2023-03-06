@@ -1,13 +1,25 @@
 # Hello NXP JN5169 ZigBee World
 
-This is a tiny example how to work with ZigBee stack using JN5169 microcontroller. The example implements a smart switch, that
-exposes an On/Off entity to the coordinator. On a button press, or on a network command, the device switches LED blinking mode.
+This is a tiny example how to work with ZigBee stack using JN5169 microcontroller. The example implements a smart switch with the following features:
+- Zigbee router device
+- 2 button channels, each of them offers
+	- Handling button according to selected mode
+	- On/Off zigbee cluster to report state change, as well as handling toggle commands
+	- On/Off Configuraiton cluster to configure device behavior
+	- Multistate input cluster to report single/double/triple/long press actions
+- binding support
+- OTA firmware update
+
+There are 2 goals of the project:
+- build an alternate firmware for Xiaomi Aqara QBKG12LM Zigbee smart switch
+- learn how Zigbee works, and [describe this in a form of tutorial](part0_plan.md), so that more people can join the technology
+
 
 # Test board
 
 Basically the code is almost independent of the hardware (assuming it is based on JN5169). I am using a simple schematics based on a cheap EBYTE E75-2G4M10S module.
 
-![Schematics](doc/Schematics.png)
+![Schematics](doc/images/Schematics.png)
 
 # How to build
 
@@ -18,7 +30,7 @@ Prerequisites:
 - MinGW (or other source where you can get `make`)
 - This all is Windows only
 
-Build instructions
+Build instructions:
 - Clone the repo
 - make a `build` directory
 - `cd build`
@@ -26,7 +38,7 @@ Build instructions
 (Correct paths to the toolchain and sdk if needed)
 - mingw32-make HelloZigbee.bin
 
-Flash instructions
+Flash instructions:
 - Open Beyond Studio
 - Put the device in the programming mode (drive SPI_MISO low while reset or power up)
 - Go to Device->Program Device
@@ -42,8 +54,8 @@ or
 
 - The device is implementing a common type of home automation devices.
 	- On the first start it is not connected to the network
-	- Press a button for 5 seconds to connect to the network
 	- Make sure your network permits joining, otherwise the device is not able to join
+	- Press a button for 5 seconds to connect to the network
 	- Press button for another 5 seconds to force the device to leave the network.
 - Device is automatically try to rejoin the network if network conditions change (e.g. parent/neighbour router no longer respond)
 	- Router device will find a way to a coordinator using a different router
@@ -68,10 +80,4 @@ external_converters:
 
 # Documentation
 
-All this code is explained in very detail in the following articles (in Russian)
-- https://habr.com/ru/post/547374/ - Getting started with JN5169 microcontroller (SDK, compiler, project structure, peripherals, sleep modes).
-- https://habr.com/ru/post/550660/ - Getting started with Zigbee network concepts. SDK structure and event handling explained.
-- https://habr.com/ru/post/561280/ - Correct network joining and rejoining using BDB component. End devices explained. Firmware architecture and porting to C++.
-- https://habr.com/ru/post/568316/ - Binding. Reports vs commands, Server vs client clusters explained. 
-- https://habr.com/ru/post/585860/ - Custom clusters, zigbee2mqtt external converters explained
-- https://habr.com/ru/post/594305/ - OTA updates
+All this code is explained in very detail in the [Hello Zigbee article series](doc/part0_plan.md)

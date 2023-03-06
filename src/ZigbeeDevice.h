@@ -34,9 +34,9 @@ class ZigbeeDevice
     int rejoinFailures;
     int cyclesTillNextRejoin;
 
-public:
     ZigbeeDevice();
 
+public:
     static ZigbeeDevice * getInstance();
 
     void joinNetwork();
