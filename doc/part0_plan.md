@@ -86,7 +86,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Understand the difference between reports and commands ([Article](part15_commands_binding.md))
 - Handle single/double/long button presses using Multistate Input cluster ([Article](part16_multistate_action.md))
 - Create a custom Zigbee cluster in order to expose device settings ([Article](part17_custom_cluster.md))
-- Make a custom zigbee2mqtt external converter to handle the custom cluster (Code ready, article pending)
+- Make a custom zigbee2mqtt external converter to handle the custom cluster ([Article](part18_zigbee2mqtt_converter.md))
 - Implement OTA firmware update from the device side (Code ready, article pending)
 - Add support for OTA firmware update for DIY devices in zigbee2mqtt (Code ready, article pending)
 
