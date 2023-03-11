@@ -87,6 +87,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Handle single/double/long button presses using Multistate Input cluster ([Article](part16_multistate_action.md))
 - Create a custom Zigbee cluster in order to expose device settings ([Article](part17_custom_cluster.md))
 - Make a custom zigbee2mqtt external converter to handle the custom cluster ([Article](part18_zigbee2mqtt_converter.md))
+- Dimming light support using Level Control Client cluster ([Article](part19_level_control.md))
 - Implement OTA firmware update from the device side (Code ready, article pending)
 - Add support for OTA firmware update for DIY devices in zigbee2mqtt (Code ready, article pending)
 
@@ -94,7 +95,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Using C++ in the project ([Article](part9_cpp_building_blocks.md))
 - Extendable structure of the project codebase ([Article](part13_project_cpp_structure.md))
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
-- Explore Identify, Groups, Scenes, and Level Control functionality
+- Explore Identify, Groups, Scenes
 - Explore Touchlink, Find-And-Bind, and ZLL Commisioning
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
