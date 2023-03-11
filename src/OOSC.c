@@ -86,6 +86,7 @@ const tsZCL_AttributeDefinition asCLD_OOSCClusterAttributeDefinitions[] = {
     {E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE,      (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eRelayMode),0},
     {E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE,       (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_UINT16,   (uint32)(&((tsCLD_OOSC*)(0))->iMaxPause),0},
     {E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR,  (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_UINT16,   (uint32)(&((tsCLD_OOSC*)(0))->iMinLongPress),0},
+    {E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_MODE, (E_ZCL_AF_RD|E_ZCL_AF_WR|E_ZCL_AF_MS),  E_ZCL_ENUM8,    (uint32)(&((tsCLD_OOSC*)(0))->eLongPressMode),0},
 
 #endif        
     {E_CLD_GLOBAL_ATTR_ID_CLUSTER_REVISION,     (E_ZCL_AF_RD|E_ZCL_AF_GA),              E_ZCL_UINT16,   (uint32)(&((tsCLD_OOSC*)(0))->u16ClusterRevision),0},   /* Mandatory  */
@@ -154,6 +155,7 @@ PUBLIC  teZCL_Status eCLD_OOSCCreateOnOffSwitchConfig(
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eRelayMode = RELAY_MODE_FRONT;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMaxPause = 250;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMinLongPress = 1000;
+            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eLongPressMode = E_CLD_OOSC_LONG_PRESS_MODE_NONE;
 #endif
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->u16ClusterRevision = CLD_OOSC_CLUSTER_REVISION;
         }

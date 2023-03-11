@@ -77,6 +77,19 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Multistate Input server cluster instance. status=%d\n", status);
 }
 
+void SwitchEndpoint::registerLevelControlClientCluster()
+{
+    // Initialize Level Control client cluser
+    teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.sLevelControlClient,
+                                                              FALSE,                              // Client
+                                                              &sCLD_LevelControl,
+                                                              &sLevelControlClientCluster,
+                                                              &au8LevelControlAttributeControlBits[0],
+                                                              &sLevelControlClientCustomDataStructure);
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Level Control client cluster instance. status=%d\n", status);
+}
+
 void SwitchEndpoint::registerEndpoint()
 {
     // Initialize endpoint structure
@@ -124,6 +137,7 @@ void SwitchEndpoint::init()
     registerClientCluster();
     registerOnOffConfigServerCluster();
     registerMultistateInputServerCluster();
+    registerLevelControlClientCluster();
     registerEndpoint();
 
     // Restore previous configuration from PDM
@@ -223,6 +237,75 @@ void SwitchEndpoint::sendCommandToBoundDevices()
                                    &sequenceNo,
                                    E_CLD_ONOFF_CMD_TOGGLE);
     DBG_vPrintf(TRUE, "Sending On/Off command status: %02x\n", status);
+}
+
+void SwitchEndpoint::reportLongPress(bool pressed)
+{
+    switch(sOnOffConfigServerCluster.eLongPressMode)
+    {
+    case E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_UP:
+        if(pressed)
+            sendLevelControlMoveCommand(true);
+        else
+            sendLevelControlStopCommand();
+        break;
+
+    case E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_DOWN:
+        if(pressed)
+            sendLevelControlMoveCommand(false);
+        else
+            sendLevelControlStopCommand();
+        break;
+
+    default:
+        break;
+    }
+}
+
+void SwitchEndpoint::sendLevelControlMoveCommand(bool up)
+{
+    // Destination address does not matter - we will send to all bound devices
+    tsZCL_Address addr;
+    addr.uAddress.u16DestinationAddress = 0x0000;
+    addr.eAddressMode = E_ZCL_AM_BOUND;
+
+    // Send the move command
+    uint8 sequenceNo;
+    tsCLD_LevelControl_MoveCommandPayload payload = {
+        up ? (uint8)0x00 : (uint8)0x01, // u8MoveMode
+        80,                             // u8Rate
+        0,                              // u8OptionsMask
+        0                               // u8OptionsOverride
+    };
+    teZCL_Status status = eCLD_LevelControlCommandMoveCommandSend(getEndpointId(),
+                                                                  1,
+                                                                  &addr,
+                                                                  &sequenceNo,
+                                                                  TRUE,
+                                                                  &payload);
+    DBG_vPrintf(TRUE, "Sending Level Control Move command status: %02x\n", status);
+}
+
+void SwitchEndpoint::sendLevelControlStopCommand()
+{
+    // Destination address does not matter - we will send to all bound devices
+    tsZCL_Address addr;
+    addr.uAddress.u16DestinationAddress = 0x0000;
+    addr.eAddressMode = E_ZCL_AM_BOUND;
+
+    // Send the move command
+    uint8 sequenceNo;
+    tsCLD_LevelControl_StopCommandPayload payload = {
+        0,          // u8OptionsMask
+        0           // u8OptionsOverride
+    };
+    teZCL_Status status = eCLD_LevelControlCommandStopCommandSend(getEndpointId(),
+                                                                  1,
+                                                                  &addr,
+                                                                  &sequenceNo,
+                                                                  TRUE,
+                                                                  &payload);
+    DBG_vPrintf(TRUE, "Sending Level Control Stop command status: %02x\n", status);
 }
 
 void SwitchEndpoint::reportAction(ButtonActionType action)

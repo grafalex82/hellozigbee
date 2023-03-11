@@ -120,6 +120,8 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
 
                 if(relayMode != RELAY_MODE_UNLINKED)
                     endpoint->switchOn();
+
+                endpoint->reportLongPress(true);
             }
             break;
 
@@ -131,6 +133,8 @@ void ButtonHandler::buttonStateMachineMomentary(bool pressed)
 
                 if(relayMode != RELAY_MODE_UNLINKED)
                     endpoint->switchOff();
+
+                endpoint->reportLongPress(false);
             }
 
             break;
@@ -164,6 +168,8 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
 
                 if(relayMode == RELAY_MODE_LONG)
                     endpoint->toggle();
+
+                endpoint->reportLongPress(true);
             }
 
             if(!pressed)
@@ -232,6 +238,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 changeState(IDLE);
 
                 endpoint->reportAction(BUTTON_RELEASED);
+                endpoint->reportLongPress(false);
             }
 
             break;

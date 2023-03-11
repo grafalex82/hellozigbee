@@ -9,6 +9,7 @@ extern "C"
     #include "OnOff.h"
     #include "OOSC.h"
     #include "MultistateInputBasic.h"
+    #include "LevelControl.h"
 }
 
 #include "Endpoint.h"
@@ -22,6 +23,7 @@ struct OnOffClusterInstances
     tsZCL_ClusterInstance sOnOffServer;
     tsZCL_ClusterInstance sOnOffConfigServer;
     tsZCL_ClusterInstance sMultistateInputServer;
+    tsZCL_ClusterInstance sLevelControlClient;
 } __attribute__ ((aligned(4)));
 
 
@@ -35,6 +37,8 @@ protected:
     tsCLD_OOSC sOnOffConfigServerCluster;
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
     tsCLD_MultistateInputBasic sMultistateInputServerCluster;
+    tsCLD_LevelControl sLevelControlClientCluster;
+    tsCLD_LevelControlCustomDataStructure sLevelControlClientCustomDataStructure;
 
     BlinkTask blinkTask;
     ButtonHandler buttonHandler;
@@ -51,11 +55,14 @@ public:
     bool runsInServerMode() const;
 
     void reportAction(ButtonActionType action);
+    void reportLongPress(bool pressed);
 
 protected:
     void doStateChange(bool state);
     void reportState();
     void sendCommandToBoundDevices();
+    void sendLevelControlMoveCommand(bool up);
+    void sendLevelControlStopCommand();
     void reportStateChange();
 
 protected:
@@ -63,6 +70,7 @@ protected:
     virtual void registerClientCluster();
     virtual void registerOnOffConfigServerCluster();
     virtual void registerMultistateInputServerCluster();
+    virtual void registerLevelControlClientCluster();
     virtual void registerEndpoint();
     virtual void restoreConfiguration();
     virtual void saveConfiguration();

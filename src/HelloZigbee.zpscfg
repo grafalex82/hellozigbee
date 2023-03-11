@@ -483,12 +483,14 @@
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
     <Endpoints Id="3" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH2">
       <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
     <PDUConfiguration NumNPDUs="25" PDUMMutexName="mutexPDUM">
       <APDUs Id="HelloZigbee->apduZDP" Name="apduZDP" Size="100" Instances="16"/>

@@ -61,6 +61,9 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyServerCommands.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/LevelControl.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/LevelControlClientCommands.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/LevelControlCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/MultistateInputBasic.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOff.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/OnOffCommands.c

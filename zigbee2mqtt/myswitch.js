@@ -23,6 +23,7 @@ const DataType = {
 const switchModeValues = ['toggle', 'momentary', 'multifunction'];
 const switchActionValues = ['onOff', 'offOn', 'toggle'];
 const relayModeValues = ['unlinked', 'front', 'single', 'double', 'tripple', 'long'];
+const longPressModeValues = ['none', 'levelCtrlUp', 'levelCtrlDown'];
 
 
 const manufacturerOptions = {
@@ -76,6 +77,11 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`min_long_press_${ep_name}`] = msg.data['65283'];
         }
 
+        // Long press mode
+        if(msg.data.hasOwnProperty('65284')) {
+            result[`long_press_mode_${ep_name}`] = msg.data['65284'];
+        }
+
         meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
         return result;
     },
@@ -83,7 +89,7 @@ const fromZigbee_OnOffSwitchCfg = {
 
 
 const toZigbee_OnOffSwitchCfg = {
-    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press'],
+    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode'],
 
     convertGet: async (entity, key, meta) => {
         meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
@@ -97,7 +103,8 @@ const toZigbee_OnOffSwitchCfg = {
                 switch_mode: 65280,
                 relay_mode: 65281,
                 max_pause: 65282,
-                min_long_press: 65283
+                min_long_press: 65283,
+                long_press_mode: 65284
             };
             meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
@@ -142,6 +149,12 @@ const toZigbee_OnOffSwitchCfg = {
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
+            case 'long_press_mode':
+                newValue = longPressModeValues.indexOf(value);
+                payload = {65284: {'value': newValue, 'type': DataType.enum8}};
+                await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+                break;
+
             default:
                 meta.logger.debug(`convertSet(): Unrecognized key=${key} (value=${value})`);
                 break;
@@ -160,6 +173,7 @@ function genSwitchEndpoint(epName) {
         exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
+        exposes.enum('long_press_mode', ea.ALL, longPressModeValues).withEndpoint(epName),
         exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
         exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
     ]
@@ -197,7 +211,7 @@ const fromZigbee_MultistateInput = {
         const value = msg.data['presentValue'];
         const action = actionLookup[value];
 
-        const result = {action: utils.postfixWithEndpointName(action, msg, model)};
+        const result = {action: utils.postfixWithEndpointName(action, msg, model, meta)};
         meta.logger.debug(`+_+_+_ Multistate::fromZigbee() result=[${JSON.stringify(result)}]`);
         return result;
     },
@@ -268,7 +282,7 @@ const device = {
         device.endpoints.forEach(async (ep) => {
             await ep.read('genOnOff', ['onOff']);
             await ep.read('genOnOffSwitchCfg', ['switchActions']);
-            await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283], manufacturerOptions.jennic);
+            await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284], manufacturerOptions.jennic);
         });
     },
     exposes: [

@@ -78,7 +78,8 @@ typedef enum
     E_CLD_OOSC_ATTR_ID_SWITCH_MODE              = 0xff00,
     E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE        = 0xff01,
     E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE         = 0xff02,
-    E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff03
+    E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff03,
+    E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_MODE   = 0xff04,
 } teCLD_OOSC_ClusterID;
 
 
@@ -99,6 +100,14 @@ typedef enum
     E_CLD_OOSC_ACTION_TOGGLE
 } teCLD_OOSC_SwitchAction;
 
+/* Long Press modes */
+typedef enum
+{
+    E_CLD_OOSC_LONG_PRESS_MODE_NONE,
+    E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_UP,
+    E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_DOWN
+} teCLD_OOSC_LongPressMode;
+
 
 /* On/Off Switch Configuration Cluster */
 typedef struct
@@ -111,6 +120,7 @@ typedef struct
     zenum8                  eRelayMode;
     zuint16                 iMaxPause;
     zuint16                 iMinLongPress;
+    zenum8                  eLongPressMode;
 #endif    
     zuint16                 u16ClusterRevision;
 } tsCLD_OOSC;
