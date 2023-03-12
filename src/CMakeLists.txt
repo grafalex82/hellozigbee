@@ -162,6 +162,7 @@ SET(SOURCES
         ButtonModes.h
         PdmIds.h
         GPIOPin.h
+        PWMPin.h
         AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp
