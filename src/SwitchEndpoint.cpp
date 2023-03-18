@@ -15,13 +15,14 @@ extern "C"
     #include "PDM.h"
 }
 
+
 SwitchEndpoint::SwitchEndpoint()
 {
 }
 
-void SwitchEndpoint::setPins(uint8 ledPin, uint32 pinMask)
+void SwitchEndpoint::setPins(uint8 ledTimer, uint32 pinMask)
 {
-    blinkTask.init(ledPin);
+    ledPin.init(ledTimer);
 
     ButtonsTask::getInstance()->registerHandler(pinMask, &buttonHandler);
 }
@@ -80,14 +81,15 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
 void SwitchEndpoint::registerLevelControlClientCluster()
 {
     // Initialize Level Control client cluser
-    teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.sLevelControlClient,
-                                                              FALSE,                              // Client
+    teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.sLevelControlServer,
+                                                              TRUE,                              // Server
                                                               &sCLD_LevelControl,
-                                                              &sLevelControlClientCluster,
+                                                              &sLevelControlServerCluster,
                                                               &au8LevelControlAttributeControlBits[0],
-                                                              &sLevelControlClientCustomDataStructure);
+                                                              &sLevelControlServerCustomDataStructure);
+
     if( status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Level Control client cluster instance. status=%d\n", status);
+        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Level Control server cluster instance. status=%d\n", status);
 }
 
 void SwitchEndpoint::registerEndpoint()
@@ -143,11 +145,8 @@ void SwitchEndpoint::init()
     // Restore previous configuration from PDM
     restoreConfiguration();
 
-    // Initialize blinking
-    // Note: this blinking task represents a relay that would be tied with this switch. That is why blinkTask
-    // is a property of SwitchEndpoint, and not the global task object
-    // TODO: restore previous blink mode from PDM
-    blinkTask.setBlinkMode(false);
+    // Initialize LED
+    ledPin.setLevel(0);
 
     // Let button handler know about this Endpoint instanct so that it can properly report new states
     buttonHandler.setEndpoint(this);
@@ -198,7 +197,7 @@ void SwitchEndpoint::doStateChange(bool state)
     if(runsInServerMode())
     {
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
-        blinkTask.setBlinkMode(state);
+        ledPin.setLevel(state ? 255 : 0);
     }
 }
 
@@ -354,16 +353,25 @@ void SwitchEndpoint::reportStateChange()
 
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
-    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
+    uint16 u16ClusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 u8CommandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x Cmd=%02x\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x evtType=%02x this=%08x Cmd=%02x\n",
                 psEvent->u8EndPoint,
                 u16ClusterId,
+                psEvent->eEventType,
+                this,
                 u8CommandId);
 
-    doStateChange(getState());
+    if(u16ClusterId == GENERAL_CLUSTER_ID_ONOFF)
+        doStateChange(getState());
+    if(u16ClusterId == GENERAL_CLUSTER_ID_LEVEL_CONTROL)
+    {
+        uint8 level = sLevelControlServerCluster.u8CurrentLevel;
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do level change %d (ledPin=%02x)\n", getEndpointId(), level, ledPin.timerId);
+        ledPin.setLevel(level);
+    }
 }
 
 void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)

@@ -13,8 +13,8 @@ extern "C"
 }
 
 #include "Endpoint.h"
-#include "BlinkTask.h"
 #include "ButtonHandler.h"
+#include "PWMPin.h"
 
 // List of cluster instances (descriptor objects) that are included into the endpoint
 struct OnOffClusterInstances
@@ -23,7 +23,7 @@ struct OnOffClusterInstances
     tsZCL_ClusterInstance sOnOffServer;
     tsZCL_ClusterInstance sOnOffConfigServer;
     tsZCL_ClusterInstance sMultistateInputServer;
-    tsZCL_ClusterInstance sLevelControlClient;
+    tsZCL_ClusterInstance sLevelControlServer;
 } __attribute__ ((aligned(4)));
 
 
@@ -37,15 +37,15 @@ protected:
     tsCLD_OOSC sOnOffConfigServerCluster;
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
     tsCLD_MultistateInputBasic sMultistateInputServerCluster;
-    tsCLD_LevelControl sLevelControlClientCluster;
-    tsCLD_LevelControlCustomDataStructure sLevelControlClientCustomDataStructure;
+    tsCLD_LevelControl sLevelControlServerCluster;
+    tsCLD_LevelControlCustomDataStructure sLevelControlServerCustomDataStructure;
 
-    BlinkTask blinkTask;
+    PWMPin ledPin;
     ButtonHandler buttonHandler;
 
 public:
     SwitchEndpoint();
-    void setPins(uint8 ledPin, uint32 pinMask);
+    void setPins(uint8 ledTimer, uint32 pinMask);
     virtual void init();
 
     bool getState() const;

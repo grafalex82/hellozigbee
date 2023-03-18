@@ -42,14 +42,13 @@ extern "C"
 }
 
 
-// 6 timers are:
+// 4 timers are:
 // - 1 in ButtonTask
-// - 2 in SwitchEndpoints
 // - 1 in PollTask
 // - 1 in DeferredExecutor (TODO: Do we still need it?)
 // - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
-ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[4 + BDB_ZTIMER_STORAGE];
 
 
 struct Context
@@ -224,8 +223,8 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
-    context.switch1.setPins(SWITCH1_LED_PIN, SWITCH1_BTN_MASK);
-    context.switch2.setPins(SWITCH2_LED_PIN, SWITCH2_BTN_MASK);
+    context.switch1.setPins(E_AHI_TIMER_2, SWITCH1_BTN_MASK);
+    context.switch2.setPins(E_AHI_TIMER_4, SWITCH2_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &context.switch1);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &context.switch2);
