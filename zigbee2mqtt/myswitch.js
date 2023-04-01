@@ -169,7 +169,6 @@ const toZigbee_OnOffSwitchCfg = {
 
 function genSwitchEndpoint(epName) {
     return [
-        e.switch().withEndpoint(epName),
         e.light_brightness().withEndpoint(epName),
         exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
