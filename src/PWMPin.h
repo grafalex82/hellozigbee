@@ -9,7 +9,7 @@ extern "C"
 
 const uint8 PWM_MAX = 255;
 
-// Use the following table to map timerIDs to apin number
+// Use the following table to map timerIDs to a pin number
 // - E_AHI_TIMER_0 - 10
 // - E_AHI_TIMER_1 - 11
 // - E_AHI_TIMER_2 - 12
