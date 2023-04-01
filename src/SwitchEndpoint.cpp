@@ -78,7 +78,7 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Multistate Input server cluster instance. status=%d\n", status);
 }
 
-void SwitchEndpoint::registerLevelControlClientCluster()
+void SwitchEndpoint::registerLevelControlServerCluster()
 {
     // Initialize Level Control client cluser
     teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.sLevelControlServer,
@@ -139,7 +139,7 @@ void SwitchEndpoint::init()
     registerClientCluster();
     registerOnOffConfigServerCluster();
     registerMultistateInputServerCluster();
-    registerLevelControlClientCluster();
+    registerLevelControlServerCluster();
     registerEndpoint();
 
     // Restore previous configuration from PDM
@@ -196,8 +196,44 @@ void SwitchEndpoint::doStateChange(bool state)
 
     if(runsInServerMode())
     {
+        DBG_vPrintf(TRUE, "   CUR: OnOff=%d Lvl=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel);
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
-        ledPin.setLevel(state ? 255 : 0);
+        DBG_vPrintf(TRUE, "   NEW: OnOff=%d Lvl=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel);
+        //ledPin.setLevel(state ? 255 : 0);
+    }
+}
+
+void SwitchEndpoint::doLevelChange(uint8 level)
+{
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do level change %d\n", getEndpointId(), level);
+
+    if(runsInServerMode())
+    {
+        static const uint8 level2pwm[256] = {
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x03,
+            0x03, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x04, 0x04, 0x05, 0x05, 0x05, 0x05, 0x05, 0x06, 0x06,
+            0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x08, 0x09, 0x09, 0x09, 0x09,
+            0x09, 0x0a, 0x0a, 0x0a, 0x0a, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0c, 0x0c, 0x0c, 0x0c, 0x0d, 0x0d,
+            0x0d, 0x0d, 0x0e, 0x0e, 0x0e, 0x0e, 0x0f, 0x0f, 0x0f, 0x0f, 0x10, 0x10, 0x10, 0x10, 0x11, 0x11,
+            0x11, 0x11, 0x12, 0x12, 0x12, 0x13, 0x13, 0x13, 0x13, 0x14, 0x14, 0x14, 0x15, 0x15, 0x15, 0x15,
+            0x16, 0x16, 0x16, 0x17, 0x17, 0x17, 0x18, 0x18, 0x18, 0x19, 0x19, 0x19, 0x1a, 0x1a, 0x1b, 0x1b,
+            0x1b, 0x1c, 0x1c, 0x1c, 0x1d, 0x1d, 0x1e, 0x1e, 0x1e, 0x1f, 0x1f, 0x20, 0x20, 0x21, 0x21, 0x22,
+            0x22, 0x22, 0x23, 0x23, 0x24, 0x24, 0x25, 0x25, 0x26, 0x26, 0x27, 0x28, 0x28, 0x29, 0x29, 0x2a,
+            0x2a, 0x2b, 0x2c, 0x2c, 0x2d, 0x2d, 0x2e, 0x2f, 0x2f, 0x30, 0x31, 0x31, 0x32, 0x33, 0x34, 0x34,
+            0x35, 0x36, 0x37, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3c, 0x3d, 0x3e, 0x3f, 0x40, 0x41, 0x42,
+            0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x50, 0x51, 0x52, 0x53, 0x55,
+            0x56, 0x57, 0x59, 0x5a, 0x5c, 0x5d, 0x5f, 0x60, 0x62, 0x64, 0x65, 0x67, 0x69, 0x6a, 0x6c, 0x6e,
+            0x70, 0x72, 0x74, 0x76, 0x78, 0x7a, 0x7c, 0x7e, 0x80, 0x82, 0x85, 0x87, 0x89, 0x8c, 0x8e, 0x91,
+            0x93, 0x96, 0x98, 0x9b, 0x9e, 0xa1, 0xa4, 0xa7, 0xaa, 0xad, 0xb0, 0xb3, 0xb6, 0xba, 0xbd, 0xc1,
+            0xc4, 0xc8, 0xcc, 0xcf, 0xd3, 0xd7, 0xdb, 0xdf, 0xe4, 0xe8, 0xec, 0xf1, 0xf6, 0xfa, 0xff, 0xff
+        };
+
+        uint8 pwm = sOnOffServerCluster.bOnOff ? level2pwm[level] : 0;
+        ledPin.setLevel(pwm);
+
+        DBG_vPrintf(TRUE, "   CUR: OnOff=%d Lvl=%d Pwm=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, pwm);
+        sLevelControlServerCluster.u8CurrentLevel = level;
+        DBG_vPrintf(TRUE, "   MEW: OnOff=%d Lvl=%d Pwm=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, pwm);
     }
 }
 
@@ -351,27 +387,32 @@ void SwitchEndpoint::reportStateChange()
         sendCommandToBoundDevices();
 }
 
-void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
+void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
 {
-    uint16 u16ClusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 u8CommandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x evtType=%02x this=%08x Cmd=%02x\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster custom message ClusterID=%04x Cmd=%02x\n",
                 psEvent->u8EndPoint,
                 u16ClusterId,
-                psEvent->eEventType,
-                this,
                 u8CommandId);
+
+//    if(u16ClusterId == GENERAL_CLUSTER_ID_ONOFF)
+//        doStateChange(getState());
+}
+
+void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 u16ClusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x\n",
+                psEvent->u8EndPoint,
+                u16ClusterId);
 
     if(u16ClusterId == GENERAL_CLUSTER_ID_ONOFF)
         doStateChange(getState());
     if(u16ClusterId == GENERAL_CLUSTER_ID_LEVEL_CONTROL)
-    {
-        uint8 level = sLevelControlServerCluster.u8CurrentLevel;
-        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do level change %d (ledPin=%02x)\n", getEndpointId(), level, ledPin.timerId);
-        ledPin.setLevel(level);
-    }
+        doLevelChange(sLevelControlServerCluster.u8CurrentLevel);
 }
 
 void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)

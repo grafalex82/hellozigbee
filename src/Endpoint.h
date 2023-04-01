@@ -21,6 +21,7 @@ public:
     virtual void handleZclEvent(tsZCL_CallBackEvent *psEvent);
 
 protected:
+    virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };

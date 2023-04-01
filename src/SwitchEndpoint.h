@@ -59,6 +59,7 @@ public:
 
 protected:
     void doStateChange(bool state);
+    void doLevelChange(uint8 level);
     void reportState();
     void sendCommandToBoundDevices();
     void sendLevelControlMoveCommand(bool up);
@@ -70,10 +71,11 @@ protected:
     virtual void registerClientCluster();
     virtual void registerOnOffConfigServerCluster();
     virtual void registerMultistateInputServerCluster();
-    virtual void registerLevelControlClientCluster();
+    virtual void registerLevelControlServerCluster();
     virtual void registerEndpoint();
     virtual void restoreConfiguration();
     virtual void saveConfiguration();
+    virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };
