@@ -233,10 +233,6 @@ void SwitchEndpoint::doLevelChange(uint8 level)
         uint8 pwm = sOnOffServerCluster.bOnOff ? level2pwm[level] : 0;
         ledPin.setLevel(pwm);
 
-        DBG_vPrintf(TRUE, "   CUR: OnOff=%d Lvl=%d Pwm=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, pwm);
-        sLevelControlServerCluster.u8CurrentLevel = level;
-        DBG_vPrintf(TRUE, "   MEW: OnOff=%d Lvl=%d Pwm=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, pwm);
-
         if(sOnOffServerCluster.bOnOff)
             reportStateChange();
     }
