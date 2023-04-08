@@ -200,6 +200,8 @@ void SwitchEndpoint::doStateChange(bool state)
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
         DBG_vPrintf(TRUE, "   NEW: OnOff=%d Lvl=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel);
         //ledPin.setLevel(state ? 255 : 0);
+
+        reportStateChange();
     }
 }
 
@@ -234,6 +236,9 @@ void SwitchEndpoint::doLevelChange(uint8 level)
         DBG_vPrintf(TRUE, "   CUR: OnOff=%d Lvl=%d Pwm=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, pwm);
         sLevelControlServerCluster.u8CurrentLevel = level;
         DBG_vPrintf(TRUE, "   MEW: OnOff=%d Lvl=%d Pwm=%d\n", sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, pwm);
+
+        if(sOnOffServerCluster.bOnOff)
+            reportStateChange();
     }
 }
 
@@ -244,8 +249,8 @@ void SwitchEndpoint::reportState()
     addr.uAddress.u16DestinationAddress = 0x0000;
     addr.eAddressMode = E_ZCL_AM_SHORT;
 
-    // Send the report
-    DBG_vPrintf(TRUE, "Reporting attribute EP=%d value=%d... ", getEndpointId(), sOnOffServerCluster.bOnOff);
+    // Send the OnOff attribute report
+    DBG_vPrintf(TRUE, "Reporting attribute EP=%d OnOff value=%d... ", getEndpointId(), sOnOffServerCluster.bOnOff);
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
     teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                GENERAL_CLUSTER_ID_ONOFF,
@@ -253,6 +258,17 @@ void SwitchEndpoint::reportState()
                                                getEndpointId(),
                                                1,
                                                myPDUM_thAPduInstance);
+    DBG_vPrintf(TRUE, "status: %02x\n", status);
+
+    // Send the Level Control attribute report
+    DBG_vPrintf(TRUE, "Reporting attribute EP=%d LevelCtrl value=%d... ", getEndpointId(), sLevelControlServerCluster.u8CurrentLevel);
+    status = eZCL_ReportAttribute(&addr,
+                                               GENERAL_CLUSTER_ID_LEVEL_CONTROL,
+                                               E_CLD_LEVELCONTROL_ATTR_ID_CURRENT_LEVEL,
+                                               getEndpointId(),
+                                               1,
+                                               myPDUM_thAPduInstance);
+
     PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
     DBG_vPrintf(TRUE, "status: %02x\n", status);
 }
@@ -397,9 +413,6 @@ void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
                 psEvent->u8EndPoint,
                 u16ClusterId,
                 u8CommandId);
-
-//    if(u16ClusterId == GENERAL_CLUSTER_ID_ONOFF)
-//        doStateChange(getState());
 }
 
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
