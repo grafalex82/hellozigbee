@@ -19,7 +19,7 @@ There are 2 goals of the project:
 
 Basically the code is almost independent of the hardware (assuming it is based on JN5169). I am using a simple schematics based on a cheap EBYTE E75-2G4M10S module.
 
-![Schematics](doc/images/Schematics.png)
+![Schematics](doc/images/Schematics2.png)
 
 # How to build
 
