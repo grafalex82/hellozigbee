@@ -352,18 +352,26 @@ void SwitchEndpoint::reportStateChange()
         sendCommandToBoundDevices();
 }
 
-void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
+void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
 {
     uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 u8CommandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x Cmd=%02x\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster command received ClusterID=%04x Cmd=%02x\n",
                 psEvent->u8EndPoint,
                 u16ClusterId,
                 u8CommandId);
 
     doStateChange(getState());
+}
+
+void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 u16ClusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x\n",
+                psEvent->u8EndPoint,
+                u16ClusterId);
 }
 
 void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)

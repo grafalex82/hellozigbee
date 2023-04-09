@@ -74,6 +74,7 @@ protected:
     virtual void registerEndpoint();
     virtual void restoreConfiguration();
     virtual void saveConfiguration();
+    virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };

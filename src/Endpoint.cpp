@@ -21,6 +21,11 @@ uint8 Endpoint::getEndpointId() const
     return endpointId;
 }
 
+void Endpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "Endpoint: Warning: using default custom cluster event handler for event type (%d)\n", psEvent->eEventType);
+}
+
 void Endpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
     DBG_vPrintf(TRUE, "Endpoint: Warning: using default cluster update handler for event type (%d)\n", psEvent->eEventType);
@@ -70,7 +75,11 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:
+            handleCustomClusterEvent(psEvent);
+            break;
+
         case E_ZCL_CBET_CLUSTER_UPDATE:
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Cluster %04x update\n", psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum);
             handleClusterUpdate(psEvent);
             break;
 
