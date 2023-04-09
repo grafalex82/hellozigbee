@@ -23,7 +23,7 @@ extern "C"
 #include "ZCLTimer.h"
 
 const uint8 SWITCH1_LED_PIN = 17;
-const uint8 SWITCH2_LED_PIN = 0;
+const uint8 SWITCH2_LED_PIN = 12;
 
 const uint8 SWITCH1_BTN_BIT = 1;
 const uint32 SWITCH1_BTN_MASK = 1UL << SWITCH1_BTN_BIT;
