@@ -1,0 +1,27 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 23,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "windows",
+        "displayName": "Default Config Windows",
+        "description": "Default build using MinGW32 generator, and sets pointers to NXP SDK at default locations",
+        "generator": "MinGW Makefiles",
+        "binaryDir": "${sourceDir}/build",
+        "cacheVariables": {
+          "TOOLCHAIN_PREFIX": {
+            "type": "STRING",
+            "value": "C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379"
+          },
+          "SDK_PREFIX": {
+            "type": "STRING",
+            "value": "C:/NXP/bstudio_nxp/sdk/JN-SW-4170"
+          }
+        }
+      }
+    ]
+  }
