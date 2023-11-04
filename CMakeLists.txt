@@ -7,8 +7,8 @@ SET(JENNIC_CHIP JN5169)
 include(cmake/JennicSDK.cmake)
 
 # Main project settings
-PROJECT(HelloZigbee)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
+PROJECT(HelloZigbee)
 ENABLE_LANGUAGE(CXX)
 ENABLE_LANGUAGE(ASM)
 
