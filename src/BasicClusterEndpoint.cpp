@@ -14,6 +14,7 @@ BasicClusterEndpoint::BasicClusterEndpoint()
 
 void BasicClusterEndpoint::registerBasicCluster()
 {
+    DBG_vPrintf(TRUE, "Registering basic cluster\n");
     // Create an instance of a basic cluster as a server
     teZCL_Status status = eCLD_BasicCreateBasic(&clusterInstances.sBasicServer,
                                                 TRUE,
@@ -26,6 +27,7 @@ void BasicClusterEndpoint::registerBasicCluster()
 
 void BasicClusterEndpoint::registerOtaCluster()
 {
+    DBG_vPrintf(TRUE, "Registering ota cluster\n");
     // Create an instance of an OTA cluster as a client */
     teZCL_Status status = eOTA_Create(&clusterInstances.sOTAClient,
                                       FALSE,  /* client */
@@ -36,7 +38,8 @@ void BasicClusterEndpoint::registerOtaCluster()
                                       &sOTACustomDataStruct);
 
     if(status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster instance. status=%d\n", status);}
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster instance. status=%d\n", status);
+}
 
 void BasicClusterEndpoint::registerEndpoint()
 {
