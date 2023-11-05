@@ -28,7 +28,8 @@
       {
         "name": "default",
         "configuration": "Release",
-        "configurePreset": "default"
+        "configurePreset": "default",
+        "targets": "HelloZigbee.flash"
       }
     ]
   }
