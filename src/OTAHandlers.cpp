@@ -34,8 +34,9 @@ void OTAHandlers::initOTA(uint8 ep)
     // Just dump current image OTA header and MAC address
     #if TRACE_OTA_DEBUG
         vDumpCurrentImageOTAHeader(otaEp);
-        vDumpOverridenMacAddress();
     #endif //TRACE_OTA_DEBUG
+
+    vDumpOverridenMacAddress(); // Dump MAC address anyway to avoid au8MacAddress to be optimized out
 }
 
 void OTAHandlers::restoreOTAAttributes()
@@ -94,7 +95,7 @@ void OTAHandlers::vDumpOverridenMacAddress()
     DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", au8MacAddress);
     for (int i=0; i<8; i++)
         DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
-    DBG_vPrintf(TRUE, "\n\n");
+    DBG_vPrintf(TRUE, "\n");
 }
 
 void OTAHandlers::saveOTAContext()
