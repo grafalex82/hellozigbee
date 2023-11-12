@@ -14,7 +14,7 @@ BasicClusterEndpoint::BasicClusterEndpoint()
 
 void BasicClusterEndpoint::registerBasicCluster()
 {
-    DBG_vPrintf(TRUE, "Registering basic cluster\n");
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerBasicCluster(): Registering basic cluster\n");
     // Create an instance of a basic cluster as a server
     teZCL_Status status = eCLD_BasicCreateBasic(&clusterInstances.sBasicServer,
                                                 TRUE,
@@ -22,12 +22,12 @@ void BasicClusterEndpoint::registerBasicCluster()
                                                 &sBasicServerCluster,
                                                 &au8BasicClusterAttributeControlBits[0]);
     if( status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create Basic Cluster instance. status=%d\n", status);
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerBasicCluster(): Failed to create Basic Cluster instance. Status=%d\n", status);
 }
 
 void BasicClusterEndpoint::registerOtaCluster()
 {
-    DBG_vPrintf(TRUE, "Registering ota cluster\n");
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerOtaCluster(): Registering ota cluster\n");
     // Create an instance of an OTA cluster as a client */
     teZCL_Status status = eOTA_Create(&clusterInstances.sOTAClient,
                                       FALSE,  /* client */
@@ -38,7 +38,7 @@ void BasicClusterEndpoint::registerOtaCluster()
                                       &sOTACustomDataStruct);
 
     if(status != E_ZCL_SUCCESS)
-        DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Failed to create OTA Cluster instance. status=%d\n", status);
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerOtaCluster(): Failed to create OTA Cluster instance. Status=%d\n", status);
 }
 
 void BasicClusterEndpoint::registerEndpoint()
@@ -55,7 +55,7 @@ void BasicClusterEndpoint::registerEndpoint()
 
     // Register the endpoint with all the clusters above
     teZCL_Status status = eZCL_Register(&endPoint);
-    DBG_vPrintf(TRUE, "BasicClusterEndpoint::init(): Register Basic Cluster Endpoint. status=%d\n", status);
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerEndpoint(): Register Basic Cluster Endpoint. Status=%d\n", status);
 }
 
 void BasicClusterEndpoint::init()

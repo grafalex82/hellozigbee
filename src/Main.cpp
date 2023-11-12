@@ -184,10 +184,15 @@ extern "C" PUBLIC void vAppMain(void)
     // Initialize UART
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
 
+    // Print welcome message
+    DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");
+    DBG_vPrintf(TRUE, "Initializing Hello Zigbee Platform\n");
+    DBG_vPrintf(TRUE, "---------------------------------------------------\n\n");
+
     // Initialize PDM
-    DBG_vPrintf(TRUE, "vAppMain(): init PDM...\n");
+    DBG_vPrintf(TRUE, "vAppMain(): init PDM...  ");
     PDM_eInitialise(0);
-    DBG_vPrintf(TRUE, "vAppMain(): PDM Capacity %d Occupancy %d\n",
+    DBG_vPrintf(TRUE, "PDM Capacity %d Occupancy %d\n",
             u8PDM_CalculateFileSystemCapacity(),
             u8PDM_GetFileSystemOccupancy() );
 
@@ -212,7 +217,7 @@ extern "C" PUBLIC void vAppMain(void)
     appEventQueue.init();
 
     // Initialize periodic tasks
-    DBG_vPrintf(TRUE, "vAppMain(): Initialize periodic tasks...\n");
+    DBG_vPrintf(TRUE, "vAppMain(): init periodic tasks...\n");
     deferredExecutor.init();
     ZCLTimer zclTimer;
     zclTimer.init();
@@ -230,10 +235,18 @@ extern "C" PUBLIC void vAppMain(void)
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &context.switch1);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &context.switch2);
 
+    // Init the ZigbeeDevice, AF, BDB, and other network stuff
+    ZigbeeDevice::getInstance();
+
+    // Print Initialization finished message
+    DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");
+    DBG_vPrintf(TRUE, "Initialization of the Hello Zigbee Platform Finished\n");
+    DBG_vPrintf(TRUE, "---------------------------------------------------\n\n");
+
     // Start ZigbeeDevice and rejoin the network (if was joined)
     ZigbeeDevice::getInstance()->rejoinNetwork();
 
-    DBG_vPrintf(TRUE, "vAppMain(): Starting the main loop\n");
+    DBG_vPrintf(TRUE, "\nvAppMain(): Starting the main loop\n");
     while(1)
     {
         zps_taskZPS();

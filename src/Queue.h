@@ -35,8 +35,6 @@ class QueueBase : public H
 public:
     QueueBase()
     {
-        // JN5169 CRT does not really call constrictors for global object
-        DBG_vPrintf(TRUE, "In a queue constructor...\n");
     }
 
     void init()

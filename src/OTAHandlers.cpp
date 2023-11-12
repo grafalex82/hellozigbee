@@ -63,6 +63,8 @@ void OTAHandlers::restoreOTAAttributes()
 
 void OTAHandlers::initFlash()
 {
+    DBG_vPrintf(TRUE, "OTAHandlers::initFlash(): init OTA handlers and prepare OTA flash space\n");
+
     // Fix and streamline possible incorrect or non-contiguous flash remapping
     if (u32REG_SysRead(REG_SYS_FLASH_REMAP) & 0xf)
     {
