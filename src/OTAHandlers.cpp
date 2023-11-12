@@ -7,6 +7,13 @@ extern "C"
     #include "string.h"
 }
 
+// OTA linker scripts expect .ro_mac_address section to be defined even though the overriden
+// MAC address may not be used
+uint8 au8MacAddress[]  __attribute__ ((section (".ro_mac_address"))) = {
+                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+};
+
+
 void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
 {
     memset(persistedData, 0, sizeof(tsOTA_PersistedData));
@@ -25,8 +32,10 @@ void OTAHandlers::initOTA(uint8 ep)
     initFlash();
 
     // Just dump current image OTA header and MAC address
-    vDumpCurrentImageOTAHeader(otaEp);
-    vDumpOverridenMacAddress();
+    #if TRACE_OTA_DEBUG
+        vDumpCurrentImageOTAHeader(otaEp);
+        vDumpOverridenMacAddress();
+    #endif //TRACE_OTA_DEBUG
 }
 
 void OTAHandlers::restoreOTAAttributes()
@@ -82,10 +91,6 @@ void OTAHandlers::initFlash()
 
 void OTAHandlers::vDumpOverridenMacAddress()
 {
-    static uint8 au8MacAddress[]  __attribute__ ((section (".ro_mac_address"))) = {
-                      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-    };
-
     DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", au8MacAddress);
     for (int i=0; i<8; i++)
         DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
