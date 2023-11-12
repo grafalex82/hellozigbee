@@ -48,6 +48,7 @@ public:
 
     void setEndpoint(SwitchEndpoint * ep);
 
+    void setConfiguration(SwitchMode switchMode, RelayMode relayMode, uint16 maxPause, uint16 minLongPress);
     void setSwitchMode(SwitchMode mode);
     void setRelayMode(RelayMode mode);
     void setMaxPause(uint16 value);
@@ -57,7 +58,7 @@ protected:
     virtual void handleButtonState(bool pressed);
     virtual void resetButtonStateMachine();
 
-    virtual void changeState(ButtonState state);
+    virtual void changeState(ButtonState state, bool suppressLogging = false);
     virtual void buttonStateMachineToggle(bool pressed);
     virtual void buttonStateMachineMomentary(bool pressed);
     virtual void buttonStateMachineMultistate(bool pressed);

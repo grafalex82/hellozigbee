@@ -117,10 +117,10 @@ void SwitchEndpoint::restoreConfiguration()
                             &readBytes);
 
     // Configure buttons state machine with read values
-    buttonHandler.setSwitchMode((SwitchMode)sOnOffConfigServerCluster.eSwitchMode);
-    buttonHandler.setRelayMode((RelayMode)sOnOffConfigServerCluster.eRelayMode);
-    buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);
-    buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
+    buttonHandler.setConfiguration((SwitchMode)sOnOffConfigServerCluster.eSwitchMode, 
+                                   (RelayMode)sOnOffConfigServerCluster.eRelayMode,
+                                   sOnOffConfigServerCluster.iMaxPause,
+                                   sOnOffConfigServerCluster.iMinLongPress);
 }
 
 void SwitchEndpoint::saveConfiguration()
@@ -140,6 +140,9 @@ void SwitchEndpoint::init()
     registerLevelControlClientCluster();
     registerEndpoint();
 
+    // Let button handler know about this Endpoint instanct so that it can properly report new states
+    buttonHandler.setEndpoint(this);
+
     // Restore previous configuration from PDM
     restoreConfiguration();
 
@@ -148,9 +151,6 @@ void SwitchEndpoint::init()
     // is a property of SwitchEndpoint, and not the global task object
     // TODO: restore previous blink mode from PDM
     blinkTask.setBlinkMode(false);
-
-    // Let button handler know about this Endpoint instanct so that it can properly report new states
-    buttonHandler.setEndpoint(this);
 }
 
 bool SwitchEndpoint::getState() const

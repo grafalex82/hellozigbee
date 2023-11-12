@@ -47,6 +47,18 @@ const char * ButtonHandler::getStateName(ButtonState state)
     return "";
 }
 
+void ButtonHandler::setConfiguration(SwitchMode switchMode, RelayMode relayMode, uint16 maxPause, uint16 minLongPress)
+{
+    // This function does the same as 4 functions below all together, but as a single transaction.
+    // This is needed to avoid cluttering log with multiple changeState messages
+    switchMode = switchMode;
+    relayMode = relayMode;
+    maxPause = maxPause/ButtonPollCycle;
+    longPressDuration = minLongPress/ButtonPollCycle;
+
+    changeState(IDLE, true);
+}
+
 void ButtonHandler::setSwitchMode(SwitchMode mode)
 {
     switchMode = mode;
@@ -71,12 +83,14 @@ void ButtonHandler::setMinLongPress(uint16 value)
     changeState(IDLE);
 }
 
-void ButtonHandler::changeState(ButtonState state)
+void ButtonHandler::changeState(ButtonState state, bool suppressLogging)
 {
     currentState = state;
     currentStateDuration = 0;
 
-    DBG_vPrintf(TRUE, "Switching button %d state to %s\n", endpoint->getEndpointId(), getStateName(state));
+    // TODO: Avoid dumping multiple changeState() calls during initial initialization
+    if(!suppressLogging)
+        DBG_vPrintf(TRUE, "Switching button %d state to %s\n", endpoint->getEndpointId(), getStateName(state));
 }
 
 void ButtonHandler::buttonStateMachineToggle(bool pressed)
