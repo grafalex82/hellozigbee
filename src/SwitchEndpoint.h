@@ -11,6 +11,7 @@ extern "C"
     #include "MultistateInputBasic.h"
     #include "LevelControl.h"
     #include "Identify.h"
+    #include "Groups.h"
 }
 
 #include "Endpoint.h"
@@ -25,6 +26,7 @@ struct OnOffClusterInstances
     tsZCL_ClusterInstance sMultistateInputServer;
     tsZCL_ClusterInstance sLevelControlClient;
     tsZCL_ClusterInstance sIdentifyServer;
+    tsZCL_ClusterInstance sGroupsServer;
 } __attribute__ ((aligned(4)));
 
 
@@ -42,6 +44,8 @@ protected:
     tsCLD_LevelControlCustomDataStructure sLevelControlClientCustomDataStructure;
     tsCLD_Identify sIdentifyServerCluster;
     tsCLD_IdentifyCustomDataStructure sIdentifyClusterData;
+    tsCLD_Groups sGroupsServerCluster;
+    tsCLD_GroupsCustomDataStructure sGroupsServerCustomDataStructure;
 
     ButtonHandler buttonHandler;
 
@@ -68,8 +72,10 @@ protected:
     void reportStateChange();
 
 protected:
+    virtual void initEndpointStructure();
     virtual void registerServerCluster();
     virtual void registerClientCluster();
+    virtual void registerGroupsCluster();
     virtual void registerOnOffConfigServerCluster();
     virtual void registerMultistateInputServerCluster();
     virtual void registerLevelControlClientCluster();

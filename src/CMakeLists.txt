@@ -5,8 +5,9 @@ ADD_DEFINITIONS(
         -DOTA_INTERNAL_STORAGE
 #        -DTRACE_ZCL=TRUE
 #        -DTRACE_OTA_DEBUG=TRUE
+        -DDEBUG_CLD_GROUPS
 #        -DDEBUG_BDB
-#        -DDEBUG_CLD_ONOFF
+        -DDEBUG_CLD_ONOFF
 #        -DDEBUG_ZQUEUE
 #        -DDEBUG_CLD_IDENTIFY
 
@@ -58,6 +59,11 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Basic.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/BasicClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/BasicCommandHandler.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Groups.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsClientCommands.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsCommandHandler.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsServerCommands.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsTableManager.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Identify.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/IdentifyCommandHandler.c

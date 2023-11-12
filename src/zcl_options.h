@@ -72,6 +72,9 @@
 #define BASIC_SERVER
 #define BASIC_CLIENT
 
+#define CLD_GROUPS
+#define GROUPS_SERVER
+
 //#define CLD_SCENES
 //#define SCENES_CLIENT
 

@@ -103,7 +103,22 @@ void SwitchEndpoint::registerIdentifyCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::registerIdentifyCluster(): Failed to create Identify Cluster instance. Status=%d\n", status);
 }
 
-void SwitchEndpoint::registerEndpoint()
+void SwitchEndpoint::registerGroupsCluster()
+{
+    DBG_vPrintf(TRUE, "Registering groups cluster\n");
+    // Create an instance of a groups cluster as a server
+    teZCL_Status status = eCLD_GroupsCreateGroups(&sClusterInstance.sGroupsServer,
+                                                  TRUE,
+                                                  &sCLD_Groups,
+                                                  &sGroupsServerCluster,
+                                                  &au8GroupsAttributeControlBits[0],
+                                                  &sGroupsServerCustomDataStructure,
+                                                  &sEndPoint);
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Groups Cluster instance. status=%d\n", status);
+}
+
+void SwitchEndpoint::initEndpointStructure()
 {
     // Initialize endpoint structure
     sEndPoint.u8EndPointNumber = getEndpointId();
@@ -114,7 +129,10 @@ void SwitchEndpoint::registerEndpoint()
     sEndPoint.psClusterInstance = (tsZCL_ClusterInstance*)&sClusterInstance;
     sEndPoint.bDisableDefaultResponse = ZCL_DISABLE_DEFAULT_RESPONSES;
     sEndPoint.pCallBackFunctions = &EndpointManager::handleZclEvent;
+}
 
+void SwitchEndpoint::registerEndpoint()
+{
     // Register the endpoint with all the clusters in it
     teZCL_Status status = eZCL_Register(&sEndPoint);
     DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Register Switch Endpoint. status=%d\n", status);
@@ -146,12 +164,14 @@ void SwitchEndpoint::saveConfiguration()
 void SwitchEndpoint::init()
 {
     // Register all clusters and endpoint itself
+    initEndpointStructure();
     registerServerCluster();
     registerClientCluster();
     registerOnOffConfigServerCluster();
     registerMultistateInputServerCluster();
     registerLevelControlClientCluster();
     registerIdentifyCluster();
+    registerGroupsCluster();
     registerEndpoint();
 
     // Let button handler know about this Endpoint instanct so that it can properly report new states
@@ -391,7 +411,23 @@ void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
                 psEvent->u8EndPoint,
                 u8CommandId);
 
-    doStateChange(getState());
+    switch(u8CommandId)
+    {
+        case E_CLD_ONOFF_CMD_OFF:
+            doStateChange(false);
+            break;
+        case E_CLD_ONOFF_CMD_ON:
+            doStateChange(true);
+            break;
+        case E_CLD_ONOFF_CMD_TOGGLE:
+            doStateChange(!getState());
+            break;
+        default:
+            DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Unsupported cluster command Cmd=%02x\n",
+                        u16ClusterId,
+                        u8CommandId);
+            break;
+    }
 }
 
 void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
