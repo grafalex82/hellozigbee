@@ -39,7 +39,7 @@ ZigbeeDevice::ZigbeeDevice()
     timeEventQueue.init();
 
     // Restore network connection state
-    connectionState.init(NOT_JOINED);
+    connectionState.init(NOT_JOINED, "connectionState");
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "ZigbeeDevice(): init Application Framework (AF)... ");

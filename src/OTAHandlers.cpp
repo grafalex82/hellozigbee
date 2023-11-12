@@ -47,7 +47,7 @@ void OTAHandlers::restoreOTAAttributes()
         DBG_vPrintf(TRUE, "OTAHandlers::restoreOTAAttributes(): Failed to create OTA Cluster attributes. status=%d\n", status);
 
     // Restore previous values
-    sPersistedData.init(resetPersistedOTAData);
+    sPersistedData.init(resetPersistedOTAData, "OTA Data");
 
     // Correct retry timer to force retry in 10 seconds
     if((&sPersistedData)->u32RequestBlockRequestTime != 0)
