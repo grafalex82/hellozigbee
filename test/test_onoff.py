@@ -7,8 +7,14 @@ import time
 
 @pytest.fixture
 def port():
-    return serial.Serial('COM5', baudrate=115200, timeout=1)
+    ser = serial.Serial('COM5', baudrate=115200, timeout=1)
+    ser.dtr = False
 
+    ser.dtr = True
+    time.sleep(0.01)
+    ser.dtr = False
+
+    return ser
 
 def wait_str(port, str, timeout=5):
     tstart = time.time()
