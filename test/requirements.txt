@@ -1,0 +1,2 @@
+pyserial==3.5
+pytest==7.4.0
