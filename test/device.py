@@ -16,9 +16,10 @@ class ZigbeeDevice():
 
     def reset(self):
         self._port.dtr = True
-        time.sleep(0.01)
-        self._port.reset_input_buffer()
+        time.sleep(0.1)
         self._port.dtr = False
+
+        self._port.reset_input_buffer()
 
 
     def wait_str(self, str, timeout=5):
