@@ -21,6 +21,8 @@ class ZigbeeDevice():
 
         self._port.reset_input_buffer()
 
+        self.wait_str("vAppMain(): Starting the main loop")
+
 
     def wait_str(self, str, timeout=5):
         tstart = time.time()

@@ -8,15 +8,17 @@ from device import *
 from zigbee import *
 
 
-# def test_on(device, zigbee):
-#     device.wait_str("Initialization of the Hello Zigbee Platform Finished")
-#     zigbee.publish('{"state":"ON"}')
-#     device.wait_str("ON")
-#     assert False
-
-# SwitchEndpoint EP=2: do state change 0
-# SwitchEndpoint EP=3: do state change 1
-
-def test_on(zigbee):
+def test_on_off(device, zigbee):
     zigbee.publish('set', '{"state_button_2":"ON"}')
-    assert False
+    device.wait_str("SwitchEndpoint EP=3: do state change 1")
+
+    zigbee.publish('set', '{"state_button_2":"OFF"}')
+    device.wait_str("SwitchEndpoint EP=3: do state change 0")
+
+
+def test_toggle(device, zigbee):
+    zigbee.publish('set', '{"state_button_2":"TOGGLE"}')
+    device.wait_str("SwitchEndpoint EP=3: do state change 1")
+
+    zigbee.publish('set', '{"state_button_2":"TOGGLE"}')
+    device.wait_str("SwitchEndpoint EP=3: do state change 0")
