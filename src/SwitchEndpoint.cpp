@@ -193,10 +193,9 @@ void SwitchEndpoint::toggle()
 
 void SwitchEndpoint::doStateChange(bool state)
 {
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
-
     if(runsInServerMode())
     {
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
         blinkTask.setBlinkMode(state);
     }
