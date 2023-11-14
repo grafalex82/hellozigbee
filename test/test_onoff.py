@@ -5,14 +5,18 @@ import pytest
 import time
 
 from device import *
+from zigbee import *
 
 
+# def test_on(device, zigbee):
+#     device.wait_str("Initialization of the Hello Zigbee Platform Finished")
+#     zigbee.publish('{"state":"ON"}')
+#     device.wait_str("ON")
+#     assert False
 
-def test_connect(device):
-    device.wait_str("Initialization of the Hello Zigbee Platform Finished")
+# SwitchEndpoint EP=2: do state change 0
+# SwitchEndpoint EP=3: do state change 1
 
-def test_connect2(device):
-    device.wait_str("Initialization of the Hello Zigbee Platform Finished")
-
-def test_connect3(device):
-    device.wait_str("Initialization of the Hello Zigbee Platform Finished")
+def test_on(zigbee):
+    zigbee.publish('set', '{"state_button_2":"ON"}')
+    assert False
