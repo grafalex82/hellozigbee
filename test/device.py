@@ -3,8 +3,8 @@ import serial
 import time
 
 @pytest.fixture(scope="session")
-def port():
-    ser = serial.Serial('COM5', baudrate=115200, timeout=1)
+def port(pytestconfig):
+    ser = serial.Serial(pytestconfig.getini("port"), baudrate=115200, timeout=1)
     ser.dtr = False # Release reset signal so that the device can boot
     yield ser
 
