@@ -27,7 +27,7 @@ const uint8 SWITCH2_LED_PIN = 12;
 
 const uint8 SWITCH1_BTN_BIT = 1;
 const uint32 SWITCH1_BTN_MASK = 1UL << SWITCH1_BTN_BIT;
-const uint8 SWITCH2_BTN_BIT = 3;
+const uint8 SWITCH2_BTN_BIT = 2;
 const uint32 SWITCH2_BTN_MASK = 1UL << SWITCH2_BTN_BIT;
 
 
