@@ -31,7 +31,7 @@ class ZigbeeDevice():
                 raise TimeoutError()
 
             line = self._port.readline().decode().rstrip()
-            print(line)
+            print("    " + line)
             if str in line:
                 return
 
