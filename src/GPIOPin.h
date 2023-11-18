@@ -52,6 +52,14 @@ public:
         vAHI_DioSetOutput(0, pinMask);
     }
 
+    void setState(bool value)
+    {
+        if(value)
+            vAHI_DioSetOutput(pinMask, 0);
+        else
+            vAHI_DioSetOutput(0, pinMask);
+    }
+
     void toggle()
     {
         uint32 currentState = u32AHI_DioReadInput();
