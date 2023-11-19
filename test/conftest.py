@@ -10,7 +10,7 @@ def pytest_addoption(parser):
 
 def set_device_attribute(device, zigbee, attribute, state, expected_response):
     # Make json payload like {"state_button_3", "ON"}
-    payload = '{{"{}":"{}"}}'.format(attribute, state)
+    payload = {attribute: state}
 
     # Prepare for waiting a zigbee2mqtt message on the default device topic
     zigbee.subscribe()
@@ -22,13 +22,12 @@ def set_device_attribute(device, zigbee, attribute, state, expected_response):
     device.wait_str(expected_response)
 
     # Wait the reply from zigbee2mqtt with the device state
-    state = json.loads(zigbee.wait_msg())
-    return state[attribute]
+    return zigbee.wait_msg()[attribute]
 
 
 def get_device_attribute(device, zigbee, attribute, expected_response):
     # Make json payload like {"state_button_3", ""}
-    payload = f'{{"{attribute}":""}}'
+    payload = {attribute: ""}
 
     # Prepare for waiting a zigbee2mqtt message on the default device topic
     zigbee.subscribe()
@@ -40,10 +39,8 @@ def get_device_attribute(device, zigbee, attribute, expected_response):
     device.wait_str(expected_response)
 
     # Wait the reply from zigbee2mqtt with the device state
-    state = json.loads(zigbee.wait_msg())
-    return state[attribute]
+    return zigbee.wait_msg()[attribute]
 
 
 def wait_attribute_report(zigbee, attribute):
-    state = json.loads(zigbee.wait_msg())
-    return state[attribute]
+    return zigbee.wait_msg()

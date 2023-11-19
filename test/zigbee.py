@@ -1,5 +1,6 @@
 import pytest
 import time
+import json
 import paho.mqtt.client as mqtt
 
 
@@ -32,6 +33,10 @@ class ZigbeeNetwork():
 
     def publish(self, subtopic, message):
         topic = self.get_topic(subtopic)
+
+        if isinstance(message, dict):
+            message = json.dumps(message)
+
         print(f"Sending message to '{topic}': {message}")
         self.client.publish(topic, message)
 
@@ -48,7 +53,7 @@ class ZigbeeNetwork():
         
         payload = self.message_received.decode()
         self.message_received = None
-        return payload
+        return json.loads(payload)
             
             
     def disconnect(self):
