@@ -174,6 +174,91 @@ PRIVATE void APP_vTaskSwitch(Context * context)
     }
 }
 
+class DebugInput
+{
+    static const int BUF_SIZE = 32;
+    char buf[BUF_SIZE];
+    char * ptr;
+    bool hasData;
+
+public:
+    DebugInput()
+    {
+        reset();
+    }
+
+    void handleDebugInput()
+    {
+        // Avoid buffer overrun
+        if(ptr >= buf + BUF_SIZE)
+            return;
+
+        // Receive the next symbol, if any
+        while(u16AHI_UartReadRxFifoLevel(E_AHI_UART_0) > 0)
+        {
+            char ch;
+            u16AHI_UartBlockReadData(E_AHI_UART_0, (uint8*)&ch, 1);
+
+            if(ch == '\r' || ch == '\n')
+            {
+                *ptr = 0;
+                hasData = true;
+            }
+            else
+                *ptr = ch;
+
+            ptr++;
+        }
+    }
+
+    bool hasCompletedLine() const
+    {
+        return hasData;
+    }
+
+    bool matchCommand(const char * command) const
+    {
+        int len = strlen(command);
+        if(strncmp(command, buf, len) == 0 && buf[len] == 0)
+            return true;
+
+        return false;
+    }
+
+    void reset()
+    {
+        ptr = buf;
+        hasData = false;
+    }
+};
+
+PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
+{
+    debugInput.handleDebugInput();
+    if(debugInput.hasCompletedLine())
+    {
+        if(debugInput.matchCommand("BTN1_PRESS"))
+        {
+            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK);
+            DBG_vPrintf(TRUE, "Matched BTN1_PRESS\n");
+        }
+
+        if(debugInput.matchCommand("BTN2_PRESS"))
+        {
+            ButtonsTask::getInstance()->setButtonsOverride(SWITCH2_BTN_MASK);
+            DBG_vPrintf(TRUE, "Matched BTN2_PRESS\n");
+        }
+
+        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE"))
+        {
+            ButtonsTask::getInstance()->setButtonsOverride(0);
+            DBG_vPrintf(TRUE, "Matched BTNx_RELEASE\n");
+        }
+
+        debugInput.reset();
+    }
+}
+
 extern "C" PUBLIC void vAppMain(void)
 {
     // Initialize the hardware
@@ -183,6 +268,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize UART
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
+    DebugInput debugInput;
 
     // Print welcome message
     DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");
@@ -254,6 +340,8 @@ extern "C" PUBLIC void vAppMain(void)
         bdb_taskBDB();
 
         ZTIMER_vTask();
+
+        APP_vHandleDebugInput(debugInput);
 
         APP_vTaskSwitch(&context);
 

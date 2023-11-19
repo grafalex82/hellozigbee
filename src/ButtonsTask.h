@@ -26,12 +26,15 @@ class ButtonsTask : public PeriodicTask
     HandlerRecord handlers[ZCL_NUMBER_OF_ENDPOINTS+1];
     uint8 numHandlers;
     uint32 buttonsMask;
+    uint32 buttonsOverride;
 
 public:
     ButtonsTask();
 
     static ButtonsTask * getInstance();
 
+    void setButtonsOverride(uint32 override);
+    
     bool handleDioInterrupt(uint32 dioStatus);
     bool canSleep() const;
 

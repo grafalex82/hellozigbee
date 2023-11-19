@@ -12,6 +12,7 @@ ButtonsTask::ButtonsTask()
     longPressCounter = 0;
 
     buttonsMask = 0;
+    buttonsOverride = 0;
 
     numHandlers = 0;
 
@@ -23,6 +24,11 @@ ButtonsTask * ButtonsTask::getInstance()
 {
     static ButtonsTask instance;
     return &instance;
+}
+
+void ButtonsTask::setButtonsOverride(uint32 override)
+{
+    buttonsOverride = override;
 }
 
 bool ButtonsTask::handleDioInterrupt(uint32 dioStatus)
@@ -63,6 +69,8 @@ void ButtonsTask::registerHandler(uint32 pinMask, IButtonHandler * handler)
 void ButtonsTask::timerCallback()
 {
     uint32 input = u32AHI_DioReadInput();
+    input &= ~buttonsOverride;
+
     bool someButtonPressed = false;
 
     //DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): input=%08x\n", input);
