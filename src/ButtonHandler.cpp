@@ -175,7 +175,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             break;
 
         case PRESSED1:
-            if(pressed && currentStateDuration > longPressDuration)
+            if(pressed && (currentStateDuration > longPressDuration))
             {
                 changeState(LONG_PRESS);
                 endpoint->reportAction(BUTTON_PRESSED);
