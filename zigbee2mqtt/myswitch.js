@@ -217,6 +217,22 @@ const fromZigbee_MultistateInput = {
     },
 }
 
+const fromZigbee_LevelCtrl = {
+    cluster: 'genLevelCtrl',
+    type: ['commandMoveToLevel', 'commandMoveToLevelWithOnOff', 'commandMove', 'commandMoveWithOnOff', 
+           'commandStop', 'commandStopWithOnOff', 'commandStep', 'commandStepWithOnOff'],
+
+    convert: (model, msg, publish, options, meta) => {
+        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
+        const cmd = msg['type'];
+        const payload = msg['data'];
+
+        const result = {level_ctrl: {command: cmd, payload: payload}};
+        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(result)}]`);
+        return result;
+    },
+}
+
 async function getImageMeta(current, logger, device) {
     logger.debug(`My getImageMeta()`);
     logger.debug(`device='${JSON.stringify(device)}'`);
@@ -276,7 +292,7 @@ const device = {
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput],
+    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_LevelCtrl],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         device.endpoints.forEach(async (ep) => {

@@ -14,6 +14,7 @@ EP3_GET_STATE = "ZCL Read Attribute: EP=3 Cluster=0006 Command=00 Attr=0000"
 EP3_SET_MODE = "ZCL Write Attribute: Clustter 0007 Attrib ff00"
 EP3_GET_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff00"
 EP3_SET_RELAY_MODE = "ZCL Write Attribute: Clustter 0007 Attrib ff01"
+EP3_SET_LONG_PRESS_MODE = "ZCL Write Attribute: Clustter 0007 Attrib ff04"
 
 
 def test_on_off(device, zigbee):    
@@ -95,3 +96,36 @@ def test_double_click(device, zigbee):
     # Check the device state changed, and the double click action is generated
     assert wait_attribute_report(zigbee, 'action') == "double_button_2"
     assert wait_attribute_report(zigbee, 'state_button_2') == "ON"
+
+
+def test_level_control(device, zigbee):
+    # Bind the endpoint with the coordinator
+    # Received MQTT message on 'zigbee2mqtt/bridge/request/device/bind' with data '{"clusters":["genLevelCtrl"],"from":"my_test_switch/3","to":"Coordinator"}'
+
+    # Ensure the switch will generate levelCtrlDown messages on long press
+    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
+    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', "unlinked", EP3_SET_RELAY_MODE) == "unlinked"
+    assert set_device_attribute(device, zigbee, 'long_press_mode_button_2', "levelCtrlDown", EP3_SET_LONG_PRESS_MODE) == "levelCtrlDown"
+
+    zigbee.subscribe()
+
+    # Emulate the long button press, wait until the switch transits to the long press state
+    device.send_str("BTN2_PRESS")
+    device.wait_str("Switching button 3 state to PRESSED1")
+    device.wait_str("Switching button 3 state to LONG_PRESS")
+    device.wait_str("Reporting multistate action EP=3 value=255... status: 00")
+    device.wait_str("Sending Level Control Move command status: 00")
+
+    # Verify the Level Control Move command has been received by the coordinator
+    assert wait_attribute_report(zigbee, 'action') == "hold_button_2"
+    assert wait_attribute_report(zigbee, 'level_ctrl') == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
+
+    # Do not forget to release the button
+    device.send_str("BTN2_RELEASE")
+    device.wait_str("Switching button 3 state to IDLE")
+    device.wait_str("Reporting multistate action EP=3 value=0... status: 00")
+    device.wait_str("Sending Level Control Stop command status: 00")
+
+    # Verify the Level Control Move command has been received by the coordinator
+    assert wait_attribute_report(zigbee, 'action') == "release_button_2"
+    assert wait_attribute_report(zigbee, 'level_ctrl')['command'] == 'commandStop'
