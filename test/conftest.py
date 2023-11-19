@@ -1,5 +1,5 @@
 import pytest
-import re
+import json
 
 def pytest_addoption(parser):
     parser.addini('port', 'COM port where the Zigbee Device is connected to')
@@ -22,8 +22,8 @@ def set_device_attribute(device, zigbee, attribute, state, expected_response):
     device.wait_str(expected_response)
 
     # Wait the reply from zigbee2mqtt with the device state
-    state = zigbee.wait_msg()
-    return re.search(f'"{attribute}":"(.*?)"', state).group(1)
+    state = json.loads(zigbee.wait_msg())
+    return state[attribute]
 
 
 def get_device_attribute(device, zigbee, attribute, expected_response):
@@ -40,10 +40,10 @@ def get_device_attribute(device, zigbee, attribute, expected_response):
     device.wait_str(expected_response)
 
     # Wait the reply from zigbee2mqtt with the device state
-    state = zigbee.wait_msg()
-    return re.search(f'"{attribute}":"(.*?)"', state).group(1)
+    state = json.loads(zigbee.wait_msg())
+    return state[attribute]
 
 
 def wait_attribute_report(zigbee, attribute):
-    state = zigbee.wait_msg()
-    return re.search(f'"{attribute}":"(.*?)"', state).group(1)
+    state = json.loads(zigbee.wait_msg())
+    return state[attribute]
