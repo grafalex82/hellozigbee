@@ -42,3 +42,8 @@ def get_device_attribute(device, zigbee, attribute, expected_response):
     # Wait the reply from zigbee2mqtt with the device state
     state = zigbee.wait_msg()
     return re.search(f'"{attribute}":"(.*?)"', state).group(1)
+
+
+def wait_attribute_report(zigbee, attribute):
+    state = zigbee.wait_msg()
+    return re.search(f'"{attribute}":"(.*?)"', state).group(1)

@@ -39,3 +39,28 @@ def test_oosc_attributes(device, zigbee):
 
     assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
     assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "multifunction"
+
+
+def test_btn_press(device, zigbee):
+    # Ensure the switch is off on start, and the mode is 'toggle'
+    assert set_device_attribute(device, zigbee, 'state_button_2', 'OFF', EP3_OFF) == "OFF"
+    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "toggle", EP3_SET_MODE) == "toggle"
+
+    zigbee.subscribe()
+
+    # Emulate short button press
+    device.send_str("BTN2_PRESS")
+    device.wait_str("Switching button 3 state to PRESSED1")
+
+    # In the toggle mode the switch is triggered immediately on button press
+    device.wait_str(EP3_ON)
+
+    # Release the button
+    time.sleep(0.1)
+    device.send_str("BTN2_RELEASE")
+    device.wait_str("Switching button 3 state to IDLE")
+
+    # Check the device state changed, and the action is generated (in this particular order)
+    assert wait_attribute_report(zigbee, 'action') == "single_button_2"
+    assert wait_attribute_report(zigbee, 'state_button_2') == "ON"
+

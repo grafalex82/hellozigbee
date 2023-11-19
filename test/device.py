@@ -34,6 +34,12 @@ class ZigbeeDevice():
             print("    " + line)
             if str in line:
                 return
+            
+
+    def send_str(self, str):
+        print(f"Sending UART command: {str}")
+        self._port.write((str + '\n').encode())
+        self._port.flush()
 
 
 
