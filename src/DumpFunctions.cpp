@@ -46,7 +46,7 @@ void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
 
 void vDumpZclWriteAttributeRequest(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "ZCL Write Attribute: Clustter %04x Attrib %04x\n",
+    DBG_vPrintf(TRUE, "ZCL Write Attribute: Cluster %04x Attrib %04x\n",
             psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
             psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
 }

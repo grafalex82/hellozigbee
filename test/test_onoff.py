@@ -11,10 +11,10 @@ from conftest import *
 EP3_ON = "SwitchEndpoint EP=3: do state change 1"
 EP3_OFF = "SwitchEndpoint EP=3: do state change 0"
 EP3_GET_STATE = "ZCL Read Attribute: EP=3 Cluster=0006 Command=00 Attr=0000"
-EP3_SET_MODE = "ZCL Write Attribute: Clustter 0007 Attrib ff00"
+EP3_SET_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff00"
 EP3_GET_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff00"
-EP3_SET_RELAY_MODE = "ZCL Write Attribute: Clustter 0007 Attrib ff01"
-EP3_SET_LONG_PRESS_MODE = "ZCL Write Attribute: Clustter 0007 Attrib ff04"
+EP3_SET_RELAY_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff01"
+EP3_SET_LONG_PRESS_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff04"
 
 
 def test_on_off(device, zigbee):    
