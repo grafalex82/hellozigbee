@@ -280,7 +280,7 @@ void SwitchEndpoint::sendLevelControlMoveCommand(bool up)
                                                                   1,
                                                                   &addr,
                                                                   &sequenceNo,
-                                                                  TRUE,
+                                                                  up ? TRUE : FALSE,    // Up will turn on the light, down will not turn off
                                                                   &payload);
     DBG_vPrintf(TRUE, "Sending Level Control Move command status: %02x\n", status);
 }
@@ -302,7 +302,7 @@ void SwitchEndpoint::sendLevelControlStopCommand()
                                                                   1,
                                                                   &addr,
                                                                   &sequenceNo,
-                                                                  TRUE,
+                                                                  FALSE,
                                                                   &payload);
     DBG_vPrintf(TRUE, "Sending Level Control Stop command status: %02x\n", status);
 }
