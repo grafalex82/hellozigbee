@@ -79,7 +79,7 @@ const fromZigbee_OnOffSwitchCfg = {
 
         // Long press mode
         if(msg.data.hasOwnProperty('65284')) {
-            result[`long_press_mode_${ep_name}`] = msg.data['65284'];
+            result[`long_press_mode_${ep_name}`] = longPressModeValues[msg.data['65284']];
         }
 
         meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
