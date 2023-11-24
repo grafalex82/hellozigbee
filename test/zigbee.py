@@ -6,7 +6,8 @@ import paho.mqtt.client as mqtt
 
 class ZigbeeNetwork():
     def __init__(self, options):
-        self.topic = options.getini('mqtt_topic')
+        self.topic = options.getini('device_mqtt_topic')
+        self.z2m_topic = options.getini('bridge_mqtt_topic')
         self.message_received = None
 
         self.client = mqtt.Client()
@@ -19,7 +20,10 @@ class ZigbeeNetwork():
         self.message_received = msg.payload
 
 
-    def get_topic(self, subtopic):
+    def get_topic(self, subtopic, bridge=False):
+        if bridge:
+            return self.z2m_topic + '/' + subtopic
+
         if subtopic:
             return self.topic + '/' + subtopic
         
@@ -31,8 +35,8 @@ class ZigbeeNetwork():
         self.message_received = None
 
 
-    def publish(self, subtopic, message):
-        topic = self.get_topic(subtopic)
+    def publish(self, subtopic, message, bridge=False):
+        topic = self.get_topic(subtopic, bridge)
 
         if isinstance(message, dict):
             message = json.dumps(message)

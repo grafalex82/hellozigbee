@@ -100,8 +100,8 @@ def test_double_click(device, zigbee):
 
 def test_level_control(device, zigbee):
     # Bind the endpoint with the coordinator
-    # Received MQTT message on 'zigbee2mqtt/bridge/request/device/bind' with data '{"clusters":["genLevelCtrl"],"from":"my_test_switch/3","to":"Coordinator"}'
-
+    send_bind_request(zigbee, "genLevelCtrl", "my_test_switch/3", "Coordinator")
+    
     # Ensure the switch will generate levelCtrlDown messages on long press
     assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
     assert set_device_attribute(device, zigbee, 'relay_mode_button_2', "unlinked", EP3_SET_RELAY_MODE) == "unlinked"

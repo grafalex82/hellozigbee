@@ -2,10 +2,11 @@ import pytest
 import json
 
 def pytest_addoption(parser):
-    parser.addini('port', 'COM port where the Zigbee Device is connected to')
-    parser.addini('mqtt_server',    'IP or network name of the MQTT server')
-    parser.addini('mqtt_port',      'MQTT server port')
-    parser.addini('mqtt_topic',     'Base MQTT topic of the tested device')
+    parser.addini('port',               'COM port where the Zigbee Device is connected to')
+    parser.addini('mqtt_server',        'IP or network name of the MQTT server')
+    parser.addini('mqtt_port',          'MQTT server port')
+    parser.addini('device_mqtt_topic',  'Base MQTT topic of the tested device')
+    parser.addini('bridge_mqtt_topic',  'Base MQTT topic for the zigbee2mqtt instance')
 
 
 def set_device_attribute(device, zigbee, attribute, state, expected_response):
@@ -42,5 +43,12 @@ def get_device_attribute(device, zigbee, attribute, expected_response):
     return zigbee.wait_msg()[attribute]
 
 
-def wait_attribute_report(zigbee, attribute):
-    return zigbee.wait_msg()
+def send_bind_request(zigbee, clusters, src, dst):
+    # clusters attribute must be a list
+    if isinstance(clusters, str):
+        clusters = [clusters]
+
+    # Send the bind request
+    payload = {"clusters": clusters, "from": src, "to": dst}
+    zigbee.publish('request/device/bind', payload, bridge=True)
+
