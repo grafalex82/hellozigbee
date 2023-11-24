@@ -14,7 +14,13 @@ EP3_GET_STATE = "ZCL Read Attribute: EP=3 Cluster=0006 Command=00 Attr=0000"
 EP3_SET_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff00"
 EP3_GET_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff00"
 EP3_SET_RELAY_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff01"
+EP3_GET_RELAY_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff01"
+EP3_SET_MAX_PAUSE = "ZCL Write Attribute: Cluster 0007 Attrib ff02"
+EP3_GET_MAX_PAUSE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff02"
+EP3_SET_MIN_LONG_PRESS = "ZCL Write Attribute: Cluster 0007 Attrib ff03"
+EP3_GET_MIN_LONG_PRESS = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff03"
 EP3_SET_LONG_PRESS_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff04"
+EP3_GET_LONG_PRESS_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff04"
 
 
 def test_on_off(device, zigbee):    
@@ -42,6 +48,25 @@ def test_oosc_attributes(device, zigbee):
 
     assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
     assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "multifunction"
+
+
+def test_oosc_attributes_survive_reboot(device, zigbee):
+    # Set a specific OOSC options
+    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
+    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', "double", EP3_SET_RELAY_MODE) == "double"
+    assert set_device_attribute(device, zigbee, 'long_press_mode_button_2', "levelCtrlUp", EP3_SET_LONG_PRESS_MODE) == "levelCtrlUp"
+    assert set_device_attribute(device, zigbee, 'max_pause_button_2', "152", EP3_SET_MAX_PAUSE) == "152"
+    assert set_device_attribute(device, zigbee, 'min_long_press_button_2', "602", EP3_SET_MIN_LONG_PRESS) == "602"
+
+    # Reset the device
+    device.reset()
+
+    # Expect the OOSC settings survive the reboot
+    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "multifunction"
+    assert get_device_attribute(device, zigbee, 'relay_mode_button_2', EP3_GET_RELAY_MODE) == "double"
+    assert get_device_attribute(device, zigbee, 'long_press_mode_button_2', EP3_GET_LONG_PRESS_MODE) == "levelCtrlUp"
+    assert get_device_attribute(device, zigbee, 'max_pause_button_2', EP3_GET_MAX_PAUSE) == 152
+    assert get_device_attribute(device, zigbee, 'min_long_press_button_2', EP3_GET_MIN_LONG_PRESS) == 602
 
 
 def test_btn_press(device, zigbee):
