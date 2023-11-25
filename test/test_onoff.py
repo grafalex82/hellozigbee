@@ -13,6 +13,8 @@ EP3_OFF = "SwitchEndpoint EP=3: do state change 0"
 EP3_GET_STATE = "ZCL Read Attribute: EP=3 Cluster=0006 Command=00 Attr=0000"
 EP3_SET_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff00"
 EP3_GET_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff00"
+EP3_SET_SWITCH_ACTIONS = "ZCL Write Attribute: Cluster 0007 Attrib 0010"
+EP3_GET_SWITCH_ACTIONS = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=0010"
 EP3_SET_RELAY_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff01"
 EP3_GET_RELAY_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff01"
 EP3_SET_MAX_PAUSE = "ZCL Write Attribute: Cluster 0007 Attrib ff02"
@@ -39,15 +41,22 @@ def test_toggle(device, zigbee):
     assert get_device_attribute(device, zigbee, 'state_button_2', EP3_GET_STATE) == "OFF"
 
 
-def test_oosc_attributes(device, zigbee):
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "toggle", EP3_SET_MODE) == "toggle"
-    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "toggle"
+@pytest.mark.parametrize("switch_mode", ["toggle", "momentary", "multifunction"])
+def test_oosc_attribute_switch_mode(device, zigbee, switch_mode):
+    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', switch_mode, EP3_SET_MODE) == switch_mode
+    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == switch_mode
 
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "momentary", EP3_SET_MODE) == "momentary"
-    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "momentary"
 
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
-    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "multifunction"
+@pytest.mark.parametrize("switch_actions", ["onOff", "offOn", "toggle"])
+def test_oosc_attribute_switch_action(device, zigbee, switch_actions):
+    assert set_device_attribute(device, zigbee, 'switch_actions_button_2', switch_actions, EP3_SET_SWITCH_ACTIONS) == switch_actions
+    assert get_device_attribute(device, zigbee, 'switch_actions_button_2', EP3_GET_SWITCH_ACTIONS) == switch_actions
+
+
+@pytest.mark.parametrize("relay_mode", ["unlinked", "front", "single", "double", "tripple", "long"])
+def test_oosc_attribute_relay_mode(device, zigbee, relay_mode):
+    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', relay_mode, EP3_SET_RELAY_MODE) == relay_mode
+    assert get_device_attribute(device, zigbee, 'relay_mode_button_2', EP3_GET_RELAY_MODE) == relay_mode
 
 
 def test_oosc_attributes_survive_reboot(device, zigbee):
