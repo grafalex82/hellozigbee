@@ -96,6 +96,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Extendable structure of the project codebase ([Article](part13_project_cpp_structure.md))
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
 - Build a Dimmable Light via Level Ctrl Server cluster ([Article](part20_dimmable_light.md))
+- Build comprehensive automated test suit ([Article](part21_test_automation.md))
 - Explore Identify, Groups, Scenes
 - Explore Touchlink, Find-And-Bind, and ZLL Commisioning
 
