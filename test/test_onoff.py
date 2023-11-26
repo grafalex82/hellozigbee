@@ -172,10 +172,13 @@ def test_oosc_attributes_survive_reboot(switch):
     assert switch.get_attribute('min_long_press') == 602
 
 
-def test_btn_press(switch):
+def test_toggle_mode_btn_press(switch):
     # Ensure the switch is off on start, and the mode is 'toggle'
     assert switch.switch('OFF', False) == 'OFF'
     assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
+
+    # Set relay_mode other than unlinked - the device will switch state when button is pressed
+    assert switch.set_attribute('relay_mode', 'front') == 'front'
 
     # Emulate short button press
     switch.press_button()
@@ -191,6 +194,142 @@ def test_btn_press(switch):
     # Check the device state changed, and the action is generated (in this particular order)
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+
+
+def test_toggle_mode_relay_unlinked(switch):
+    # Ensure the switch is off on start, and the mode is 'toggle'
+    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
+
+    # Set relay_mode to unlinked - the device will not change its state, but only send the single press action
+    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+
+    # Emulate short button press
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # Release the button
+    switch.release_button()
+    switch.wait_button_state("IDLE")
+
+    # Check the action is generated, but the state has not changed
+    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
+    assert switch.get_state() == "OFF"
+
+
+@pytest.mark.parametrize("switch_actions, init_state, alter_state", [
+    ('onOff', "OFF", "ON"),
+    ('offOn', "ON", "OFF")
+])
+def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
+    # Just handy variables
+    init_state_bool = init_state == 'ON'
+    alter_state_bool = alter_state == 'ON'
+
+    # Ensure the switch is in init_state on start, and the mode is 'momentary'
+    assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
+    assert switch.switch(init_state, init_state_bool) == init_state
+
+    # This test is focused on onOff and offOn switch actions
+    assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
+
+    # Set relay_mode other than unlinked - the device will switch state when button is pressed, and then change again when depressed
+    assert switch.set_attribute('relay_mode', 'front') == 'front'
+
+    # Emulate short button press
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # In the momentary mode the switch is triggered immediately on button press. The state is changed from init_state to alter_state
+    switch.wait_state_change_msg(alter_state_bool)
+
+    # Release the button
+    switch.release_button()
+    switch.wait_button_state("IDLE")
+
+    # Once the button is released, the state must get back to the init state
+    switch.wait_state_change_msg(init_state_bool)
+
+    # Check the device state changed, and the action is generated (in this particular order)
+    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
+    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
+
+
+@pytest.mark.parametrize("init_state, alter_state", [
+    ("OFF", "ON"),
+    #("ON", "OFF")      # BUG: The code does not really toggles the state. but rather works as offOn mode
+])
+def test_momentary_toggle(switch, init_state, alter_state):
+    # Just handy variables
+    init_state_bool = init_state == 'ON'
+    alter_state_bool = alter_state == 'ON'
+
+    # Ensure the switch is in init_state on start, and the mode is 'momentary'
+    assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
+    assert switch.switch(init_state, init_state_bool) == init_state
+
+    # This test is focused on the 'toggle' switch actions mode (withing 'momentary' switch mode)
+    assert switch.set_attribute('switch_actions', 'toggle') == 'toggle'
+
+    # Set relay_mode other than unlinked - the device will switch state when button is pressed, and then change again when depressed
+    assert switch.set_attribute('relay_mode', 'front') == 'front'
+
+    # Emulate short button press
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # In the momentary-toggle mode the switch is toggled immediately on button press. The state is changed from init_state to alter_state
+    switch.wait_state_change_msg(alter_state_bool)
+
+    # Release the button
+    switch.release_button()
+    switch.wait_button_state("IDLE")
+
+    # Once the button is released, the state must get back to the init state
+    switch.wait_state_change_msg(init_state_bool)
+
+    # Check the device state changed, and the action is generated (in this particular order)
+    # On the release the state must return to the original state
+    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
+    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
+
+
+
+@pytest.mark.parametrize("switch_actions, init_state", [
+    ('onOff', "OFF"),
+    ('offOn', "ON")
+])
+def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
+    # Just handy variables
+    init_state_bool = init_state == 'ON'
+
+    # Ensure the switch is in init_state on start, and the mode is 'momentary'
+    assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
+    assert switch.switch(init_state, init_state_bool) == init_state
+
+    # This test is focused on onOff and offOn switch actions
+    assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
+
+    # Set relay_mode to unlinked - the device will generate actions, but do not really toggle the state
+    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+
+    # Emulate short button press
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # Release the button
+    switch.release_button()
+    switch.wait_button_state("IDLE")
+
+    # Check that device actions were triggered, but the device state is unchanged
+    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
+    assert switch.get_state()  == init_state
+
 
 
 def test_double_click(switch):
