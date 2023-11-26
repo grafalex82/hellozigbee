@@ -17,16 +17,13 @@ class SmartSwitch:
     """
 
     def __init__(self, device, zigbee, ep, z2m_name):
+        # Remember parameters for further use
         self.device = device
         self.zigbee = zigbee
         self.ep = ep
         self.button = ep-1
         self.z2m_name = z2m_name
 
-        self.ON_MSG                 = f"SwitchEndpoint EP={ep}: do state change 1"
-        self.OFF_MSG                = f"SwitchEndpoint EP={ep}: do state change 0"
-        self.GET_STATE_MSG          = f"ZCL Read Attribute: EP={ep} Cluster=0006 Command=00 Attr=0000"
-        
         # Most of the tests will require device state MQTT messages. Subscribe for them
         self.zigbee.subscribe()
 
@@ -36,7 +33,8 @@ class SmartSwitch:
 
 
     def get_state_change_msg(self, expected_state):
-        return self.ON_MSG if expected_state else self.OFF_MSG
+        return f"SwitchEndpoint EP={self.ep}: do state change {1 if expected_state else 0}"
+
 
     def switch(self, cmd, expected_state):
         msg = self.get_state_change_msg(expected_state)
@@ -44,7 +42,8 @@ class SmartSwitch:
 
 
     def get_state(self):
-        return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, self.GET_STATE_MSG)
+        msg = f"ZCL Read Attribute: EP={ep} Cluster=0006 Command=00 Attr=0000"
+        return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, msg)
 
 
     def wait_state_change_msg(self, expected_state):
