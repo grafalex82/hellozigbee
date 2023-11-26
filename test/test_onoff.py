@@ -30,6 +30,7 @@ class SmartSwitch:
         self.device = device
         self.zigbee = zigbee
         self.ep = ep
+        self.button = ep-1
         self.z2m_name = z2m_name
 
         self.ON_MSG                 = f"SwitchEndpoint EP={ep}: do state change 1"
@@ -84,6 +85,21 @@ class SmartSwitch:
     def get_attribute(self, attr):
         msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0007 Command=00 Attr={self.get_attr_id_by_name(attr)}"
         return get_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, msg)
+
+
+    def press_button(self):
+        cmd = f"BTN{self.button}_PRESS"
+        self.device.send_str(cmd)
+
+
+    def release_button(self):
+        cmd = f"BTN{self.button}_RELEASE"
+        self.device.send_str(cmd)
+
+
+    def wait_button_state(self, state):
+        state_str = f"Switching button {self.ep} state to {state}"
+        self.device.wait_str(state_str)
 
 
 def test_on_off(device, zigbee):
@@ -161,16 +177,16 @@ def test_btn_press(device, zigbee):
     zigbee.subscribe()
 
     # Emulate short button press
-    device.send_str("BTN2_PRESS")
-    device.wait_str("Switching button 3 state to PRESSED1")
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
 
     # In the toggle mode the switch is triggered immediately on button press
     device.wait_str(EP3_ON)
 
     # Release the button
     time.sleep(0.1)
-    device.send_str("BTN2_RELEASE")
-    device.wait_str("Switching button 3 state to IDLE")
+    switch.release_button()
+    switch.wait_button_state("IDLE")
 
     # Check the device state changed, and the action is generated (in this particular order)
     assert zigbee.wait_msg()['action'] == "single_button_2"
@@ -188,18 +204,18 @@ def test_double_click(device, zigbee):
     zigbee.subscribe()
 
     # Emulate the first click
-    device.send_str("BTN2_PRESS")
-    device.wait_str("Switching button 3 state to PRESSED1")
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
     time.sleep(0.1)
-    device.send_str("BTN2_RELEASE")
-    device.wait_str("Switching button 3 state to PAUSE1")
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
 
     # Emulate the second click
-    device.send_str("BTN2_PRESS")
-    device.wait_str("Switching button 3 state to PRESSED2")
+    switch.press_button()
+    switch.wait_button_state("PRESSED2")
     time.sleep(0.1)
-    device.send_str("BTN2_RELEASE")
-    device.wait_str("Switching button 3 state to PAUSE2")
+    switch.release_button()
+    switch.wait_button_state("PAUSE2")
 
     # We expect the LED to toggle after the second button click
     device.wait_str(EP3_ON)
@@ -223,9 +239,9 @@ def test_level_control(device, zigbee):
     zigbee.subscribe()
 
     # Emulate the long button press, wait until the switch transits to the long press state
-    device.send_str("BTN2_PRESS")
-    device.wait_str("Switching button 3 state to PRESSED1")
-    device.wait_str("Switching button 3 state to LONG_PRESS")
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+    switch.wait_button_state("LONG_PRESS")
     device.wait_str("Reporting multistate action EP=3 value=255... status: 00")
     device.wait_str("Sending Level Control Move command status: 00")
 
@@ -234,8 +250,8 @@ def test_level_control(device, zigbee):
     assert zigbee.wait_msg()['level_ctrl'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
 
     # Do not forget to release the button
-    device.send_str("BTN2_RELEASE")
-    device.wait_str("Switching button 3 state to IDLE")
+    switch.release_button()
+    switch.wait_button_state("IDLE")
     device.wait_str("Reporting multistate action EP=3 value=0... status: 00")
     device.wait_str("Sending Level Control Stop command status: 00")
 
