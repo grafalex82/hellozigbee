@@ -59,6 +59,11 @@ class SmartSwitch:
         return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, self.GET_STATE_MSG)
 
 
+    def wait_state_msg(self, expected_state):
+        msg = self.ON_MSG if expected_state else self.OFF_MSG
+        self.device.wait_str(msg)
+
+
     def get_attr_id_by_name(self, attr):
         match attr:
             case 'switch_mode':
@@ -100,6 +105,17 @@ class SmartSwitch:
     def wait_button_state(self, state):
         state_str = f"Switching button {self.ep} state to {state}"
         self.device.wait_str(state_str)
+
+
+    def wait_report_multistate(self, value):
+        state_str = f"Reporting multistate action EP={self.ep} value={value}... status: 00"
+        self.device.wait_str(state_str)
+
+
+    def wait_report_level_ctrl(self, cmd):
+        state_str = f"Sending Level Control {cmd} command status: 00"
+        self.device.wait_str(state_str)
+
 
 
 def test_on_off(device, zigbee):
@@ -181,7 +197,7 @@ def test_btn_press(device, zigbee):
     switch.wait_button_state("PRESSED1")
 
     # In the toggle mode the switch is triggered immediately on button press
-    device.wait_str(EP3_ON)
+    switch.wait_state_msg(True)
 
     # Release the button
     time.sleep(0.1)
@@ -218,7 +234,7 @@ def test_double_click(device, zigbee):
     switch.wait_button_state("PAUSE2")
 
     # We expect the LED to toggle after the second button click
-    device.wait_str(EP3_ON)
+    switch.wait_state_msg(True)
 
     # Check the device state changed, and the double click action is generated
     assert zigbee.wait_msg()['action'] == "double_button_2"
@@ -242,8 +258,8 @@ def test_level_control(device, zigbee):
     switch.press_button()
     switch.wait_button_state("PRESSED1")
     switch.wait_button_state("LONG_PRESS")
-    device.wait_str("Reporting multistate action EP=3 value=255... status: 00")
-    device.wait_str("Sending Level Control Move command status: 00")
+    switch.wait_report_multistate(255)  # 255 means button long press
+    switch.wait_report_level_ctrl("Move")
 
     # Verify the Level Control Move command has been received by the coordinator
     assert zigbee.wait_msg()['action'] == "hold_button_2"
@@ -252,8 +268,8 @@ def test_level_control(device, zigbee):
     # Do not forget to release the button
     switch.release_button()
     switch.wait_button_state("IDLE")
-    device.wait_str("Reporting multistate action EP=3 value=0... status: 00")
-    device.wait_str("Sending Level Control Stop command status: 00")
+    switch.wait_report_multistate(0)
+    switch.wait_report_level_ctrl("Stop")
 
     # Verify the Level Control Move command has been received by the coordinator
     assert zigbee.wait_msg()['action'] == "release_button_2"
