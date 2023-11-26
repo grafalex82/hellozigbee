@@ -25,63 +25,138 @@ EP3_SET_LONG_PRESS_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff04"
 EP3_GET_LONG_PRESS_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff04"
 
 
-def test_on_off(device, zigbee):    
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'ON', EP3_ON) == "ON"
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'OFF', EP3_OFF) == "OFF"
+class SmartSwitch:
+    def __init__(self, device, zigbee, ep, z2m_name):
+        self.device = device
+        self.zigbee = zigbee
+        self.ep = ep
+        self.z2m_name = z2m_name
+
+        self.ON_MSG                 = f"SwitchEndpoint EP={ep}: do state change 1"
+        self.OFF_MSG                = f"SwitchEndpoint EP={ep}: do state change 0"
+        self.GET_STATE_MSG          = f"ZCL Read Attribute: EP={ep} Cluster=0006 Command=00 Attr=0000"
+        self.SET_MODE_MSG           = f"ZCL Write Attribute: Cluster 0007 Attrib ff00"
+        self.GET_MODE_MSG           = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff00"
+        self.SET_SWITCH_ACTIONS_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib 0010"
+        self.GET_SWITCH_ACTIONS_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=0010"
+        self.SET_RELAY_MODE_MSG     = f"ZCL Write Attribute: Cluster 0007 Attrib ff01"
+        self.GET_RELAY_MODE_MSG     = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff01"
+        self.SET_MAX_PAUSE_MSG      = f"ZCL Write Attribute: Cluster 0007 Attrib ff02"
+        self.GET_MAX_PAUSE_MSG      = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff02"
+        self.SET_MIN_LONG_PRESS_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib ff03"
+        self.GET_MIN_LONG_PRESS_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff03"
+        self.SET_LONG_PRESS_MODE_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib ff04"
+        self.GET_LONG_PRESS_MODE_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff04"
+
+
+    def switch(self, cmd, expected_state):
+        msg = self.ON_MSG if expected_state else self.OFF_MSG
+        return set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
+
+
+    def get_state(self):
+        return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, self.GET_STATE_MSG)
+
+
+    def get_attr_id_by_name(self, attr):
+        match attr:
+            case 'switch_mode':
+                return 'ff00'
+            case 'switch_actions':
+                return '0010'
+            case 'relay_mode':
+                return 'ff01'
+            case 'max_pause':
+                return 'ff02'
+            case 'min_long_press':
+                return 'ff03'
+            case 'long_press_mode':
+                return 'ff04'
+            case _:
+                raise RuntimeError("Unknown attribute name")
+
+
+    def set_attribute(self, attr, value):
+        msg = f"ZCL Write Attribute: Cluster 0007 Attrib {self.get_attr_id_by_name(attr)}"
+        return set_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, value, msg)
+
+
+    def get_attribute(self, attr):
+        msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0007 Command=00 Attr={self.get_attr_id_by_name(attr)}"
+        return get_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, msg)
+
+
+def test_on_off(device, zigbee):
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
+    assert switch.switch('ON', True) == 'ON'
+    assert switch.switch('OFF', False) == 'OFF'
 
 
 def test_toggle(device, zigbee):
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'OFF', EP3_OFF) == "OFF"
-    assert get_device_attribute(device, zigbee, 'state_button_2', EP3_GET_STATE) == "OFF"
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
 
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'TOGGLE', EP3_ON) == "ON"
-    assert get_device_attribute(device, zigbee, 'state_button_2', EP3_GET_STATE) == "ON"
+    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.get_state() == 'OFF'
 
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'TOGGLE', EP3_OFF) == "OFF"
-    assert get_device_attribute(device, zigbee, 'state_button_2', EP3_GET_STATE) == "OFF"
+    assert switch.switch('TOGGLE', True) == 'ON'
+    assert switch.get_state() == 'ON'
+
+    assert switch.switch('TOGGLE', False) == 'OFF'
+    assert switch.get_state() == 'OFF'
 
 
 @pytest.mark.parametrize("switch_mode", ["toggle", "momentary", "multifunction"])
 def test_oosc_attribute_switch_mode(device, zigbee, switch_mode):
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', switch_mode, EP3_SET_MODE) == switch_mode
-    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == switch_mode
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
+    assert switch.set_attribute('switch_mode', switch_mode) == switch_mode
+    assert switch.get_attribute('switch_mode') == switch_mode
 
 
 @pytest.mark.parametrize("switch_actions", ["onOff", "offOn", "toggle"])
 def test_oosc_attribute_switch_action(device, zigbee, switch_actions):
-    assert set_device_attribute(device, zigbee, 'switch_actions_button_2', switch_actions, EP3_SET_SWITCH_ACTIONS) == switch_actions
-    assert get_device_attribute(device, zigbee, 'switch_actions_button_2', EP3_GET_SWITCH_ACTIONS) == switch_actions
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
+    assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
+    assert switch.get_attribute('switch_actions') == switch_actions
 
 
 @pytest.mark.parametrize("relay_mode", ["unlinked", "front", "single", "double", "tripple", "long"])
 def test_oosc_attribute_relay_mode(device, zigbee, relay_mode):
-    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', relay_mode, EP3_SET_RELAY_MODE) == relay_mode
-    assert get_device_attribute(device, zigbee, 'relay_mode_button_2', EP3_GET_RELAY_MODE) == relay_mode
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
+    assert switch.set_attribute('relay_mode', relay_mode) == relay_mode
+    assert switch.get_attribute('relay_mode') == relay_mode
 
 
 def test_oosc_attributes_survive_reboot(device, zigbee):
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
     # Set a specific OOSC options
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
-    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', "double", EP3_SET_RELAY_MODE) == "double"
-    assert set_device_attribute(device, zigbee, 'long_press_mode_button_2', "levelCtrlUp", EP3_SET_LONG_PRESS_MODE) == "levelCtrlUp"
-    assert set_device_attribute(device, zigbee, 'max_pause_button_2', "152", EP3_SET_MAX_PAUSE) == "152"
-    assert set_device_attribute(device, zigbee, 'min_long_press_button_2', "602", EP3_SET_MIN_LONG_PRESS) == "602"
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.set_attribute('relay_mode', 'double') == 'double'
+    assert switch.set_attribute('long_press_mode', 'levelCtrlUp') == 'levelCtrlUp'
+    assert switch.set_attribute('max_pause', '152') == '152'
+    assert switch.set_attribute('min_long_press', '602') == '602'
 
     # Reset the device
     device.reset()
 
     # Expect the OOSC settings survive the reboot
-    assert get_device_attribute(device, zigbee, 'switch_mode_button_2', EP3_GET_MODE) == "multifunction"
-    assert get_device_attribute(device, zigbee, 'relay_mode_button_2', EP3_GET_RELAY_MODE) == "double"
-    assert get_device_attribute(device, zigbee, 'long_press_mode_button_2', EP3_GET_LONG_PRESS_MODE) == "levelCtrlUp"
-    assert get_device_attribute(device, zigbee, 'max_pause_button_2', EP3_GET_MAX_PAUSE) == 152
-    assert get_device_attribute(device, zigbee, 'min_long_press_button_2', EP3_GET_MIN_LONG_PRESS) == 602
+    assert switch.get_attribute('switch_mode') == 'multifunction'
+    assert switch.get_attribute('relay_mode') == 'double'
+    assert switch.get_attribute('long_press_mode') == 'levelCtrlUp'
+    assert switch.get_attribute('max_pause') == 152
+    assert switch.get_attribute('min_long_press') == 602
 
 
 def test_btn_press(device, zigbee):
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
     # Ensure the switch is off on start, and the mode is 'toggle'
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'OFF', EP3_OFF) == "OFF"
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "toggle", EP3_SET_MODE) == "toggle"
+    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
 
     zigbee.subscribe()
 
@@ -103,10 +178,12 @@ def test_btn_press(device, zigbee):
 
 
 def test_double_click(device, zigbee):
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
     # Ensure the switch is off on start, the mode is 'multifunction', and relay mode is 'double'
-    assert set_device_attribute(device, zigbee, 'state_button_2', 'OFF', EP3_OFF) == "OFF"
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
-    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', "double", EP3_SET_RELAY_MODE) == "double"
+    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.set_attribute('relay_mode', 'double') == 'double'
 
     zigbee.subscribe()
 
@@ -133,13 +210,15 @@ def test_double_click(device, zigbee):
 
 
 def test_level_control(device, zigbee):
+    switch = SmartSwitch(device, zigbee, 3, "button_2")
+
     # Bind the endpoint with the coordinator
     send_bind_request(zigbee, "genLevelCtrl", "my_test_switch/3", "Coordinator")
     
     # Ensure the switch will generate levelCtrlDown messages on long press
-    assert set_device_attribute(device, zigbee, 'switch_mode_button_2', "multifunction", EP3_SET_MODE) == "multifunction"
-    assert set_device_attribute(device, zigbee, 'relay_mode_button_2', "unlinked", EP3_SET_RELAY_MODE) == "unlinked"
-    assert set_device_attribute(device, zigbee, 'long_press_mode_button_2', "levelCtrlDown", EP3_SET_LONG_PRESS_MODE) == "levelCtrlDown"
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+    assert switch.set_attribute('long_press_mode', 'levelCtrlDown') == 'levelCtrlDown'
 
     zigbee.subscribe()
 
