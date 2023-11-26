@@ -8,23 +8,6 @@ from device import *
 from zigbee import *
 from conftest import *
 
-EP3_ON = "SwitchEndpoint EP=3: do state change 1"
-EP3_OFF = "SwitchEndpoint EP=3: do state change 0"
-EP3_GET_STATE = "ZCL Read Attribute: EP=3 Cluster=0006 Command=00 Attr=0000"
-EP3_SET_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff00"
-EP3_GET_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff00"
-EP3_SET_SWITCH_ACTIONS = "ZCL Write Attribute: Cluster 0007 Attrib 0010"
-EP3_GET_SWITCH_ACTIONS = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=0010"
-EP3_SET_RELAY_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff01"
-EP3_GET_RELAY_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff01"
-EP3_SET_MAX_PAUSE = "ZCL Write Attribute: Cluster 0007 Attrib ff02"
-EP3_GET_MAX_PAUSE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff02"
-EP3_SET_MIN_LONG_PRESS = "ZCL Write Attribute: Cluster 0007 Attrib ff03"
-EP3_GET_MIN_LONG_PRESS = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff03"
-EP3_SET_LONG_PRESS_MODE = "ZCL Write Attribute: Cluster 0007 Attrib ff04"
-EP3_GET_LONG_PRESS_MODE = "ZCL Read Attribute: EP=3 Cluster=0007 Command=00 Attr=ff04"
-
-
 class SmartSwitch:
     def __init__(self, device, zigbee, ep, z2m_name):
         self.device = device
@@ -36,19 +19,7 @@ class SmartSwitch:
         self.ON_MSG                 = f"SwitchEndpoint EP={ep}: do state change 1"
         self.OFF_MSG                = f"SwitchEndpoint EP={ep}: do state change 0"
         self.GET_STATE_MSG          = f"ZCL Read Attribute: EP={ep} Cluster=0006 Command=00 Attr=0000"
-        self.SET_MODE_MSG           = f"ZCL Write Attribute: Cluster 0007 Attrib ff00"
-        self.GET_MODE_MSG           = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff00"
-        self.SET_SWITCH_ACTIONS_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib 0010"
-        self.GET_SWITCH_ACTIONS_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=0010"
-        self.SET_RELAY_MODE_MSG     = f"ZCL Write Attribute: Cluster 0007 Attrib ff01"
-        self.GET_RELAY_MODE_MSG     = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff01"
-        self.SET_MAX_PAUSE_MSG      = f"ZCL Write Attribute: Cluster 0007 Attrib ff02"
-        self.GET_MAX_PAUSE_MSG      = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff02"
-        self.SET_MIN_LONG_PRESS_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib ff03"
-        self.GET_MIN_LONG_PRESS_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff03"
-        self.SET_LONG_PRESS_MODE_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib ff04"
-        self.GET_LONG_PRESS_MODE_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff04"
-
+        
         # Most of the tests will require device state MQTT messages. Subscribe for them
         self.zigbee.subscribe()
 
@@ -57,8 +28,11 @@ class SmartSwitch:
         self.device.reset()
 
 
+    def get_state_change_msg(self, expected_state):
+        return self.ON_MSG if expected_state else self.OFF_MSG
+
     def switch(self, cmd, expected_state):
-        msg = self.ON_MSG if expected_state else self.OFF_MSG
+        msg = self.get_state_change_msg(expected_state)
         return set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
 
 
@@ -66,8 +40,8 @@ class SmartSwitch:
         return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, self.GET_STATE_MSG)
 
 
-    def wait_state_msg(self, expected_state):
-        msg = self.ON_MSG if expected_state else self.OFF_MSG
+    def wait_state_change_msg(self, expected_state):
+        msg = self.get_state_change_msg(expected_state)
         self.device.wait_str(msg)
 
 
@@ -205,7 +179,7 @@ def test_btn_press(device, zigbee):
     switch.wait_button_state("PRESSED1")
 
     # In the toggle mode the switch is triggered immediately on button press
-    switch.wait_state_msg(True)
+    switch.wait_state_change_msg(True)
 
     # Release the button
     switch.release_button()
@@ -237,7 +211,7 @@ def test_double_click(device, zigbee):
     switch.wait_button_state("PAUSE2")
 
     # We expect the LED to toggle after the second button click
-    switch.wait_state_msg(True)
+    switch.wait_state_change_msg(True)
 
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['action'] == "double_button_2"
