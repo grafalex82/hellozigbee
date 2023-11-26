@@ -49,6 +49,9 @@ class SmartSwitch:
         self.SET_LONG_PRESS_MODE_MSG = f"ZCL Write Attribute: Cluster 0007 Attrib ff04"
         self.GET_LONG_PRESS_MODE_MSG = f"ZCL Read Attribute: EP={ep} Cluster=0007 Command=00 Attr=ff04"
 
+        # Most of the tests will require device state MQTT messages. Subscribe for them
+        self.zigbee.subscribe()
+
 
     def switch(self, cmd, expected_state):
         msg = self.ON_MSG if expected_state else self.OFF_MSG
@@ -190,8 +193,6 @@ def test_btn_press(device, zigbee):
     assert switch.switch('OFF', False) == 'OFF'
     assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
 
-    zigbee.subscribe()
-
     # Emulate short button press
     switch.press_button()
     switch.wait_button_state("PRESSED1")
@@ -216,8 +217,6 @@ def test_double_click(device, zigbee):
     assert switch.switch('OFF', False) == 'OFF'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
     assert switch.set_attribute('relay_mode', 'double') == 'double'
-
-    zigbee.subscribe()
 
     # Emulate the first click
     switch.press_button()
@@ -251,8 +250,6 @@ def test_level_control(device, zigbee):
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
     assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
     assert switch.set_attribute('long_press_mode', 'levelCtrlDown') == 'levelCtrlDown'
-
-    zigbee.subscribe()
 
     # Emulate the long button press, wait until the switch transits to the long press state
     switch.press_button()
