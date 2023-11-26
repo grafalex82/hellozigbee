@@ -42,7 +42,7 @@ class SmartSwitch:
 
 
     def get_state(self):
-        msg = f"ZCL Read Attribute: EP={ep} Cluster=0006 Command=00 Attr=0000"
+        msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0006 Command=00 Attr=0000"
         return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, msg)
 
 
