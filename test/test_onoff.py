@@ -201,7 +201,6 @@ def test_btn_press(device, zigbee):
     switch.wait_state_msg(True)
 
     # Release the button
-    time.sleep(0.1)
     switch.release_button()
     switch.wait_button_state("IDLE")
 
@@ -221,14 +220,12 @@ def test_double_click(device, zigbee):
     # Emulate the first click
     switch.press_button()
     switch.wait_button_state("PRESSED1")
-    time.sleep(0.1)
     switch.release_button()
     switch.wait_button_state("PAUSE1")
 
     # Emulate the second click
     switch.press_button()
     switch.wait_button_state("PRESSED2")
-    time.sleep(0.1)
     switch.release_button()
     switch.wait_button_state("PAUSE2")
 
