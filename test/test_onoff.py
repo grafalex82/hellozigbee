@@ -53,6 +53,10 @@ class SmartSwitch:
         self.zigbee.subscribe()
 
 
+    def reset(self):
+        self.device.reset()
+
+
     def switch(self, cmd, expected_state):
         msg = self.ON_MSG if expected_state else self.OFF_MSG
         return set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
@@ -179,7 +183,7 @@ def test_oosc_attributes_survive_reboot(device, zigbee):
     assert switch.set_attribute('min_long_press', '602') == '602'
 
     # Reset the device
-    device.reset()
+    switch.reset()
 
     # Expect the OOSC settings survive the reboot
     assert switch.get_attribute('switch_mode') == 'multifunction'
