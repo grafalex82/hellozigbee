@@ -737,11 +737,97 @@ During a long press, the device will generate the `hold_button_2` action, and mo
 
 Upon button release, the device generates `release_button_2` action, and genLevelCtrl Stop Move command with no payload.
 
+
+# Running tests for both button channels
+
+In the preceding examples, we focused on a single button channel. However, to ensure a comprehensive test suite, it is essential to cover both button channels implemented in the device. Instead of duplicating all tests, the pytest framework offers a parameterization feature, which we are already acquainted with.
+
+However, a challenge arises. Different button channels use distinct Zigbee2mqtt names, endpoint numbers, button IDs, and so on. These details frequently appear in device logs and MQTT messages. Tests might become cluttered if these strings are constructed and parameterized within each test.
+
+Fortunately, a solution exists to encapsulate this complexity within a helper test harness object. This object can handle all endpoint-dependent elements internally, providing a simplified interface.
+
+
+```python
+class SmartSwitch:
+    def __init__(self, device, zigbee, ep, z2m_name):
+        # Remember parameters for further use
+        self.device = device
+        self.zigbee = zigbee
+        self.ep = ep
+        self.button = ep-1
+        self.z2m_name = z2m_name
+
+        # Most of the tests will require device state MQTT messages. Subscribe for them
+        self.zigbee.subscribe()
+
+
+    def reset(self):
+        self.device.reset()
+
+
+    def get_state_change_msg(self, expected_state):
+        return f"SwitchEndpoint EP={self.ep}: do state change {1 if expected_state else 0}"
+
+
+    def switch(self, cmd, expected_state):
+        msg = self.get_state_change_msg(expected_state)
+        return set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
+
+
+    def get_state(self):
+        msg = f"ZCL Read Attribute: EP={ep} Cluster=0006 Command=00 Attr=0000"
+        return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, msg)
+
+
+    def wait_state_change_msg(self, expected_state):
+        msg = self.get_state_change_msg(expected_state)
+        self.device.wait_str(msg)
+```
+
+Technically, there's nothing new here, all these routines are detailed above. They are simply encapsulated within a class to reduce the number of parameters exposed by a function. Other functions, such as getting/setting OOSC attributes, simulating button presses/releases, searching for multistate report messages, and so on, are implemented in a similar fashion.
+
+Now, let's explore a particularly useful feature - fixture parameterization.
+
+
+```python
+# Make each test that uses switch fixture to run twice for both buttons.
+# Using the ids parameter the button name will be displayed as a test parameter
+@pytest.fixture(params = [(2, "button_1"), (3, "button_2")], ids=lambda x: x[1])
+def switch(device, zigbee, request):
+    return SmartSwitch(device, zigbee, request.param[0], request.param[1])
+```
+
+This fixture creates a SmartSwitch object. Moreover, each test that is using the `switch` fixture will be executed twice - one for first button channel (endpoint #2, zigbee2mqtt name `button_1`), and another for the second button channel (endpoint #3, zigbee2mqtt name `button_2`). The `ids` parameter is used to display button names in the test execution log.
+
+The tests get simpler - all the string matching logic is moved to the SmartSwitch object, while the test is focusing only on the test scenario.
+
+```python
+def test_btn_press(switch):
+    # Ensure the switch is off on start, and the mode is 'toggle'
+    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
+
+    # Emulate short button press
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # In the toggle mode the switch is triggered immediately on button press
+    switch.wait_state_change_msg(True)
+
+    # Release the button
+    switch.release_button()
+    switch.wait_button_state("IDLE")
+
+    # Check the device state changed, and the action is generated (in this particular order)
+    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+```
+
 # Summary
 
 That concludes this article. As demonstrated, automated testing of network devices is not an insurmountable task and can be established relatively easily. Using this approach, tests can verify how the device responds to network commands and generate device-side events transmitted to the network.
 
-The article outlines a general approach to developing automated tests. Now, the next step is to write numerous tests covering all the implemented functionality. Leveraging pytest features, such as parameterization, can be beneficial. For example, since the device has two identical button channels, instead of writing two sets of identical tests, pytest's parameterize feature allows running the same test for both channels with some data manipulation.
+The article outlines a general approach to developing automated tests. Now, the next step is to write numerous tests covering all the implemented functionality. The test suite will be extended as the switch functionality is expected to grow.
 
 Regarding the limitations of the proposed approach, it's easier to validate that the system is doing expected things but challenging to ensure that it is NOT doing something. It's uncertain whether a checked event was not generated or simply delayed. Fortunately, the goal is not to cover every possibility with tests. Instead, the test suite should be comprehensive enough to detect breaking changes.
 
