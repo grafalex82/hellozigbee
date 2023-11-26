@@ -52,3 +52,13 @@ def send_bind_request(zigbee, clusters, src, dst):
     payload = {"clusters": clusters, "from": src, "to": dst}
     zigbee.publish('request/device/bind', payload, bridge=True)
 
+
+def send_unbind_request(zigbee, clusters, src, dst):
+    # clusters attribute must be a list
+    if isinstance(clusters, str):
+        clusters = [clusters]
+
+    # Send the bind request
+    payload = {"clusters": clusters, "from": src, "to": dst}
+    zigbee.publish('request/device/unbind', payload, bridge=True)
+

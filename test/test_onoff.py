@@ -27,6 +27,9 @@ class SmartSwitch:
         # Most of the tests will require device state MQTT messages. Subscribe for them
         self.zigbee.subscribe()
 
+        # Unbind also from all clusters that are possibly were bound by previous tests
+        send_unbind_request(self.zigbee, "genLevelCtrl", f"my_test_switch/{self.ep}", "Coordinator")
+
 
     def reset(self):
         self.device.reset()
