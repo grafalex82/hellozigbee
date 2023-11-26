@@ -120,6 +120,9 @@ class SmartSwitch:
         self.device.wait_str(state_str)
 
 
+    def wait_zigbee_state(self):
+        return self.zigbee.wait_msg()
+
 
 def test_on_off(device, zigbee):
     switch = SmartSwitch(device, zigbee, 3, "button_2")
@@ -205,8 +208,8 @@ def test_btn_press(device, zigbee):
     switch.wait_button_state("IDLE")
 
     # Check the device state changed, and the action is generated (in this particular order)
-    assert zigbee.wait_msg()['action'] == "single_button_2"
-    assert zigbee.wait_msg()['state_button_2'] == "ON"
+    assert switch.wait_zigbee_state()['action'] == "single_button_2"
+    assert switch.wait_zigbee_state()['state_button_2'] == "ON"
 
 
 def test_double_click(device, zigbee):
@@ -233,8 +236,8 @@ def test_double_click(device, zigbee):
     switch.wait_state_msg(True)
 
     # Check the device state changed, and the double click action is generated
-    assert zigbee.wait_msg()['action'] == "double_button_2"
-    assert zigbee.wait_msg()['state_button_2'] == "ON"
+    assert switch.wait_zigbee_state()['action'] == "double_button_2"
+    assert switch.wait_zigbee_state()['state_button_2'] == "ON"
 
 
 def test_level_control(device, zigbee):
@@ -256,8 +259,8 @@ def test_level_control(device, zigbee):
     switch.wait_report_level_ctrl("Move")
 
     # Verify the Level Control Move command has been received by the coordinator
-    assert zigbee.wait_msg()['action'] == "hold_button_2"
-    assert zigbee.wait_msg()['level_ctrl'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
+    assert switch.wait_zigbee_state()['action'] == "hold_button_2"
+    assert switch.wait_zigbee_state()['level_ctrl'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
 
     # Do not forget to release the button
     switch.release_button()
@@ -266,5 +269,5 @@ def test_level_control(device, zigbee):
     switch.wait_report_level_ctrl("Stop")
 
     # Verify the Level Control Move command has been received by the coordinator
-    assert zigbee.wait_msg()['action'] == "release_button_2"
-    assert zigbee.wait_msg()['level_ctrl']['command'] == 'commandStop'
+    assert switch.wait_zigbee_state()['action'] == "release_button_2"
+    assert switch.wait_zigbee_state()['level_ctrl']['command'] == 'commandStop'
