@@ -331,11 +331,63 @@ def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
     assert switch.get_state()  == init_state
 
 
+def test_multifunction_front(switch):
+    # Ensure the switch is OFF on start, and the mode is 'multifunction'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.switch('OFF', False) == 'OFF'
 
-def test_double_click(switch):
-    # Ensure the switch is off on start, the mode is 'multifunction', and relay mode is 'double'
+    # This test is focused on 'front' relay mode
+    assert switch.set_attribute('relay_mode', 'front') == 'front'
+
+    # Emulate the button click
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # In 'front' mode we expect the LED to toggle immediately on button press
+    switch.wait_state_change_msg(True)
+
+    # Do not forget to release the button
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
+    switch.wait_button_state("IDLE")
+
+    # Check the device state changed, and the single click action is generated
+    # As a side effect of current state machine implementation, action gets aftecr state change if relay mode is front
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
+    
+
+def test_multifunction_single(switch):
+    # Ensure the switch is OFF on start, and the mode is 'multifunction'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.switch('OFF', False) == 'OFF'
+
+    # This test is focused on 'single' relay mode
+    assert switch.set_attribute('relay_mode', 'single') == 'single'
+
+    # Emulate the button click
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+
+    # Then release the button and wait until single press is detected
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
+    switch.wait_button_state("IDLE")
+
+    # In the 'single' relay mode we expect the LED to toggle after the short button press
+    switch.wait_state_change_msg(True)
+
+    # Check the device state changed, and the single click action is generated
+    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+
+
+def test_multifunction_double(switch):
+    # Ensure the switch is off on start, the mode is 'multifunction'
     assert switch.switch('OFF', False) == 'OFF'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+
+    # This test is focused on 'double' relay mode
     assert switch.set_attribute('relay_mode', 'double') == 'double'
 
     # Emulate the first click
@@ -356,6 +408,123 @@ def test_double_click(switch):
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['action'] == "double_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+
+
+def test_multifunction_tripple(switch):
+    # Ensure the switch is off on start, the mode is 'multifunction'
+    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+
+    # This test is focused on 'tripple' relay mode
+    assert switch.set_attribute('relay_mode', 'tripple') == 'tripple'
+
+    # Emulate the first click
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
+
+    # Emulate the second click
+    switch.press_button()
+    switch.wait_button_state("PRESSED2")
+    switch.release_button()
+    switch.wait_button_state("PAUSE2")
+
+    # Emulate the third click
+    switch.press_button()
+    switch.wait_button_state("PRESSED3")
+    switch.release_button()
+    switch.wait_button_state("IDLE")
+
+    # We expect the LED to toggle after the third click
+    switch.wait_state_change_msg(True)
+
+    # Check the device state changed, and the double click action is generated
+    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['action'] == "tripple_" + switch.z2m_name
+
+
+def test_multifunction_unlinked_single(switch):
+    # Ensure the switch is OFF on start, and the mode is 'multifunction'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.switch('OFF', False) == 'OFF'
+
+    # This test is focused on 'unlinked' relay mode
+    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+
+    # Emulate a single button click
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
+
+    # Wait intil button state machine detects single click
+    switch.wait_button_state("IDLE")
+
+    # Check the single click action is generated, but the state has not changed
+    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
+    assert switch.get_state() == 'OFF'
+
+
+def test_multifunction_unlinked_double(switch):
+    # Ensure the switch is OFF on start, and the mode is 'multifunction'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.switch('OFF', False) == 'OFF'
+
+    # This test is focused on 'unlinked' relay mode
+    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+
+    # Emulate the first click
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
+
+    # Emulate the second click
+    switch.press_button()
+    switch.wait_button_state("PRESSED2")
+    switch.release_button()
+    switch.wait_button_state("PAUSE2")
+
+    # Wait intil button state machine detects double click
+    switch.wait_button_state("IDLE")
+
+    # Check the single click action is generated, but the state has not changed
+    assert switch.wait_zigbee_state()['action'] == "double_" + switch.z2m_name 
+    assert switch.get_state() == 'OFF'
+
+
+def test_multifunction_unlinked_tripple(switch):
+    # Ensure the switch is OFF on start, and the mode is 'multifunction'
+    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    assert switch.switch('OFF', False) == 'OFF'
+
+    # This test is focused on 'unlinked' relay mode
+    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+
+    # Emulate the first click
+    switch.press_button()
+    switch.wait_button_state("PRESSED1")
+    switch.release_button()
+    switch.wait_button_state("PAUSE1")
+
+    # Emulate the second click
+    switch.press_button()
+    switch.wait_button_state("PRESSED2")
+    switch.release_button()
+    switch.wait_button_state("PAUSE2")
+
+    # Emulate the third click
+    switch.press_button()
+    switch.wait_button_state("PRESSED3")
+    switch.release_button()
+    
+    # Wait intil button state machine detects double click
+    switch.wait_button_state("IDLE")
+
+    # Check the single click action is generated, but the state has not changed
+    assert switch.wait_zigbee_state()['action'] == "tripple_" + switch.z2m_name 
+    assert switch.get_state() == 'OFF'
 
 
 def test_level_control(switch):
