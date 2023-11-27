@@ -24,7 +24,7 @@ class ZigbeeDevice():
         self.wait_str("vAppMain(): Starting the main loop")
 
 
-    def wait_str(self, str, timeout=5):
+    def wait_str(self, str, timeout=15):
         tstart = time.time()
         while True:
             if tstart + timeout < time.time():

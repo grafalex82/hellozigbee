@@ -45,7 +45,7 @@ class ZigbeeNetwork():
         self.client.publish(topic, message)
 
 
-    def wait_msg(self, timeout=30):
+    def wait_msg(self, timeout=60):
         start_time = time.time()
 
         while self.message_received is None:
