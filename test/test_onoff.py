@@ -27,9 +27,6 @@ class SmartSwitch:
         # Most of the tests will require device state MQTT messages. Subscribe for them
         self.zigbee.subscribe()
 
-        # Unbind also from all clusters that are possibly were bound by previous tests
-        send_unbind_request(self.zigbee, "genLevelCtrl", f"my_test_switch/{self.ep}", "Coordinator")
-
 
     def reset(self):
         self.device.reset()
@@ -111,12 +108,27 @@ class SmartSwitch:
         return self.zigbee.wait_msg()
 
 
+# List of smart switch channels (endpoint number and z2m name)
+button_channels = [(2, "button_1"), (3, "button_2")]
 
 # Make each test that uses switch fixture to run twice for both buttons. 
 # Using the ids parameter the button name will be displayed as a test parameter
-@pytest.fixture(params = [(2, "button_1"), (3, "button_2")], ids=lambda x: x[1])
+@pytest.fixture(params = button_channels, ids=lambda x: x[1])
 def switch(device, zigbee, request):
     return SmartSwitch(device, zigbee, request.param[0], request.param[1])
+
+
+# Make sure that no bindings that could possibly change test behavior is active. 
+# Cleanup bindings at exit. Use autouse=True to implicitly apply it to all tests
+@pytest.fixture(scope="session", autouse = True)
+def cleanup_bindings(zigbee):
+    for ep, _ in button_channels:
+        send_unbind_request(zigbee, "genLevelCtrl", f"my_test_switch/{ep}", "Coordinator")
+
+    yield
+
+    for ep, _ in button_channels:
+        send_unbind_request(zigbee, "genLevelCtrl", f"my_test_switch/{ep}", "Coordinator")
 
 
 def test_on_off(switch):
@@ -527,10 +539,18 @@ def test_multifunction_unlinked_tripple(switch):
     assert switch.get_state() == 'OFF'
 
 
-def test_level_control(switch):
+@pytest.fixture
+def genLevelCtrl_bindings(switch):
     # Bind the endpoint with the coordinator
     send_bind_request(switch.zigbee, "genLevelCtrl", f"my_test_switch/{switch.ep}", "Coordinator")
-    
+
+    yield
+
+    # Cleanup bindings
+    send_unbind_request(switch.zigbee, "genLevelCtrl", f"my_test_switch/{switch.ep}", "Coordinator")
+
+
+def test_level_control(switch, genLevelCtrl_bindings):
     # Ensure the switch will generate levelCtrlDown messages on long press
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
     assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
