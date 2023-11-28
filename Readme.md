@@ -12,7 +12,7 @@ This is a tiny example how to work with ZigBee stack using JN5169 microcontrolle
 
 There are 2 goals of the project:
 - build an alternate firmware for Xiaomi Aqara QBKG12LM Zigbee smart switch
-- learn how Zigbee works, and [describe this in a form of tutorial](part0_plan.md), so that more people can join the technology
+- learn how Zigbee works, and [describe this in a form of tutorial](doc/part0_plan.md), so that more people can join the technology
 
 
 # Test board
