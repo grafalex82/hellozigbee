@@ -36,7 +36,7 @@ Build instructions:
 - `cd build`
 - `cmake -G "MinGW Makefiles" -DTOOLCHAIN_PREFIX=C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379 -DSDK_PREFIX=C:/NXP/bstudio_nxp/sdk/JN-SW-4170 ..`
 (Correct paths to the toolchain and sdk if needed)
-- mingw32-make HelloZigbee.bin
+- `mingw32-make HelloZigbee.bin`
 
 Flash instructions:
 - Open Beyond Studio
@@ -48,7 +48,14 @@ Flash instructions:
 or
 
 - Put the device in the programming mode (drive SPI_MISO low while reset or power up)
-- mingw32-make HelloZigbee.flash
+- `mingw32-make HelloZigbee.flash`
+
+To run tests:
+- Install python and pytest
+- Register the switch in the zigbee2mqtt, name it `my_test_switch`
+- Edit `tests\pytest.ini` file, specify parameters applicable for your setup (COM port, zigbee2mqtt address, etc)
+- `cd tests`
+- `pytest`
 
 # How to use
 
