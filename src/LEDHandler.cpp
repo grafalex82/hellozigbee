@@ -40,6 +40,63 @@ const LEDProgramEntry OK_EFFECT[] =
     {LED_CMD_STOP, 0, 0},
 };
 
+const LEDProgramEntry CHANNEL_CHANGE_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 255, 64},   // Maximum brightness for 0.5 sec
+    {LED_CMD_PAUSE, 10, 0},
+    {LED_CMD_MOVE_TO_LEVEL, 10, 80},    // The to minimum brightness for 7.5 seconds
+    {LED_CMD_PAUSE, 75, 0},
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry NETWORK_SEARCH1_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black, change instantly
+
+    {LED_CMD_MOVE_TO_LEVEL, 255, 20},   // Blink medium fast
+    {LED_CMD_MOVE_TO_LEVEL, 0, 20},
+
+    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry NETWORK_SEARCH2_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Start with white, change instantly
+
+    {LED_CMD_MOVE_TO_LEVEL, 0, 20},     // Blink medium fast
+    {LED_CMD_MOVE_TO_LEVEL, 255, 20},   
+
+    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry NETWORK_CONNECT1_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black, change instantly
+
+    {LED_CMD_MOVE_TO_LEVEL, 255, 96},   // Blink medium fast
+    {LED_CMD_MOVE_TO_LEVEL, 0, 96},
+
+    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry NETWORK_CONNECT2_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Start with white, change instantly
+
+    {LED_CMD_MOVE_TO_LEVEL, 0, 96},     // Blink medium fast
+    {LED_CMD_MOVE_TO_LEVEL, 255, 96},   
+
+    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
+
+    {LED_CMD_STOP, 0, 0},
+};
 
 LEDHandler::LEDHandler()
 {
@@ -56,7 +113,7 @@ void LEDHandler::init(uint8 timer)
 
     handlerState = STATE_IDLE;
 
-    programPtr = OK_EFFECT;
+    programPtr = NETWORK_CONNECT1_EFFECT;
     programIterations = 0;
 }
 
