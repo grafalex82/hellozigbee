@@ -28,6 +28,7 @@ class LEDHandler
     uint8 pauseCycles;
 
     const LEDProgramEntry * programPtr;
+    uint8 programIterations;
 
     enum HandlerState
     {
