@@ -21,14 +21,15 @@ struct LEDProgramEntry
 
 class LEDHandler
 {
-    PWMPin pin;
-    uint8 curLevel;
-    uint8 targetLevel;
-    uint8 increment;
-    uint8 pauseCycles;
+    PWMPin pin;             // The Pin object where the LED is connected
+    uint8 curLevel;         // Currently active brightness level (changes gradually on setting new brightness)
+    uint8 targetLevel;      // Target brightness level while gradually increasing/decreasing brightness
+    uint8 idleLevel;        // Selected brightness level when no effect active
+    uint8 increment;        // Increment/decrement step when gradually changing brightness
+    uint8 pauseCycles;      // Number of cycles to wait before switching to IDLE state
 
-    const LEDProgramEntry * programPtr;
-    uint8 programIterations;
+    const LEDProgramEntry * programPtr; // Pointer to the currently executed effect program, or NULL of no effect selected
+    uint8 programIterations;            // Number of program iterations executed (used for LED_CMD_REPEAT command)
 
     enum HandlerState
     {
@@ -52,6 +53,9 @@ protected:
     void handleStatePause();
 
     void handleProgramCommand();
+
+    void moveToLevel(uint8 target, uint8 step);
+    void pause(uint8 cycles);
 };  
 
 

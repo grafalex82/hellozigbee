@@ -9,8 +9,6 @@ const LEDProgramEntry BREATHE_EFFECT[] =
 
     {LED_CMD_REPEAT, 4, 10},            // Jump 4 steps back, Repeat 10 times
 
-    {LED_CMD_MOVE_TO_LEVEL, 0, 10},     // Switch off
-
     {LED_CMD_STOP, 0, 0},
 };
 
@@ -23,6 +21,7 @@ LEDHandler::LEDHandler()
 void LEDHandler::init(uint8 timer)
 {
     pin.init(timer);
+    idleLevel = 0;
     curLevel = 0;
     targetLevel = 0;
     increment = 0;
@@ -96,6 +95,19 @@ void LEDHandler::handleStateMachine()
     }
 }
 
+void LEDHandler::moveToLevel(uint8 target, uint8 step)
+{
+    targetLevel = target;
+    increment = step;
+    handlerState = curLevel < targetLevel ? STATE_INCREMENTING : STATE_DECREMENTING;
+}
+
+void LEDHandler::pause(uint8 cycles)
+{
+    pauseCycles = cycles;
+    handlerState = STATE_PAUSE;
+}
+
 void LEDHandler::handleProgramCommand()
 {
     LEDProgramEntry command = *programPtr;
@@ -103,22 +115,14 @@ void LEDHandler::handleProgramCommand()
 
     switch(command.command)
     {
-        // Abandon program
-        case LED_CMD_STOP:  
-            programPtr = NULL;
-            break;
-
         // Schedule gradual movement to desired level (up or down)
         case LED_CMD_MOVE_TO_LEVEL:
-            targetLevel = command.param1;
-            increment = command.param2;
-            handlerState = curLevel < targetLevel ? STATE_INCREMENTING : STATE_DECREMENTING;
+            moveToLevel(command.param1, command.param2);
             break;
 
         // Schedule a short pause
         case LED_CMD_PAUSE:
-            pauseCycles = command.param1;
-            handlerState = STATE_PAUSE;
+            pause(command.param1);
             break;
 
         // Repeat few previous commands (number is in param1), until iterations counter matches param2
@@ -129,6 +133,12 @@ void LEDHandler::handleProgramCommand()
                 break;
 
             programPtr -= (command.param1 + 1);
+            break;
+
+        // Abandon program, transit to idle level
+        case LED_CMD_STOP:  
+            programPtr = NULL;
+            moveToLevel(idleLevel, 10);
             break;
 
         default:
