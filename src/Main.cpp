@@ -21,6 +21,7 @@ extern "C"
 #include "BasicClusterEndpoint.h"
 #include "ZigbeeDevice.h"
 #include "ZCLTimer.h"
+#include "LEDTask.h"
 
 const uint8 SWITCH1_LED_PIN = 17;
 const uint8 SWITCH2_LED_PIN = 12;
@@ -42,14 +43,15 @@ extern "C"
 }
 
 
-// 6 timers are:
+// 7 timers are:
 // - 1 in ButtonTask
+// - 1 in LEDTask
 // - 2 in SwitchEndpoints
 // - 1 in PollTask
 // - 1 in DeferredExecutor (TODO: Do we still need it?)
 // - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
-ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[7 + BDB_ZTIMER_STORAGE];
 
 
 struct Context
@@ -308,6 +310,8 @@ extern "C" PUBLIC void vAppMain(void)
     ZCLTimer zclTimer;
     zclTimer.init();
     zclTimer.startTimer(1000);
+    LEDTask ledTask;
+    ledTask.start();
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");

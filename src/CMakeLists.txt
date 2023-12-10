@@ -166,6 +166,8 @@ SET(SOURCES
         AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp
+        LEDTask.cpp
+        LEDHandler.cpp
         ButtonHandler.cpp
         PollTask.cpp
         DeferredExecutor.cpp
