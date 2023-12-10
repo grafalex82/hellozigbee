@@ -13,7 +13,6 @@ const LEDProgramEntry BLINK_EFFECT[] =
     {LED_CMD_STOP, 0, 0},
 };
 
-
 const LEDProgramEntry BREATHE_EFFECT[] = 
 {
     {LED_CMD_MOVE_TO_LEVEL, 200, 10},   // Gradually move to the bright level
@@ -22,6 +21,21 @@ const LEDProgramEntry BREATHE_EFFECT[] =
     {LED_CMD_PAUSE, 5, 0},              // Stay there for a 250 ms
 
     {LED_CMD_REPEAT, 4, 8},             // Jump 4 steps back, Repeat 8 times
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry OK_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 64},     // Start with black
+    {LED_CMD_PAUSE, 5, 0},              // Stay there for a 250 ms
+
+    {LED_CMD_MOVE_TO_LEVEL, 255, 80},   // Blink fast to maximum, and then back to 0
+    {LED_CMD_MOVE_TO_LEVEL, 0, 80},
+    {LED_CMD_MOVE_TO_LEVEL, 255, 80},   // Blink fast to maximum, and then back to 0
+    {LED_CMD_MOVE_TO_LEVEL, 0, 80},
+
+    {LED_CMD_PAUSE, 5, 0},              // Stay for another 250 ms
 
     {LED_CMD_STOP, 0, 0},
 };
@@ -42,7 +56,7 @@ void LEDHandler::init(uint8 timer)
 
     handlerState = STATE_IDLE;
 
-    programPtr = BREATHE_EFFECT;
+    programPtr = OK_EFFECT;
     programIterations = 0;
 }
 
