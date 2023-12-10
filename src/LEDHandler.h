@@ -7,6 +7,26 @@ class LEDHandler
 {
     PWMPin pin;
     uint8 curLevel;
+    uint8 targetLevel;
+    uint8 increment;
+
+    // Temporary
+    bool incrementing;
+
+    enum ProgramState
+    {
+        IDLE,
+        RUNNING
+    };
+
+    enum HandlerState
+    {
+        STATE_FIXED_LEVEL,
+        STATE_INCREMENTING,
+        STATE_DECREMENTING
+    };
+
+    HandlerState handlerState;
 
 public:
     LEDHandler();
