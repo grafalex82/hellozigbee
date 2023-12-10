@@ -13,8 +13,10 @@ void LEDHandler::init(uint8 timer)
     increment = 0;
 
     incrementing = false;
+    inPause = false;
 
-    handlerState = STATE_FIXED_LEVEL;
+    handlerState = STATE_IDLE;
+
 }
 
 void LEDHandler::handleStateIncrementing()
@@ -28,7 +30,7 @@ void LEDHandler::handleStateIncrementing()
         level = 255;
 
     if(level == targetLevel)
-        handlerState = STATE_FIXED_LEVEL;
+        handlerState = STATE_IDLE;
 
     curLevel = (uint8)level;
     pin.setLevel(curLevel);
@@ -45,13 +47,20 @@ void LEDHandler::handleStateDecrementing()
         level = targetLevel;
 
     if(level == targetLevel)
-        handlerState = STATE_FIXED_LEVEL;
+        handlerState = STATE_IDLE;
 
     curLevel = (uint8)level;
     pin.setLevel(curLevel);
 }
 
-void LEDHandler::update()
+void LEDHandler::handleStatePause()
+{
+    pauseCycles--;
+    if(pauseCycles == 0)
+        handlerState = STATE_IDLE;
+}
+
+void LEDHandler::handleStateMachine()
 {
     switch(handlerState)
     {
@@ -63,18 +72,42 @@ void LEDHandler::update()
             handleStateDecrementing();
             break;
 
-        case STATE_FIXED_LEVEL:
+        case STATE_PAUSE:
+            handleStatePause();
+            break;
+
+        case STATE_IDLE:
         default:
             break;
     }
+}
 
+void LEDHandler::update()
+{
+    handleStateMachine();
+
+    // if(handlerState == STATE_IDLE && programPtr != NULL)
+    // {
+    //     curProgramCmd = *programPtr;
+    //     programPtr++;
+    // }
+    
     // Temporary
-    if(handlerState == STATE_FIXED_LEVEL)
+    if(handlerState == STATE_IDLE)
     {
-        incrementing = !incrementing;
+        inPause = ~inPause;
+        if(inPause)
+        {
+            pauseCycles = 50;
+            handlerState = STATE_PAUSE;
+        }
+        else
+        {
+            incrementing = !incrementing;
 
-        targetLevel = incrementing ? 255 : 0;
-        increment = 4;
-        handlerState = incrementing ? STATE_INCREMENTING : STATE_DECREMENTING;
+            targetLevel = incrementing ? 255 : 0;
+            increment = 5;
+            handlerState = incrementing ? STATE_INCREMENTING : STATE_DECREMENTING;
+        }
     }
 }

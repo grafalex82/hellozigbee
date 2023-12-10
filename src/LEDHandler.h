@@ -9,9 +9,11 @@ class LEDHandler
     uint8 curLevel;
     uint8 targetLevel;
     uint8 increment;
+    uint8 pauseCycles;
 
     // Temporary
     bool incrementing;
+    bool inPause;
 
     enum ProgramState
     {
@@ -21,9 +23,10 @@ class LEDHandler
 
     enum HandlerState
     {
-        STATE_FIXED_LEVEL,
+        STATE_IDLE,
         STATE_INCREMENTING,
-        STATE_DECREMENTING
+        STATE_DECREMENTING,
+        STATE_PAUSE
     };
 
     HandlerState handlerState;
@@ -32,6 +35,12 @@ public:
     LEDHandler();
     void init(uint8 timer);
     void update();
+
+protected:
+    void handleStateMachine();
+    void handleStateIncrementing();
+    void handleStateDecrementing();
+    void handleStatePause();
 };  
 
 
