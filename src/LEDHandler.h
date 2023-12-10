@@ -3,6 +3,22 @@
 
 #include "PWMPin.h"
 
+enum LEDProgramCommand
+{
+    LED_CMD_STOP,               // no params
+    LED_CMD_MOVE_TO_LEVEL,      // param1 - target level, param2 - brightness increment per 50 ms
+    LED_CMD_PAUSE,              // param1 - pause duration (in 50ms quants)
+    LED_CMD_REPEAT              // param1 - target program index, param2 - number of iterations
+};
+
+struct LEDProgramEntry
+{
+    LEDProgramCommand command;
+    uint8 param1;
+    uint8 param2;
+};
+
+
 class LEDHandler
 {
     PWMPin pin;
@@ -11,15 +27,7 @@ class LEDHandler
     uint8 increment;
     uint8 pauseCycles;
 
-    // Temporary
-    bool incrementing;
-    bool inPause;
-
-    enum ProgramState
-    {
-        IDLE,
-        RUNNING
-    };
+    const LEDProgramEntry * programPtr;
 
     enum HandlerState
     {
@@ -41,6 +49,8 @@ protected:
     void handleStateIncrementing();
     void handleStateDecrementing();
     void handleStatePause();
+
+    void handleProgramCommand();
 };  
 
 
