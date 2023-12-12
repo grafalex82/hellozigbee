@@ -112,9 +112,6 @@ void LEDHandler::init(uint8 timer)
     increment = 0;
 
     handlerState = STATE_IDLE;
-
-    programPtr = NETWORK_CONNECT1_EFFECT;
-    programIterations = 0;
 }
 
 void LEDHandler::handleStateIncrementing()
@@ -237,4 +234,34 @@ void LEDHandler::update()
 
     if(handlerState == STATE_IDLE && programPtr != NULL)
         handleProgramCommand();
+}
+
+void LEDHandler::setFixedLevel(uint8 level, uint8 step)
+{
+    programPtr = NULL;
+    idleLevel = level;
+    moveToLevel(level, step);
+}
+
+void LEDHandler::startEffect(const LEDProgramEntry * effect)
+{
+    programPtr = effect;
+
+    if(programPtr)
+    {
+        // Set state to IDLE just to force switching to the program mode
+        handlerState = STATE_IDLE;  
+
+        // The new program will start from the very first iteration
+        programIterations = 0;
+    }
+    else
+        stopEffect();
+}
+
+void LEDHandler::stopEffect()
+{
+    // Abandon current program and get back to the previously set brightness level
+    programPtr = NULL;
+    moveToLevel(idleLevel, 10);
 }

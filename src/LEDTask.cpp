@@ -27,6 +27,49 @@ LEDTask * LEDTask::getInstance()
 void LEDTask::start()
 {
     startTimer(50);
+
+    // Temporary
+    triggerSpecialEffect(0);
+}
+
+void LEDTask::triggerEffect(uint8 effect)
+{
+    const LEDProgramEntry * program = NULL;
+    if(effect == 0)
+        program = BLINK_EFFECT;
+    if(effect == 1)
+        program = BREATHE_EFFECT;
+    if(effect == 2)
+        program = OK_EFFECT;
+    if(effect == 11)
+        program = CHANNEL_CHANGE_EFFECT;
+
+    led1red.startEffect(program);
+    led2red.startEffect(program);
+}
+
+void LEDTask::triggerSpecialEffect(uint8 effect)
+{
+    const LEDProgramEntry * program1 = NULL;
+    const LEDProgramEntry * program2 = NULL;
+
+    // Network search effect
+    if(effect == 0)
+    {
+        program1 = NETWORK_SEARCH1_EFFECT;
+        program2 = NETWORK_SEARCH2_EFFECT;
+    }
+
+    // Connecting effect
+    if(effect == 1)
+    {
+        program1 = NETWORK_CONNECT1_EFFECT;
+        program2 = NETWORK_CONNECT2_EFFECT;
+    }
+
+    led1red.startEffect(program1);
+    led2red.startEffect(program2);
+
 }
 
 void LEDTask::timerCallback()

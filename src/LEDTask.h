@@ -46,6 +46,9 @@ public:
     static LEDTask * getInstance();
     void start();
 
+    void triggerEffect(uint8 effect);
+    void triggerSpecialEffect(uint8 effect);
+
 protected:
     virtual void timerCallback();    
 };

@@ -19,6 +19,15 @@ struct LEDProgramEntry
 };
 
 
+extern const LEDProgramEntry BLINK_EFFECT[];
+extern const LEDProgramEntry BREATHE_EFFECT[];
+extern const LEDProgramEntry OK_EFFECT[];
+extern const LEDProgramEntry CHANNEL_CHANGE_EFFECT[];
+extern const LEDProgramEntry NETWORK_SEARCH1_EFFECT[];
+extern const LEDProgramEntry NETWORK_SEARCH2_EFFECT[];
+extern const LEDProgramEntry NETWORK_CONNECT1_EFFECT[];
+extern const LEDProgramEntry NETWORK_CONNECT2_EFFECT[];
+
 class LEDHandler
 {
     PWMPin pin;             // The Pin object where the LED is connected
@@ -45,6 +54,10 @@ public:
     LEDHandler();
     void init(uint8 timer);
     void update();
+
+    void setFixedLevel(uint8 level, uint8 step);
+    void startEffect(const LEDProgramEntry * effect);
+    void stopEffect();
 
 protected:
     void handleStateMachine();
