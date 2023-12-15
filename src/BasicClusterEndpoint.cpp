@@ -25,6 +25,21 @@ void BasicClusterEndpoint::registerBasicCluster()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerBasicCluster(): Failed to create Basic Cluster instance. Status=%d\n", status);
 }
 
+void BasicClusterEndpoint::registerIdentifyCluster()
+{
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerIdentifyCluster(): Registering identify cluster\n");
+    // Create an instance of a basic cluster as a server
+    teZCL_Status status = eCLD_IdentifyCreateIdentify(&clusterInstances.sIdentifyServer,
+                                                TRUE,
+                                                &sCLD_Identify,
+                                                &sIdentifyServerCluster,
+                                                &au8IdentifyAttributeControlBits[0],
+                                                &sIdentifyClusterData);
+    
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerIdentifyCluster(): Failed to create Identify Cluster instance. Status=%d\n", status);
+}
+
 void BasicClusterEndpoint::registerOtaCluster()
 {
     DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerOtaCluster(): Registering ota cluster\n");
@@ -61,6 +76,7 @@ void BasicClusterEndpoint::registerEndpoint()
 void BasicClusterEndpoint::init()
 {
     registerBasicCluster();
+    registerIdentifyCluster();
     registerOtaCluster();
     registerEndpoint();
 

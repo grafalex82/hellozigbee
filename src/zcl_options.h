@@ -75,9 +75,9 @@
 //#define CLD_SCENES
 //#define SCENES_CLIENT
 
-//#define CLD_IDENTIFY
-//#define IDENTIFY_CLIENT
-//#define IDENTIFY_SERVER
+#define CLD_IDENTIFY
+#define IDENTIFY_SERVER
+#define CLD_IDENTIFY_CMD_TRIGGER_EFFECT
 
 #define CLD_ONOFF
 #define ONOFF_CLIENT

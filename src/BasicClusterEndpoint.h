@@ -8,6 +8,7 @@ extern "C"
 {
     #include "zcl.h"
     #include "Basic.h"
+    #include "Identify.h"
 }
 
 // List of cluster instances (descriptor objects) that are included into an Endpoint
@@ -18,6 +19,9 @@ struct BasicClusterInstances
 
     // Zigbee device may have also OTA optional clusters for the client
     tsZCL_ClusterInstance sOTAClient;
+
+    // Identify cluster (whole device handler)
+    tsZCL_ClusterInstance sIdentifyServer;
 } __attribute__ ((aligned(4)));
 
 class BasicClusterEndpoint : public Endpoint
@@ -29,6 +33,8 @@ class BasicClusterEndpoint : public Endpoint
 
     // Value storage for endpoint's clusters
     tsCLD_Basic sBasicServerCluster;
+    tsCLD_Identify sIdentifyServerCluster;
+    tsCLD_IdentifyCustomDataStructure sIdentifyClusterData;
     tsCLD_AS_Ota sOTAClientCluster;
     tsOTA_Common sOTACustomDataStruct;
 
@@ -41,6 +47,7 @@ public:
 
 protected:
     virtual void registerBasicCluster();
+    virtual void registerIdentifyCluster();
     virtual void registerOtaCluster();
     virtual void registerEndpoint();
 

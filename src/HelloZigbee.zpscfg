@@ -475,6 +475,7 @@
     <Endpoints Id="1" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="BASIC">
       <InputClusters Cluster="Basic" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Default" RxAPDU="HelloZigbee->apduZCL" Discoverable="false"/>
+      <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OTA" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
