@@ -52,6 +52,11 @@ protected:
     virtual void registerEndpoint();
 
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
+    virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
+
+    void handleIdentifyClusterEvent(tsZCL_CallBackEvent *psEvent);
+    void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
+    void handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent);
 };
 
 #endif // BASICCLUSTERENDPOINT_H

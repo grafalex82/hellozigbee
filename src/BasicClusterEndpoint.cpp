@@ -93,12 +93,60 @@ void BasicClusterEndpoint::init()
 
 void BasicClusterEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
-    // This function handles only OTA messages
-    if(psEvent->uMessage.sClusterCustomMessage.u16ClusterId != OTA_CLUSTER_ID)
-        return;
+    uint16 clusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
 
+    switch(clusterId)
+    {
+        case GENERAL_CLUSTER_ID_IDENTIFY:
+            handleIdentifyClusterUpdate(psEvent);
+            break;
+
+        case OTA_CLUSTER_ID:
+            handleOTAClusterUpdate(psEvent);
+            break;
+
+        default:
+            DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected cluster update message ClusterID=%04x\n", clusterId);
+            break;
+    }
+}
+
+void BasicClusterEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 clusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
+
+    switch(clusterId)
+    {
+        case GENERAL_CLUSTER_ID_IDENTIFY:
+            handleIdentifyClusterEvent(psEvent);
+            break;
+
+        default:
+            DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", clusterId);
+            break;
+    }
+}
+
+void BasicClusterEndpoint::handleIdentifyClusterEvent(tsZCL_CallBackEvent *psEvent)
+{
+    tsCLD_IdentifyCallBackMessage * msg = (tsCLD_IdentifyCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    uint8 u8CommandId = msg->u8CommandId;
+
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Identify cluster command Cmd=%d\n",
+                psEvent->u8EndPoint,
+                u8CommandId);
+}
+
+void BasicClusterEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Identify cluster update event. Identify Time = %d\n",
+                psEvent->u8EndPoint, 
+                sIdentifyServerCluster.u16IdentifyTime);
+}
+
+void BasicClusterEndpoint::handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
     // Parse and process OTA message
     tsOTA_CallBackMessage *psCallBackMessage = (tsOTA_CallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     otaHandlers.handleOTAMessage(psCallBackMessage);
 }
-
