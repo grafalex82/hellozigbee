@@ -307,6 +307,7 @@ const device = {
     ],
     endpoint: (device) => {
         return {
+            basic: 1,
             button_1: 2,
             button_2: 3
         };
