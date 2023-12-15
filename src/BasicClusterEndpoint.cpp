@@ -1,5 +1,6 @@
 #include "BasicClusterEndpoint.h"
 #include "EndpointManager.h"
+#include "LEDTask.h"
 
 extern "C"
 {
@@ -130,18 +131,36 @@ void BasicClusterEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent
 void BasicClusterEndpoint::handleIdentifyClusterEvent(tsZCL_CallBackEvent *psEvent)
 {
     tsCLD_IdentifyCallBackMessage * msg = (tsCLD_IdentifyCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    uint8 u8CommandId = msg->u8CommandId;
+    uint8 commandId = msg->u8CommandId;
 
     DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Identify cluster command Cmd=%d\n",
                 psEvent->u8EndPoint,
-                u8CommandId);
+                commandId);
+
+    switch(commandId)
+    {
+        case E_CLD_IDENTIFY_CMD_IDENTIFY:
+            LEDTask::getInstance()->triggerEffect(E_CLD_IDENTIFY_EFFECT_BREATHE);
+            break;
+
+        case E_CLD_IDENTIFY_CMD_TRIGGER_EFFECT:
+            LEDTask::getInstance()->triggerEffect(msg->uMessage.psTriggerEffectRequestPayload->eEffectId);
+            break;
+
+        default:
+            break;
+    }
 }
 
 void BasicClusterEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
+    zuint16 identifyTime = sIdentifyServerCluster.u16IdentifyTime;
     DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Identify cluster update event. Identify Time = %d\n",
                 psEvent->u8EndPoint, 
-                sIdentifyServerCluster.u16IdentifyTime);
+                identifyTime);
+
+    if(identifyTime == 0)
+        LEDTask::getInstance()->stopEffect();
 }
 
 void BasicClusterEndpoint::handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent)

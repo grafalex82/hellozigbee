@@ -40,12 +40,14 @@ class LEDTask : public PeriodicTask
     unsigned char targetValue;
     char increment;
 
-public:
+private:
     LEDTask();
 
+public:
     static LEDTask * getInstance();
     void start();
 
+    void stopEffect();
     void triggerEffect(uint8 effect);
     void triggerSpecialEffect(uint8 effect);
 

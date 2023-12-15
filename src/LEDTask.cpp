@@ -26,10 +26,14 @@ LEDTask * LEDTask::getInstance()
 
 void LEDTask::start()
 {
+    stopEffect();
     startTimer(50);
+}
 
-    // Temporary
-    triggerSpecialEffect(0);
+void LEDTask::stopEffect()
+{
+    led1red.stopEffect();
+    led2red.stopEffect();
 }
 
 void LEDTask::triggerEffect(uint8 effect)
