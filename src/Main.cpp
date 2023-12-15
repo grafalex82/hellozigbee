@@ -310,8 +310,7 @@ extern "C" PUBLIC void vAppMain(void)
     ZCLTimer zclTimer;
     zclTimer.init();
     zclTimer.startTimer(1000);
-    LEDTask ledTask;
-    ledTask.start();
+    LEDTask::getInstance()->start();
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
