@@ -325,8 +325,8 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
-    context.switch1.setPins(SWITCH1_LED_PIN, SWITCH1_BTN_MASK);
-    context.switch2.setPins(SWITCH2_LED_PIN, SWITCH2_BTN_MASK);
+    context.switch1.setPins(SWITCH1_BTN_MASK);
+    context.switch2.setPins(SWITCH2_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &context.switch1);
     EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &context.switch2);

@@ -14,7 +14,6 @@ extern "C"
 }
 
 #include "Endpoint.h"
-#include "BlinkTask.h"
 #include "ButtonHandler.h"
 
 // List of cluster instances (descriptor objects) that are included into the endpoint
@@ -44,12 +43,11 @@ protected:
     tsCLD_Identify sIdentifyServerCluster;
     tsCLD_IdentifyCustomDataStructure sIdentifyClusterData;
 
-    BlinkTask blinkTask;
     ButtonHandler buttonHandler;
 
 public:
     SwitchEndpoint();
-    void setPins(uint8 ledPin, uint32 pinMask);
+    void setPins(uint32 pinMask);
     virtual void init();
 
     bool getState() const;

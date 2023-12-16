@@ -20,10 +20,8 @@ SwitchEndpoint::SwitchEndpoint()
 {
 }
 
-void SwitchEndpoint::setPins(uint8 ledPin, uint32 pinMask)
+void SwitchEndpoint::setPins(uint32 pinMask)
 {
-    blinkTask.init(ledPin);
-
     ButtonsTask::getInstance()->registerHandler(pinMask, &buttonHandler);
 }
 
@@ -36,7 +34,7 @@ void SwitchEndpoint::registerServerCluster()
                                                 &sOnOffServerCluster,
                                                 &au8OnOffAttributeControlBits[0],
                                                 &sOnOffServerCustomDataStructure);
-    if( status != E_ZCL_SUCCESS)
+    if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create OnOff server cluster instance. status=%d\n", status);
 }
 
@@ -49,7 +47,7 @@ void SwitchEndpoint::registerClientCluster()
                                                 &sOnOffClientCluster,
                                                 &au8OnOffAttributeControlBits[0],
                                                 NULL);
-    if( status != E_ZCL_SUCCESS)
+    if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create OnOff client cluster instance. status=%d\n", status);
 }
 
@@ -61,7 +59,7 @@ void SwitchEndpoint::registerOnOffConfigServerCluster()
                                                            &sCLD_OOSC,
                                                            &sOnOffConfigServerCluster,
                                                            &au8OOSCAttributeControlBits[0]);
-    if( status != E_ZCL_SUCCESS)
+    if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create OnOff config server cluster instance. status=%d\n", status);
 }
 
@@ -74,7 +72,7 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
                 &sCLD_MultistateInputBasic,
                 &sMultistateInputServerCluster,
                 &au8MultistateInputBasicAttributeControlBits[0]);
-    if( status != E_ZCL_SUCCESS)
+    if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Multistate Input server cluster instance. status=%d\n", status);
 }
 
@@ -87,7 +85,7 @@ void SwitchEndpoint::registerLevelControlClientCluster()
                                                               &sLevelControlClientCluster,
                                                               &au8LevelControlAttributeControlBits[0],
                                                               &sLevelControlClientCustomDataStructure);
-    if( status != E_ZCL_SUCCESS)
+    if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Level Control client cluster instance. status=%d\n", status);
 }
 
@@ -101,7 +99,7 @@ void SwitchEndpoint::registerIdentifyCluster()
                                                 &au8IdentifyAttributeControlBits[0],
                                                 &sIdentifyClusterData);
     
-    if( status != E_ZCL_SUCCESS)
+    if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "SwitchEndpoint::registerIdentifyCluster(): Failed to create Identify Cluster instance. Status=%d\n", status);
 }
 
@@ -162,11 +160,7 @@ void SwitchEndpoint::init()
     // Restore previous configuration from PDM
     restoreConfiguration();
 
-    // Initialize blinking
-    // Note: this blinking task represents a relay that would be tied with this switch. That is why blinkTask
-    // is a property of SwitchEndpoint, and not the global task object
-    // TODO: restore previous blink mode from PDM
-    blinkTask.setBlinkMode(false);
+    // TODO: restore previous brightness from PDM
 }
 
 bool SwitchEndpoint::getState() const
@@ -213,7 +207,8 @@ void SwitchEndpoint::doStateChange(bool state)
     {
         DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
-        blinkTask.setBlinkMode(state);
+
+        LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
     }
 }
 
