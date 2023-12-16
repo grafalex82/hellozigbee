@@ -90,6 +90,21 @@ void SwitchEndpoint::registerLevelControlClientCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Level Control client cluster instance. status=%d\n", status);
 }
 
+void SwitchEndpoint::registerIdentifyCluster()
+{
+    DBG_vPrintf(TRUE, "SwitchEndpoint::registerIdentifyCluster(): Registering identify cluster\n");
+    // Create an instance of a basic cluster as a server
+    teZCL_Status status = eCLD_IdentifyCreateIdentify(&sClusterInstance.sIdentifyServer,
+                                                TRUE,
+                                                &sCLD_Identify,
+                                                &sIdentifyServerCluster,
+                                                &au8IdentifyAttributeControlBits[0],
+                                                &sIdentifyClusterData);
+    
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "SwitchEndpoint::registerIdentifyCluster(): Failed to create Identify Cluster instance. Status=%d\n", status);
+}
+
 void SwitchEndpoint::registerEndpoint()
 {
     // Initialize endpoint structure
@@ -138,6 +153,7 @@ void SwitchEndpoint::init()
     registerOnOffConfigServerCluster();
     registerMultistateInputServerCluster();
     registerLevelControlClientCluster();
+    registerIdentifyCluster();
     registerEndpoint();
 
     // Let button handler know about this Endpoint instanct so that it can properly report new states
