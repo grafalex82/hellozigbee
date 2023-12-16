@@ -269,6 +269,7 @@ extern "C" PUBLIC void vAppMain(void)
     portENABLE_INTERRUPTS();
 
     // Initialize UART
+    vAHI_UartSetRTSCTS(E_AHI_UART_0, FALSE);
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
     DebugInput debugInput;
 
