@@ -80,7 +80,10 @@ protected:
     virtual void restoreConfiguration();
     virtual void saveConfiguration();
     virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
+    virtual void handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent);
+    virtual void handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
+    virtual void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 };
 

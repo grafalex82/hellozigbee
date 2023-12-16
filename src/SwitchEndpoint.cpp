@@ -6,6 +6,7 @@
 #include "ZigbeeDevice.h"
 #include "ButtonsTask.h"
 #include "PdmIds.h"
+#include "LEDTask.h"
 
 extern "C"
 {
@@ -92,7 +93,6 @@ void SwitchEndpoint::registerLevelControlClientCluster()
 
 void SwitchEndpoint::registerIdentifyCluster()
 {
-    DBG_vPrintf(TRUE, "SwitchEndpoint::registerIdentifyCluster(): Registering identify cluster\n");
     // Create an instance of a basic cluster as a server
     teZCL_Status status = eCLD_IdentifyCreateIdentify(&sClusterInstance.sIdentifyServer,
                                                 TRUE,
@@ -369,24 +369,88 @@ void SwitchEndpoint::reportStateChange()
 
 void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
 {
-    uint16 u16ClusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
+    uint16 clusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
+
+    switch(clusterId)
+    {
+        case GENERAL_CLUSTER_ID_ONOFF:
+            handleOnOffClusterCommand(psEvent);
+            break;
+
+        case GENERAL_CLUSTER_ID_IDENTIFY:
+            handleIdentifyClusterCommand(psEvent);
+            break;
+
+        default:
+            DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", clusterId);
+            break;
+    }
+}
+
+void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
+{
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 u8CommandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster command received ClusterID=%04x Cmd=%02x\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x\n",
                 psEvent->u8EndPoint,
-                u16ClusterId,
                 u8CommandId);
 
     doStateChange(getState());
 }
 
+void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
+{
+    tsCLD_IdentifyCallBackMessage * msg = (tsCLD_IdentifyCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    uint8 commandId = msg->u8CommandId;
+    uint8 ep = psEvent->u8EndPoint;
+
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Identify cluster command Cmd=%d\n",
+                ep,
+                commandId);
+
+    switch(commandId)
+    {
+        case E_CLD_IDENTIFY_CMD_IDENTIFY:
+            LEDTask::getInstance()->triggerEffect(ep, E_CLD_IDENTIFY_EFFECT_BREATHE);
+            break;
+
+        case E_CLD_IDENTIFY_CMD_TRIGGER_EFFECT:
+            LEDTask::getInstance()->triggerEffect(ep, msg->uMessage.psTriggerEffectRequestPayload->eEffectId);
+            break;
+
+        default:
+            break;
+    }
+}
+
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
-    uint16 u16ClusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+    uint16 clusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x\n",
                 psEvent->u8EndPoint,
-                u16ClusterId);
+                clusterId);
+
+    switch(clusterId)
+    {
+        case GENERAL_CLUSTER_ID_IDENTIFY:
+            handleIdentifyClusterUpdate(psEvent);
+            break;
+
+        default:
+            break;
+    }
+}
+
+void SwitchEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    zuint16 identifyTime = sIdentifyServerCluster.u16IdentifyTime;
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Identify cluster update event. Identify Time = %d\n",
+                psEvent->u8EndPoint, 
+                identifyTime);
+
+    if(identifyTime == 0)
+        LEDTask::getInstance()->stopEffect();
 }
 
 void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
