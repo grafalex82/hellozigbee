@@ -55,7 +55,7 @@ public:
     void init(uint8 timer);
     void update();
 
-    void setFixedLevel(uint8 level, uint8 step);
+    void setFixedLevel(uint8 level, uint8 step = 10);
     void startEffect(const LEDProgramEntry * effect);
     void stopEffect();
 

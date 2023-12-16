@@ -1,12 +1,14 @@
-#include "BasicClusterEndpoint.h"
-#include "EndpointManager.h"
-#include "LEDTask.h"
-
 extern "C"
 {
+    #include "jendefs.h"
+    #include "zps_gen.h"
     #include "dbg.h"
     #include "string.h"
 }
+
+#include "BasicClusterEndpoint.h"
+#include "EndpointManager.h"
+#include "LEDTask.h"
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {
@@ -140,11 +142,11 @@ void BasicClusterEndpoint::handleIdentifyClusterEvent(tsZCL_CallBackEvent *psEve
     switch(commandId)
     {
         case E_CLD_IDENTIFY_CMD_IDENTIFY:
-            LEDTask::getInstance()->triggerEffect(E_CLD_IDENTIFY_EFFECT_BREATHE);
+            LEDTask::getInstance()->triggerEffect(HELLOZIGBEE_BASIC_ENDPOINT, E_CLD_IDENTIFY_EFFECT_BREATHE);
             break;
 
         case E_CLD_IDENTIFY_CMD_TRIGGER_EFFECT:
-            LEDTask::getInstance()->triggerEffect(msg->uMessage.psTriggerEffectRequestPayload->eEffectId);
+            LEDTask::getInstance()->triggerEffect(HELLOZIGBEE_BASIC_ENDPOINT, msg->uMessage.psTriggerEffectRequestPayload->eEffectId);
             break;
 
         default:

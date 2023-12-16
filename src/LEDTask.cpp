@@ -1,9 +1,11 @@
-#include "LEDTask.h"
-
 extern "C"
 {
+    #include "jendefs.h"
+    #include "zps_gen.h"
     #include "dbg.h"
 }
+
+#include "LEDTask.h"
 
 
 // Note: Object constructors are not executed by CRT if creating a global var of this object :(
@@ -36,8 +38,26 @@ void LEDTask::stopEffect()
     led2red.stopEffect();
 }
 
-void LEDTask::triggerEffect(uint8 effect)
+void LEDTask::setFixedLevel(uint8 ep, uint8 level)
 {
+    if(ep == HELLOZIGBEE_SWITCH1_ENDPOINT)
+    {
+        led1red.setFixedLevel(level);
+        led2red.stopEffect();
+    }
+
+    if(ep == HELLOZIGBEE_SWITCH2_ENDPOINT)
+    {
+        led1red.stopEffect();
+        led2red.setFixedLevel(level);
+    }
+}
+
+void LEDTask::triggerEffect(uint8 ep, uint8 effect)
+{
+    bool ch1 = ep != HELLOZIGBEE_SWITCH2_ENDPOINT;
+    bool ch2 = ep != HELLOZIGBEE_SWITCH1_ENDPOINT;
+
     const LEDProgramEntry * program = NULL;
     if(effect == 0)
         program = BLINK_EFFECT;
@@ -48,8 +68,10 @@ void LEDTask::triggerEffect(uint8 effect)
     if(effect == 11)
         program = CHANNEL_CHANGE_EFFECT;
 
-    led1red.startEffect(program);
-    led2red.startEffect(program);
+    if(ch1)
+        led1red.startEffect(program);
+    if(ch2)
+        led2red.startEffect(program);
 }
 
 void LEDTask::triggerSpecialEffect(uint8 effect)

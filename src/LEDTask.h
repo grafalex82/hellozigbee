@@ -48,7 +48,8 @@ public:
     void start();
 
     void stopEffect();
-    void triggerEffect(uint8 effect);
+    void setFixedLevel(uint8 ep, uint8 level);
+    void triggerEffect(uint8 ep, uint8 effect);
     void triggerSpecialEffect(uint8 effect);
 
 protected:
