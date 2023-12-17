@@ -1,6 +1,11 @@
 #ifndef LEDHANDLER_H
 #define LEDHANDLER_H
 
+extern "C"
+{
+    #include "jendefs.h"
+}
+
 #include "PWMPin.h"
 
 enum LEDProgramCommand

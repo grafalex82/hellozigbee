@@ -1,7 +1,3 @@
-#include "ZigbeeDevice.h"
-#include "DumpFunctions.h"
-#include "Queue.h"
-
 extern "C"
 {
     #include "jendefs.h"
@@ -18,6 +14,9 @@ extern "C"
     #include "OnOff.h"
 }
 
+#include "ZigbeeDevice.h"
+#include "DumpFunctions.h"
+#include "Queue.h"
 
 extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
 extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
