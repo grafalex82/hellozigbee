@@ -76,6 +76,20 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
         DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Multistate Input server cluster instance. status=%d\n", status);
 }
 
+void SwitchEndpoint::registerLevelControlServerCluster()
+{
+    // Initialize Level Control client cluser
+    teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.sLevelControlServer,
+                                                                TRUE,                              // Server
+                                                                &sCLD_LevelControl,
+                                                                &sLevelControlServerCluster,
+                                                                &au8LevelControlAttributeControlBits[0],
+                                                                &sLevelControlServerCustomDataStructure);
+
+    if( status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Failed to create Level Control server cluster instance. status=%d\n", status);
+}
+
 void SwitchEndpoint::registerLevelControlClientCluster()
 {
     // Initialize Level Control client cluser
@@ -150,6 +164,7 @@ void SwitchEndpoint::init()
     registerClientCluster();
     registerOnOffConfigServerCluster();
     registerMultistateInputServerCluster();
+    registerLevelControlServerCluster();
     registerLevelControlClientCluster();
     registerIdentifyCluster();
     registerEndpoint();

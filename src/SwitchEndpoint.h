@@ -23,6 +23,7 @@ struct OnOffClusterInstances
     tsZCL_ClusterInstance sOnOffServer;
     tsZCL_ClusterInstance sOnOffConfigServer;
     tsZCL_ClusterInstance sMultistateInputServer;
+    tsZCL_ClusterInstance sLevelControlServer;
     tsZCL_ClusterInstance sLevelControlClient;
     tsZCL_ClusterInstance sIdentifyServer;
 } __attribute__ ((aligned(4)));
@@ -38,6 +39,8 @@ protected:
     tsCLD_OOSC sOnOffConfigServerCluster;
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
     tsCLD_MultistateInputBasic sMultistateInputServerCluster;
+    tsCLD_LevelControl sLevelControlServerCluster;
+    tsCLD_LevelControlCustomDataStructure sLevelControlServerCustomDataStructure;
     tsCLD_LevelControl sLevelControlClientCluster;
     tsCLD_LevelControlCustomDataStructure sLevelControlClientCustomDataStructure;
     tsCLD_Identify sIdentifyServerCluster;
@@ -72,6 +75,7 @@ protected:
     virtual void registerClientCluster();
     virtual void registerOnOffConfigServerCluster();
     virtual void registerMultistateInputServerCluster();
+    virtual void registerLevelControlServerCluster();
     virtual void registerLevelControlClientCluster();
     virtual void registerIdentifyCluster();
     virtual void registerEndpoint();

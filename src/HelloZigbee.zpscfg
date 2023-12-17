@@ -484,6 +484,7 @@
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="LevelControl" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
@@ -492,6 +493,7 @@
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="LevelControl" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
