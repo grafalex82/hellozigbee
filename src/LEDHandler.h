@@ -72,6 +72,7 @@ protected:
 
     void handleProgramCommand();
 
+    void setPWMLevel(uint8 level);
     void moveToLevel(uint8 target, uint8 step);
     void pause(uint8 cycles);
 };  
