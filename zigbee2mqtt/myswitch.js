@@ -169,7 +169,7 @@ const toZigbee_OnOffSwitchCfg = {
 
 function genSwitchEndpoint(epName) {
     return [
-        e.switch().withEndpoint(epName),
+        e.light_brightness().withEndpoint(epName),
         exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
@@ -292,8 +292,8 @@ const device = {
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_LevelCtrl],
-    toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
+    fromZigbee: [fz.on_off, fz.brightness, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_LevelCtrl],
+    toZigbee: [tz.light_onoff_brightness, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         device.endpoints.forEach(async (ep) => {
             await ep.read('genOnOff', ['onOff']);

@@ -224,6 +224,23 @@ void SwitchEndpoint::doStateChange(bool state)
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
 
         LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
+
+        reportStateChange();
+    }
+}
+
+void SwitchEndpoint::doLevelChange(uint8 level)
+{
+    if(runsInServerMode())
+    {
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do level change %d\n", getEndpointId(), level);
+        sLevelControlServerCluster.u8CurrentLevel = level;
+
+        if(sOnOffServerCluster.bOnOff)
+        {
+            LEDTask::getInstance()->setFixedLevel(getEndpointId(), level);
+            reportStateChange();
+        }
     }
 }
 
@@ -234,8 +251,8 @@ void SwitchEndpoint::reportState()
     addr.uAddress.u16DestinationAddress = 0x0000;
     addr.eAddressMode = E_ZCL_AM_SHORT;
 
-    // Send the report
-    DBG_vPrintf(TRUE, "Reporting attribute EP=%d value=%d... ", getEndpointId(), sOnOffServerCluster.bOnOff);
+    // Send the On/Off cluster report
+    DBG_vPrintf(TRUE, "Reporting On/Off attribute EP=%d value=%d... ", getEndpointId(), sOnOffServerCluster.bOnOff);
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
     teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                GENERAL_CLUSTER_ID_ONOFF,
@@ -243,6 +260,18 @@ void SwitchEndpoint::reportState()
                                                getEndpointId(),
                                                1,
                                                myPDUM_thAPduInstance);
+
+    DBG_vPrintf(TRUE, "status: %02x\n", status);
+
+    // Send the Level Control attribute report
+    DBG_vPrintf(TRUE, "Reporting attribute EP=%d LevelCtrl value=%d... ", getEndpointId(), sLevelControlServerCluster.u8CurrentLevel);
+    status = eZCL_ReportAttribute(&addr,
+                                               GENERAL_CLUSTER_ID_LEVEL_CONTROL,
+                                               E_CLD_LEVELCONTROL_ATTR_ID_CURRENT_LEVEL,
+                                               getEndpointId(),
+                                               1,
+                                               myPDUM_thAPduInstance);
+
     PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
     DBG_vPrintf(TRUE, "status: %02x\n", status);
 }
@@ -387,6 +416,10 @@ void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
             handleOnOffClusterCommand(psEvent);
             break;
 
+        case GENERAL_CLUSTER_ID_LEVEL_CONTROL:
+            handleLevelCtrlClusterCommand(psEvent);
+            break;
+
         case GENERAL_CLUSTER_ID_IDENTIFY:
             handleIdentifyClusterCommand(psEvent);
             break;
@@ -402,11 +435,23 @@ void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 u8CommandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x. Ignoring.\n",
                 psEvent->u8EndPoint,
                 u8CommandId);
 
-    doStateChange(getState());
+    //doStateChange(getState());
+}
+
+void SwitchEndpoint::handleLevelCtrlClusterCommand(tsZCL_CallBackEvent *psEvent)
+{
+    tsCLD_LevelControlCallBackMessage * msg = (tsCLD_LevelControlCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    uint8 u8CommandId = msg->u8CommandId;
+
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: LevelCtrl command received Cmd=%02x. Ignoring.\n",
+                psEvent->u8EndPoint,
+                u8CommandId);
+
+    //doLevelChange(getState());
 }
 
 void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
@@ -437,19 +482,44 @@ void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
     uint16 clusterId = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Cluster update message ClusterID=%04x\n",
-                psEvent->u8EndPoint,
-                clusterId);
-
     switch(clusterId)
     {
+        case GENERAL_CLUSTER_ID_ONOFF:
+            handleOnOffClusterUpdate(psEvent);
+            break;
+
+        case GENERAL_CLUSTER_ID_LEVEL_CONTROL:
+            handleLevelCtrlClusterUpdate(psEvent);
+            break;
+
         case GENERAL_CLUSTER_ID_IDENTIFY:
             handleIdentifyClusterUpdate(psEvent);
             break;
 
         default:
+            DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Warning: Unexpected cluster update message ClusterID=%04x\n",
+                        psEvent->u8EndPoint,
+                        clusterId);
             break;
     }
+}
+
+void SwitchEndpoint::handleOnOffClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off update message. New state: %d\n",
+                psEvent->u8EndPoint,
+                sOnOffServerCluster.bOnOff);
+
+    doStateChange(getState());
+}
+
+void SwitchEndpoint::handleLevelCtrlClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: LevelCtrl update message. New level: %d\n",
+                psEvent->u8EndPoint,
+                sLevelControlServerCluster.u8CurrentLevel);
+
+    doLevelChange(sLevelControlServerCluster.u8CurrentLevel);    
 }
 
 void SwitchEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent)
