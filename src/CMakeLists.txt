@@ -169,6 +169,7 @@ SET(SOURCES
         ButtonsTask.cpp
         LEDTask.cpp
         LEDHandler.cpp
+        LEDPair.cpp
         ButtonHandler.cpp
         PollTask.cpp
         DeferredExecutor.cpp

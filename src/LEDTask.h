@@ -3,6 +3,7 @@
 
 #include "PeriodicTask.h"
 #include "LEDHandler.h"
+#include "LEDPair.h"
 
 extern "C"
 {
@@ -10,35 +11,11 @@ extern "C"
     #include "zcl_options.h"
 }
 
-enum LEDCommand
-{
-    CHANNEL_OFF,
-    CHANNEL_ON,
-    CHANNEL_SET_LEVEL,
-    EFFECT_BLINK,
-    EFFECT_BREATHE,
-    EFFECT_OK,
-    EFFECT_STOP
-};
-
-
 
 class LEDTask : public PeriodicTask
 {
-    LEDHandler led1red;
-    //LEDHandler led1blue;
-    LEDHandler led2red;
-    //LEDHandler led2blue;
-
-    enum State
-    {
-        IDLE,
-        MOVE_TO
-    };
-
-    unsigned char currentValue;
-    unsigned char targetValue;
-    char increment;
+    LEDPair ch1;
+    LEDPair ch2;
 
 private:
     LEDTask();

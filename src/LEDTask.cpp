@@ -14,10 +14,8 @@ LEDTask::LEDTask()
 {
     PeriodicTask::init(50);
 
-    led1red.init(E_AHI_TIMER_3);
-    //led1blue.init(E_AHI_TIMER_4);
-    led2red.init(E_AHI_TIMER_1);
-    //led2blue.init(E_AHI_TIMER_2);
+    ch1.init(E_AHI_TIMER_3, E_AHI_TIMER_4);
+    ch2.init(E_AHI_TIMER_1, E_AHI_TIMER_2);
 }
 
 LEDTask * LEDTask::getInstance()
@@ -34,29 +32,22 @@ void LEDTask::start()
 
 void LEDTask::stopEffect()
 {
-    led1red.stopEffect();
-    led2red.stopEffect();
+    ch1.stopEffect();
+    ch2.stopEffect();
 }
 
 void LEDTask::setFixedLevel(uint8 ep, uint8 level)
 {
     if(ep == HELLOZIGBEE_SWITCH1_ENDPOINT)
-    {
-        led1red.setFixedLevel(level);
-        led2red.stopEffect();
-    }
-
+        ch1.setFixedLevel(level);
     if(ep == HELLOZIGBEE_SWITCH2_ENDPOINT)
-    {
-        led1red.stopEffect();
-        led2red.setFixedLevel(level);
-    }
+        ch2.setFixedLevel(level);
 }
 
 void LEDTask::triggerEffect(uint8 ep, uint8 effect)
 {
-    bool ch1 = ep != HELLOZIGBEE_SWITCH2_ENDPOINT;
-    bool ch2 = ep != HELLOZIGBEE_SWITCH1_ENDPOINT;
+    bool setCh1 = ep != HELLOZIGBEE_SWITCH2_ENDPOINT;
+    bool setCh2 = ep != HELLOZIGBEE_SWITCH1_ENDPOINT;
 
     const LEDProgramEntry * program = NULL;
     if(effect == 0)
@@ -68,10 +59,10 @@ void LEDTask::triggerEffect(uint8 ep, uint8 effect)
     if(effect == 11)
         program = CHANNEL_CHANGE_EFFECT;
 
-    if(ch1)
-        led1red.startEffect(program);
-    if(ch2)
-        led2red.startEffect(program);
+    if(setCh1)
+        ch1.startEffect(program);
+    if(setCh2)
+        ch2.startEffect(program);
 }
 
 void LEDTask::triggerSpecialEffect(uint8 effect)
@@ -93,13 +84,13 @@ void LEDTask::triggerSpecialEffect(uint8 effect)
         program2 = NETWORK_CONNECT2_EFFECT;
     }
 
-    led1red.startEffect(program1);
-    led2red.startEffect(program2);
+    ch1.startEffect(program1);
+    ch2.startEffect(program2);
 
 }
 
 void LEDTask::timerCallback()
 {
-    led1red.update();
-    led2red.update();
+    ch1.update();
+    ch2.update();
 }
