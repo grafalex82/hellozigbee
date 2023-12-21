@@ -11,7 +11,7 @@ ButtonHandler::ButtonHandler()
 {
     endpoint = NULL;
 
-    currentState = IDLE;
+    currentState = INVALID;
     currentStateDuration = 0;
 
     switchMode = SWITCH_MODE_TOGGLE;
@@ -41,6 +41,7 @@ const char * ButtonHandler::getStateName(ButtonState state)
     case PAUSE2: return "PAUSE2";
     case PRESSED3: return "PRESSED3";
     case LONG_PRESS: return "LONG_PRESS";
+    case INVALID: return "INVALID";
     }
 
     // Should never happen
@@ -56,31 +57,31 @@ void ButtonHandler::setConfiguration(SwitchMode switchMode, RelayMode relayMode,
     maxPause = maxPause/ButtonPollCycle;
     longPressDuration = minLongPress/ButtonPollCycle;
 
-    changeState(IDLE, true);
+    changeState(INVALID, true);
 }
 
 void ButtonHandler::setSwitchMode(SwitchMode mode)
 {
     switchMode = mode;
-    changeState(IDLE);
+    changeState(INVALID);
 }
 
 void ButtonHandler::setRelayMode(RelayMode mode)
 {
     relayMode = mode;
-    changeState(IDLE);
+    changeState(INVALID);
 }
 
 void ButtonHandler::setMaxPause(uint16 value)
 {
     maxPause = value/ButtonPollCycle;
-    changeState(IDLE);
+    changeState(INVALID);
 }
 
 void ButtonHandler::setMinLongPress(uint16 value)
 {
     longPressDuration = value/ButtonPollCycle;
-    changeState(IDLE);
+    changeState(INVALID);
 }
 
 void ButtonHandler::changeState(ButtonState state, bool suppressLogging)
@@ -269,6 +270,17 @@ void ButtonHandler::handleButtonState(bool pressed)
     if(currentStateDuration < 2)
         return;
 
+    // On a mode change the state is set to INVALID. This is needed to avoid immediate handling of a pressed button (if any).
+    // This check performs exit from INVALID state to IDLE upon button release
+    if(currentState == INVALID)
+    {
+        if(!pressed)
+            changeState(IDLE);
+            
+        return;
+    }
+
+    // Handle the button according to the current mode
     switch(switchMode)
     {
     case SWITCH_MODE_TOGGLE:
@@ -287,5 +299,5 @@ void ButtonHandler::handleButtonState(bool pressed)
 
 void ButtonHandler::resetButtonStateMachine()
 {
-    changeState(IDLE);
+    changeState(INVALID);
 }

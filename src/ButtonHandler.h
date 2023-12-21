@@ -38,7 +38,8 @@ class ButtonHandler: public IButtonHandler
         PRESSED2,
         PAUSE2,
         PRESSED3,
-        LONG_PRESS
+        LONG_PRESS,
+        INVALID
     };
 
     ButtonState currentState;
