@@ -11,6 +11,11 @@ extern "C"
     #include "zcl_options.h"
 }
 
+enum LEDTaskSpecialEffect
+{
+    LED_TASK_NETWORK_SEARCH_EFFECT,
+    LED_TASK_NETWORK_CONNECT_EFFECT
+};
 
 class LEDTask : public PeriodicTask
 {
@@ -27,7 +32,7 @@ public:
     void stopEffect();
     void setFixedLevel(uint8 ep, uint8 level);
     void triggerEffect(uint8 ep, uint8 effect);
-    void triggerSpecialEffect(uint8 effect);
+    void triggerSpecialEffect(LEDTaskSpecialEffect effect);
 
 protected:
     virtual void timerCallback();    

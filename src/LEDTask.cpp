@@ -65,20 +65,20 @@ void LEDTask::triggerEffect(uint8 ep, uint8 effect)
         ch2.startEffect(program);
 }
 
-void LEDTask::triggerSpecialEffect(uint8 effect)
+void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
 {
     const LEDProgramEntry * program1 = NULL;
     const LEDProgramEntry * program2 = NULL;
 
     // Network search effect
-    if(effect == 0)
+    if(effect == LED_TASK_NETWORK_SEARCH_EFFECT)
     {
         program1 = NETWORK_SEARCH1_EFFECT;
         program2 = NETWORK_SEARCH2_EFFECT;
     }
 
     // Connecting effect
-    if(effect == 1)
+    if(effect == LED_TASK_NETWORK_CONNECT_EFFECT)
     {
         program1 = NETWORK_CONNECT1_EFFECT;
         program2 = NETWORK_CONNECT2_EFFECT;
