@@ -46,16 +46,15 @@ extern "C"
 }
 
 
-// 8 timers are:
+// 6 timers are:
 // - 1 in ButtonTask
 // - 1 in LEDTask
-// - 2 in SwitchEndpoints
 // - 1 in Heartbeat BlinkTask
 // - 1 in PollTask
 // - 1 in DeferredExecutor (TODO: Do we still need it?)
 // - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
-ZTIMER_tsTimer timers[8 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
 
 
 struct Context
