@@ -50,38 +50,14 @@ const LEDProgramEntry CHANNEL_CHANGE_EFFECT[] =
     {LED_CMD_STOP, 0, 0},
 };
 
-const LEDProgramEntry NETWORK_SEARCH1_EFFECT[] = 
-{
-    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black, change instantly
-
-    {LED_CMD_MOVE_TO_LEVEL, 255, 20},   // Blink medium fast
-    {LED_CMD_MOVE_TO_LEVEL, 0, 20},
-
-    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
-
-    {LED_CMD_STOP, 0, 0},
-};
-
-const LEDProgramEntry NETWORK_SEARCH2_EFFECT[] = 
-{
-    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Start with white, change instantly
-
-    {LED_CMD_MOVE_TO_LEVEL, 0, 20},     // Blink medium fast
-    {LED_CMD_MOVE_TO_LEVEL, 255, 20},   
-
-    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
-
-    {LED_CMD_STOP, 0, 0},
-};
-
 const LEDProgramEntry NETWORK_CONNECT1_EFFECT[] = 
 {
     {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black, change instantly
 
-    {LED_CMD_MOVE_TO_LEVEL, 255, 96},   // Blink medium fast
-    {LED_CMD_MOVE_TO_LEVEL, 0, 96},
+    {LED_CMD_MOVE_TO_LEVEL, 255, 25},   // Blink medium fast
+    {LED_CMD_MOVE_TO_LEVEL, 0, 25},
 
-    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
+    {LED_CMD_REPEAT, 2, 25},            // Jump 2 steps back, Repeat 25 times (hopefully connect will happen earlier)
 
     {LED_CMD_STOP, 0, 0},
 };
@@ -90,13 +66,14 @@ const LEDProgramEntry NETWORK_CONNECT2_EFFECT[] =
 {
     {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Start with white, change instantly
 
-    {LED_CMD_MOVE_TO_LEVEL, 0, 96},     // Blink medium fast
-    {LED_CMD_MOVE_TO_LEVEL, 255, 96},   
+    {LED_CMD_MOVE_TO_LEVEL, 0, 25},     // Blink medium fast
+    {LED_CMD_MOVE_TO_LEVEL, 255, 25},   
 
-    {LED_CMD_REPEAT, 2, 20},            // Jump 2 steps back, Repeat 20 times
+    {LED_CMD_REPEAT, 2, 25},            // Jump 2 steps back, Repeat 25 times (hopefully connect will happen earlier)
 
     {LED_CMD_STOP, 0, 0},
 };
+
 
 LEDHandler::LEDHandler()
 {

@@ -70,23 +70,18 @@ void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
     const LEDProgramEntry * program1 = NULL;
     const LEDProgramEntry * program2 = NULL;
 
-    // Network search effect
-    if(effect == LED_TASK_NETWORK_SEARCH_EFFECT)
-    {
-        program1 = NETWORK_SEARCH1_EFFECT;
-        program2 = NETWORK_SEARCH2_EFFECT;
-    }
-
-    // Connecting effect
+    // Network joining effect
     if(effect == LED_TASK_NETWORK_CONNECT_EFFECT)
     {
         program1 = NETWORK_CONNECT1_EFFECT;
         program2 = NETWORK_CONNECT2_EFFECT;
     }
 
+    // Other effects TBD
+
+    // Apply the effect
     ch1.startEffect(program1);
     ch2.startEffect(program2);
-
 }
 
 void LEDTask::timerCallback()

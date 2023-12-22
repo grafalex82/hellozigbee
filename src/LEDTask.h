@@ -13,8 +13,8 @@ extern "C"
 
 enum LEDTaskSpecialEffect
 {
-    LED_TASK_NETWORK_SEARCH_EFFECT,
     LED_TASK_NETWORK_CONNECT_EFFECT
+    // Other effects TBD
 };
 
 class LEDTask : public PeriodicTask
