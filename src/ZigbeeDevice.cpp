@@ -17,6 +17,7 @@ extern "C"
 #include "ZigbeeDevice.h"
 #include "DumpFunctions.h"
 #include "Queue.h"
+#include "LEDTask.h"
 
 extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
 extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
@@ -75,6 +76,9 @@ void ZigbeeDevice::joinNetwork()
     ZPS_vSetKeys();
     ZPS_vSaveAllZpsRecords();
 
+    // Indicate we are joining
+    LEDTask::getInstance()->triggerSpecialEffect(LED_TASK_NETWORK_CONNECT_EFFECT);
+
     // Connect to a network
     ZPS_teStatus status = BDB_eNsStartNwkSteering();
     DBG_vPrintf(TRUE, "  BDB_eNsStartNwkSteering=%d\n", status);
@@ -84,12 +88,15 @@ void ZigbeeDevice::rejoinNetwork()
 {
     DBG_vPrintf(TRUE, "== Rejoining the network\n");
 
+    // Perpare network joining mode constants
     sBDB.sAttrib.bbdbNodeIsOnANetwork = (connectionState == JOINED ? TRUE : FALSE);
     sBDB.sAttrib.u8bdbCommissioningMode = BDB_COMMISSIONING_MODE_NWK_STEERING;
 
+    // Start network joining
     DBG_vPrintf(TRUE, "ZigbeeDevice(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
     ZPS_vSaveAllZpsRecords();
     BDB_vStart();
+
 }
 
 void ZigbeeDevice::leaveNetwork()
@@ -124,6 +131,9 @@ void ZigbeeDevice::handleNetworkJoinAndRejoin()
 {
     DBG_vPrintf(TRUE, "== Device now is on the network\n");
     connectionState = JOINED;
+
+    // Stop network joining effect
+    LEDTask::getInstance()->stopEffect();
 
     // Store the extended network ID for future use
     ZPS_eAplAibSetApsUseExtendedPanId(ZPS_u64NwkNibGetEpid(ZPS_pvAplZdoGetNwkHandle()));
@@ -164,7 +174,10 @@ void ZigbeeDevice::handleRejoinFailure()
         cyclesTillNextRejoin = 4; // 4 * 15s = 1 minute
     }
     else
+    {
+        LEDTask::getInstance()->stopEffect();
         handleLeaveNetwork();
+    }
 }
 
 void ZigbeeDevice::handlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
