@@ -17,9 +17,9 @@ There are 2 goals of the project:
 
 # Test board
 
-Basically the code is almost independent of the hardware (assuming it is based on JN5169). I am using a simple schematics based on a cheap EBYTE E75-2G4M10S module.
+Basically the code is almost independent of the hardware (assuming it is based on JN5169). As a development board a cheap EBYTE E75-2G4M10S module is used.
 
-![Schematics](doc/images/Schematics2.png)
+![Schematics](doc/images/Schematics3.png)
 
 # How to build
 
