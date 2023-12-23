@@ -83,6 +83,9 @@ protected:
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
+
+    virtual void handleDeviceJoin();
+    virtual void handleDeviceLeave();
 };
 
 #endif // SWITCH_ENDPOINT_H

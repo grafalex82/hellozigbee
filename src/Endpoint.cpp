@@ -88,3 +88,13 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             break;
     }
 }
+
+void Endpoint::handleDeviceJoin()
+{
+    // Nothing to do
+}
+
+void Endpoint::handleDeviceLeave()
+{
+    // Nothing to do
+}

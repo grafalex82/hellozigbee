@@ -18,6 +18,7 @@ extern "C"
 #include "DumpFunctions.h"
 #include "Queue.h"
 #include "LEDTask.h"
+#include "EndpointManager.h"
 
 extern PUBLIC tszQueue zps_msgMlmeDcfmInd;
 extern PUBLIC tszQueue zps_msgMcpsDcfmInd;
@@ -96,7 +97,6 @@ void ZigbeeDevice::rejoinNetwork()
     DBG_vPrintf(TRUE, "ZigbeeDevice(): Starting base device behavior... bNodeIsOnANetwork=%d\n", sBDB.sAttrib.bbdbNodeIsOnANetwork);
     ZPS_vSaveAllZpsRecords();
     BDB_vStart();
-
 }
 
 void ZigbeeDevice::leaveNetwork()
@@ -111,7 +111,9 @@ void ZigbeeDevice::leaveNetwork()
         // Leave failed, probably lost parent, so just reset everything
         DBG_vPrintf(TRUE, "== Failed to properly leave the network. Force leaving the network\n");
         handleLeaveNetwork();
-     }
+    }
+
+    EndpointManager::getInstance()->handleDeviceLeave();
 }
 
 void ZigbeeDevice::joinOrLeaveNetwork()
@@ -144,6 +146,8 @@ void ZigbeeDevice::handleNetworkJoinAndRejoin()
     if(ZPS_eAplZdoGetDeviceType() == ZPS_ZDO_DEVICE_ENDDEVICE)
         pollTask.startPoll(2000);
     rejoinFailures = 0;
+
+    EndpointManager::getInstance()->handleDeviceJoin();
 }
 
 void ZigbeeDevice::handleLeaveNetwork()
@@ -159,6 +163,8 @@ void ZigbeeDevice::handleLeaveNetwork()
     ZPS_vDefaultStack();
     ZPS_vSetKeys();
     ZPS_vSaveAllZpsRecords();
+
+    EndpointManager::getInstance()->handleDeviceLeave();
 }
 
 void ZigbeeDevice::handleRejoinFailure()

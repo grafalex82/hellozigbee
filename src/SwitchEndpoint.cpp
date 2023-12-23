@@ -477,3 +477,15 @@ bool SwitchEndpoint::runsInServerMode() const
 {
     return !hasBindings(getEndpointId(), GENERAL_CLUSTER_ID_ONOFF);
 }
+
+void SwitchEndpoint::handleDeviceJoin()
+{
+    // Force resetting the LED
+    doStateChange(getState());
+}
+
+void SwitchEndpoint::handleDeviceLeave()
+{
+    // Force resetting the LED
+    doStateChange(getState());
+}

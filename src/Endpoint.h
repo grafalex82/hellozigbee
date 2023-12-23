@@ -20,6 +20,9 @@ public:
     virtual void init() = 0;
     virtual void handleZclEvent(tsZCL_CallBackEvent *psEvent);
 
+    virtual void handleDeviceJoin();
+    virtual void handleDeviceLeave();
+
 protected:
     virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);

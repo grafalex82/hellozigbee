@@ -91,3 +91,15 @@ void EndpointManager::handleZclEvent(tsZCL_CallBackEvent *psEvent)
 {
     EndpointManager::getInstance()->handleZclEventInt(psEvent);
 }
+
+void EndpointManager::handleDeviceJoin()
+{
+    for(uint8 ep = 1; ep <= ZCL_NUMBER_OF_ENDPOINTS; ep++)
+        registry[ep]->handleDeviceJoin();
+}
+
+void EndpointManager::handleDeviceLeave()
+{
+    for(uint8 ep = 1; ep <= ZCL_NUMBER_OF_ENDPOINTS; ep++)
+        registry[ep]->handleDeviceJoin();
+}

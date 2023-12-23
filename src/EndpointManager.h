@@ -22,6 +22,8 @@ public:
     void registerEndpoint(uint8 id, Endpoint * endpoint);
 
     static void handleZclEvent(tsZCL_CallBackEvent *psEvent);
+    void handleDeviceJoin();
+    void handleDeviceLeave();
 
 protected:
     void handleZclEventInt(tsZCL_CallBackEvent *psEvent);
