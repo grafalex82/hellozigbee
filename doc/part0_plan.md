@@ -97,7 +97,9 @@ After some experimenting, and having some progress on the project, I can now def
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
 - Build a Dimmable Light via Level Ctrl Server cluster ([Article](part20_dimmable_light.md))
 - Build comprehensive automated test suit ([Article](part21_test_automation.md))
-- Explore Identify, Groups, Scenes
+- Explore Identify cluster ([Article](part22_identify_cluster.md))
+- Explore Groups (Code ready, article pending)
+- Explore Scenes cluster
 - Explore Touchlink, Find-And-Bind, and ZLL Commisioning
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware

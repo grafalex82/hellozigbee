@@ -88,3 +88,9 @@ external_converters:
 # Documentation
 
 All this code is explained in very detail in the [Hello Zigbee article series](doc/part0_plan.md)
+
+# Support
+
+This project is being developed for free as a pet project. At the same time you may consider supporting the project with a small donate.
+
+<a href="https://www.buymeacoffee.com/grafalex" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
