@@ -45,7 +45,7 @@ const LEDProgramEntry CHANNEL_CHANGE_EFFECT[] =
     {LED_CMD_MOVE_TO_LEVEL, 255, 64},   // Maximum brightness for 0.5 sec
     {LED_CMD_PAUSE, 10, 0},
     {LED_CMD_MOVE_TO_LEVEL, 10, 80},    // The to minimum brightness for 7.5 seconds
-    {LED_CMD_PAUSE, 75, 0},
+    {LED_CMD_PAUSE, 150, 0},
 
     {LED_CMD_STOP, 0, 0},
 };
