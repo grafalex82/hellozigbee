@@ -16,6 +16,11 @@ extern "C"
     #include "PDM.h"
 }
 
+uint8 max(uint8 a, uint8 b)
+{
+    return a > b ? a : b;
+}
+
 SwitchEndpoint::SwitchEndpoint()
 {
 }
@@ -218,30 +223,55 @@ void SwitchEndpoint::toggle()
 
 void SwitchEndpoint::doStateChange(bool state)
 {
-    if(runsInServerMode())
+    if(!runsInServerMode())
     {
-        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
-        sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
-
-        LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
-
-        reportStateChange();
+        LEDTask::getInstance()->setFixedLevel(getEndpointId(), 0);
+        return;
     }
+
+    uint8 level = state ? max(sLevelControlServerCluster.u8CurrentLevel, 1) : 0;
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d. Setting level %d\n", getEndpointId(), state, level);
+    DBG_vPrintf(TRUE, "#### New level=%d, LevelCtrl cluster level=%d\n", level, sLevelControlServerCluster.u8CurrentLevel);
+    sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
+
+    LEDTask::getInstance()->setFixedLevel(getEndpointId(), level);
+
+    reportStateChange();
 }
 
-void SwitchEndpoint::doLevelChange(uint8 level)
+void SwitchEndpoint::doLevelChange(uint8 level, uint16 transitionTime, bool withOnOff)
 {
-    if(runsInServerMode())
+    if(!runsInServerMode())
     {
-        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do level change %d\n", getEndpointId(), level);
-        sLevelControlServerCluster.u8CurrentLevel = level;
-
-        if(sOnOffServerCluster.bOnOff)
-        {
-            LEDTask::getInstance()->setFixedLevel(getEndpointId(), level);
-            reportStateChange();
-        }
+        LEDTask::getInstance()->setFixedLevel(getEndpointId(), 0);
+        return;
     }
+
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do level change %d, transitionTime=%d, withOnOff=%d\n", 
+                getEndpointId(), 
+                level, 
+                transitionTime, 
+                withOnOff);
+
+    // Nothing to do if switch is Off and requested level is zero
+    if(!getState() && level == 0)
+        return;
+
+    if(withOnOff)
+    {
+        sLevelControlServerCluster.u8CurrentLevel = level;
+        sOnOffServerCluster.bOnOff = level != 0;   
+    }
+    else
+    {
+        sLevelControlServerCluster.u8CurrentLevel = max(level, 1);
+    }
+
+    DBG_vPrintf(TRUE, "#### New state=%d, New level=%d\n", 
+                sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel);
+
+    LEDTask::getInstance()->setFixedLevel(getEndpointId(), sLevelControlServerCluster.u8CurrentLevel);
+    reportStateChange();
 }
 
 void SwitchEndpoint::reportState()
@@ -433,23 +463,46 @@ void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
 void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
 {
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    uint8 u8CommandId = msg->u8CommandId;
+    uint8 commandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x. Ignoring.\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x.\n",
                 psEvent->u8EndPoint,
-                u8CommandId);
+                commandId);
 
-    //doStateChange(getState());
+    doStateChange(getState());
 }
 
 void SwitchEndpoint::handleLevelCtrlClusterCommand(tsZCL_CallBackEvent *psEvent)
 {
     tsCLD_LevelControlCallBackMessage * msg = (tsCLD_LevelControlCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    uint8 u8CommandId = msg->u8CommandId;
+    uint8 commandId = msg->u8CommandId;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: LevelCtrl command received Cmd=%02x. Ignoring.\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: LevelCtrl command received Cmd=%d.\n",
                 psEvent->u8EndPoint,
-                u8CommandId);
+                commandId);
+
+    switch(commandId)
+    {
+        case E_CLD_LEVELCONTROL_CMD_MOVE_TO_LEVEL:
+        case E_CLD_LEVELCONTROL_CMD_MOVE_TO_LEVEL_WITH_ON_OFF:
+            doLevelChange(msg->uMessage.psMoveToLevelCommandPayload->u8Level, 
+                          msg->uMessage.psMoveToLevelCommandPayload->u16TransitionTime,
+                          commandId == E_CLD_LEVELCONTROL_CMD_MOVE_TO_LEVEL_WITH_ON_OFF);
+            break;
+
+        case E_CLD_LEVELCONTROL_CMD_MOVE:
+        case E_CLD_LEVELCONTROL_CMD_STEP:
+        case E_CLD_LEVELCONTROL_CMD_STOP:
+            
+        case E_CLD_LEVELCONTROL_CMD_MOVE_WITH_ON_OFF:
+        case E_CLD_LEVELCONTROL_CMD_STEP_WITH_ON_OFF:
+        case E_CLD_LEVELCONTROL_CMD_STOP_WITH_ON_OFF:
+        default:
+            DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Warning: Unsupported LevelCtrl command: %d\n",
+                        psEvent->u8EndPoint,
+                        commandId);
+            break;
+    }
 
     //doLevelChange(getState());
 }
@@ -506,20 +559,20 @@ void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 
 void SwitchEndpoint::handleOnOffClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off update message. New state: %d\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off update message. New state: %d. Ignoring.\n",
                 psEvent->u8EndPoint,
                 sOnOffServerCluster.bOnOff);
 
-    doStateChange(getState());
+//    doStateChange(getState());
 }
 
 void SwitchEndpoint::handleLevelCtrlClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: LevelCtrl update message. New level: %d\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: LevelCtrl update message. New level: %d. Ignoring.\n",
                 psEvent->u8EndPoint,
                 sLevelControlServerCluster.u8CurrentLevel);
 
-    doLevelChange(sLevelControlServerCluster.u8CurrentLevel);    
+//    doLevelChange(sLevelControlServerCluster.u8CurrentLevel);    
 }
 
 void SwitchEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent)
