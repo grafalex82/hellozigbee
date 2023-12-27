@@ -200,7 +200,6 @@ void SwitchEndpoint::switchOn()
         newValue = false;
 
     doStateChange(newValue);
-    reportStateChange();
 }
 
 void SwitchEndpoint::switchOff()
@@ -212,13 +211,11 @@ void SwitchEndpoint::switchOff()
         newValue = true;
 
     doStateChange(newValue);
-    reportStateChange();
 }
 
 void SwitchEndpoint::toggle()
 {
     doStateChange(!getState());
-    reportStateChange();
 }
 
 void SwitchEndpoint::doStateChange(bool state)
