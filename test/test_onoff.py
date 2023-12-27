@@ -30,6 +30,7 @@ class SmartSwitch:
 
     def reset(self):
         self.device.reset()
+        self.wait_button_state('IDLE')
 
 
     def get_state_change_msg(self, expected_state):
