@@ -37,8 +37,14 @@ class SmartSwitch:
 
 
     def switch(self, cmd, expected_state):
+        # Send the On/Off/Toggle command, verify device log has the state change message
         msg = self.get_state_change_msg(expected_state)
-        return set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
+        set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
+
+        # Device will respond with 2 reports: On/Off state and new brightness level
+        state = self.zigbee.wait_msg()['state_'+self.z2m_name]
+        level = self.zigbee.wait_msg()['brightness_'+self.z2m_name]
+        return (state, level)
 
 
     def get_state(self):
@@ -134,18 +140,18 @@ def cleanup_bindings(zigbee):
 
 
 def test_on_off(switch):
-    assert switch.switch('ON', True) == 'ON'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('ON', True)[0] == 'ON'
+    assert switch.switch('OFF', False)[0] == 'OFF'
 
 
 def test_toggle(switch):
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
     assert switch.get_state() == 'OFF'
 
-    assert switch.switch('TOGGLE', True) == 'ON'
+    assert switch.switch('TOGGLE', True)[0] == 'ON'
     assert switch.get_state() == 'ON'
 
-    assert switch.switch('TOGGLE', False) == 'OFF'
+    assert switch.switch('TOGGLE', False)[0] == 'OFF'
     assert switch.get_state() == 'OFF'
 
 
@@ -188,7 +194,7 @@ def test_oosc_attributes_survive_reboot(switch):
 
 def test_toggle_mode_btn_press(switch):
     # Ensure the switch is off on start, and the mode is 'toggle'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
     assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed
@@ -208,11 +214,12 @@ def test_toggle_mode_btn_press(switch):
     # Check the device state changed, and the action is generated (in this particular order)
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 def test_toggle_mode_relay_unlinked(switch):
     # Ensure the switch is off on start, and the mode is 'toggle'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
     assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
 
     # Set relay_mode to unlinked - the device will not change its state, but only send the single press action
@@ -242,7 +249,7 @@ def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
     assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
-    assert switch.switch(init_state, init_state_bool) == init_state
+    assert switch.switch(init_state, init_state_bool)[0] == init_state
 
     # This test is focused on onOff and offOn switch actions
     assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
@@ -267,8 +274,11 @@ def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
     # Check the device state changed, and the action is generated (in this particular order)
     assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
+
     assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 @pytest.mark.parametrize("init_state, alter_state", [
@@ -282,7 +292,7 @@ def test_momentary_toggle(switch, init_state, alter_state):
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
     assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
-    assert switch.switch(init_state, init_state_bool) == init_state
+    assert switch.switch(init_state, init_state_bool)[0] == init_state
 
     # This test is focused on the 'toggle' switch actions mode (withing 'momentary' switch mode)
     assert switch.set_attribute('switch_actions', 'toggle') == 'toggle'
@@ -308,8 +318,11 @@ def test_momentary_toggle(switch, init_state, alter_state):
     # On the release the state must return to the original state
     assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
+
     assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 
@@ -323,7 +336,7 @@ def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
     assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
-    assert switch.switch(init_state, init_state_bool) == init_state
+    assert switch.switch(init_state, init_state_bool)[0] == init_state
 
     # This test is focused on onOff and offOn switch actions
     assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
@@ -348,7 +361,7 @@ def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
 def test_multifunction_front(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'front' relay mode
     assert switch.set_attribute('relay_mode', 'front') == 'front'
@@ -368,13 +381,14 @@ def test_multifunction_front(switch):
     # Check the device state changed, and the single click action is generated
     # As a side effect of current state machine implementation, action gets aftecr state change if relay mode is front
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
     
 
 def test_multifunction_single(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'single' relay mode
     assert switch.set_attribute('relay_mode', 'single') == 'single'
@@ -394,11 +408,12 @@ def test_multifunction_single(switch):
     # Check the device state changed, and the single click action is generated
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 def test_multifunction_double(switch):
     # Ensure the switch is off on start, the mode is 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
 
     # This test is focused on 'double' relay mode
@@ -422,11 +437,12 @@ def test_multifunction_double(switch):
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['action'] == "double_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 def test_multifunction_tripple(switch):
     # Ensure the switch is off on start, the mode is 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
 
     # This test is focused on 'tripple' relay mode
@@ -455,13 +471,14 @@ def test_multifunction_tripple(switch):
 
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
     assert switch.wait_zigbee_state()['action'] == "tripple_" + switch.z2m_name
 
 
 def test_multifunction_unlinked_single(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'unlinked' relay mode
     assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
@@ -483,7 +500,7 @@ def test_multifunction_unlinked_single(switch):
 def test_multifunction_unlinked_double(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'unlinked' relay mode
     assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
@@ -511,7 +528,7 @@ def test_multifunction_unlinked_double(switch):
 def test_multifunction_unlinked_tripple(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
     assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.switch('OFF', False) == 'OFF'
+    assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'unlinked' relay mode
     assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
