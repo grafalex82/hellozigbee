@@ -1,13 +1,4 @@
-import pytest
-import serial
 import time
-
-@pytest.fixture(scope="session")
-def port(pytestconfig):
-    ser = serial.Serial(pytestconfig.getini("port"), baudrate=115200, timeout=1)
-    ser.dtr = False # Release reset signal so that the device can boot
-    yield ser
-
 
 class ZigbeeDevice():
     def __init__(self, port):
@@ -40,16 +31,3 @@ class ZigbeeDevice():
         print(f"Sending UART command: {str}")
         self._port.write((str + '\n').encode())
         self._port.flush()
-
-
-
-@pytest.fixture(scope="session")
-def device_session(port):
-    dev = ZigbeeDevice(port)
-    yield dev
-
-
-@pytest.fixture(scope="function")
-def device(device_session):
-    device_session.reset()
-    yield device_session
