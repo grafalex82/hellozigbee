@@ -55,9 +55,10 @@ public:
     void setMaxPause(uint16 value);
     void setMinLongPress(uint16 value);
 
+    void resetButtonStateMachine();
+
 protected:
     virtual void handleButtonState(bool pressed);
-    virtual void resetButtonStateMachine();
 
     virtual void changeState(ButtonState state, bool suppressLogging = false);
     virtual void buttonStateMachineToggle(bool pressed);

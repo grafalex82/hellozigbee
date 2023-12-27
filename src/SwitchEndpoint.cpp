@@ -594,17 +594,29 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     // Update buttons state machine with received value
     if(clusterId == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION)
     {
-        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MODE)
-            buttonHandler.setSwitchMode((SwitchMode)sOnOffConfigServerCluster.eSwitchMode);
+        switch(attrId)
+        {
+            case E_CLD_OOSC_ATTR_ID_SWITCH_MODE:
+                buttonHandler.setSwitchMode((SwitchMode)sOnOffConfigServerCluster.eSwitchMode);
+                break;
 
-        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE)
-            buttonHandler.setRelayMode((RelayMode)sOnOffConfigServerCluster.eRelayMode);
+            case E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE:
+                buttonHandler.setRelayMode((RelayMode)sOnOffConfigServerCluster.eRelayMode);
+                break;
 
-        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE)
-            buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);
+            case E_CLD_OOSC_ATTR_ID_SWITCH_MAX_PAUSE:
+                buttonHandler.setMaxPause(sOnOffConfigServerCluster.iMaxPause);
+                break;
 
-        if(attrId == E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR)
-            buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
+            case E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR:
+                buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
+                break;
+
+            default:
+                // Tests will expect button state machine go IDLE when any of the settings are changed
+                buttonHandler.resetButtonStateMachine();
+                break;
+        }
     }
 
     // Store received values into PDM
