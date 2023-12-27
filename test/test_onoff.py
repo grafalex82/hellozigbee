@@ -78,9 +78,8 @@ class SmartSwitch:
 
     def set_attribute(self, attr, value):
         msg = f"ZCL Write Attribute: Cluster 0007 Attrib {self.get_attr_id_by_name(attr)}"
-        ret = set_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, value, msg)
+        assert set_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, value, msg) == value
         self.wait_button_state('IDLE')
-        return ret
 
 
     def get_attribute(self, attr):
@@ -158,29 +157,29 @@ def test_toggle(switch):
 
 @pytest.mark.parametrize("switch_mode", ["toggle", "momentary", "multifunction"])
 def test_oosc_attribute_switch_mode(switch, switch_mode):
-    assert switch.set_attribute('switch_mode', switch_mode) == switch_mode
+    switch.set_attribute('switch_mode', switch_mode)
     assert switch.get_attribute('switch_mode') == switch_mode
 
 
 @pytest.mark.parametrize("switch_actions", ["onOff", "offOn", "toggle"])
 def test_oosc_attribute_switch_action(switch, switch_actions):
-    assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
+    switch.set_attribute('switch_actions', switch_actions)
     assert switch.get_attribute('switch_actions') == switch_actions
 
 
 @pytest.mark.parametrize("relay_mode", ["unlinked", "front", "single", "double", "tripple", "long"])
 def test_oosc_attribute_relay_mode(switch, relay_mode):
-    assert switch.set_attribute('relay_mode', relay_mode) == relay_mode
+    switch.set_attribute('relay_mode', relay_mode)
     assert switch.get_attribute('relay_mode') == relay_mode
 
 
 def test_oosc_attributes_survive_reboot(switch):
     # Set a specific OOSC options
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.set_attribute('relay_mode', 'double') == 'double'
-    assert switch.set_attribute('long_press_mode', 'levelCtrlUp') == 'levelCtrlUp'
-    assert switch.set_attribute('max_pause', '152') == '152'
-    assert switch.set_attribute('min_long_press', '602') == '602'
+    switch.set_attribute('switch_mode', 'multifunction')
+    switch.set_attribute('relay_mode', 'double')
+    switch.set_attribute('long_press_mode', 'levelCtrlUp')
+    switch.set_attribute('max_pause', '152')
+    switch.set_attribute('min_long_press', '602')
 
     # Reset the device
     switch.reset()
@@ -196,10 +195,10 @@ def test_oosc_attributes_survive_reboot(switch):
 def test_toggle_mode_btn_press(switch):
     # Ensure the switch is off on start, and the mode is 'toggle'
     assert switch.switch('OFF', False)[0] == 'OFF'
-    assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
+    switch.set_attribute('switch_mode', 'toggle')
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed
-    assert switch.set_attribute('relay_mode', 'front') == 'front'
+    switch.set_attribute('relay_mode', 'front')
 
     # Emulate short button press
     switch.press_button()
@@ -221,10 +220,10 @@ def test_toggle_mode_btn_press(switch):
 def test_toggle_mode_relay_unlinked(switch):
     # Ensure the switch is off on start, and the mode is 'toggle'
     assert switch.switch('OFF', False)[0] == 'OFF'
-    assert switch.set_attribute('switch_mode', 'toggle') == 'toggle'
+    switch.set_attribute('switch_mode', 'toggle')
 
     # Set relay_mode to unlinked - the device will not change its state, but only send the single press action
-    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+    switch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate short button press
     switch.press_button()
@@ -249,14 +248,14 @@ def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
     alter_state_bool = alter_state == 'ON'
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
-    assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
+    switch.set_attribute('switch_mode', 'momentary')
     assert switch.switch(init_state, init_state_bool)[0] == init_state
 
     # This test is focused on onOff and offOn switch actions
-    assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
+    switch.set_attribute('switch_actions', switch_actions)
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed, and then change again when depressed
-    assert switch.set_attribute('relay_mode', 'front') == 'front'
+    switch.set_attribute('relay_mode', 'front')
 
     # Emulate short button press
     switch.press_button()
@@ -292,14 +291,14 @@ def test_momentary_toggle(switch, init_state, alter_state):
     alter_state_bool = alter_state == 'ON'
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
-    assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
+    switch.set_attribute('switch_mode', 'momentary')
     assert switch.switch(init_state, init_state_bool)[0] == init_state
 
     # This test is focused on the 'toggle' switch actions mode (withing 'momentary' switch mode)
-    assert switch.set_attribute('switch_actions', 'toggle') == 'toggle'
+    switch.set_attribute('switch_actions', 'toggle')
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed, and then change again when depressed
-    assert switch.set_attribute('relay_mode', 'front') == 'front'
+    switch.set_attribute('relay_mode', 'front')
 
     # Emulate short button press
     switch.press_button()
@@ -336,14 +335,14 @@ def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
     init_state_bool = init_state == 'ON'
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
-    assert switch.set_attribute('switch_mode', 'momentary') == 'momentary'
+    switch.set_attribute('switch_mode', 'momentary')
     assert switch.switch(init_state, init_state_bool)[0] == init_state
 
     # This test is focused on onOff and offOn switch actions
-    assert switch.set_attribute('switch_actions', switch_actions) == switch_actions
+    switch.set_attribute('switch_actions', switch_actions)
 
     # Set relay_mode to unlinked - the device will generate actions, but do not really toggle the state
-    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+    switch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate short button press
     switch.press_button()
@@ -361,11 +360,11 @@ def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
 
 def test_multifunction_front(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
     assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'front' relay mode
-    assert switch.set_attribute('relay_mode', 'front') == 'front'
+    switch.set_attribute('relay_mode', 'front')
 
     # Emulate the button click
     switch.press_button()
@@ -388,11 +387,11 @@ def test_multifunction_front(switch):
 
 def test_multifunction_single(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
     assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'single' relay mode
-    assert switch.set_attribute('relay_mode', 'single') == 'single'
+    switch.set_attribute('relay_mode', 'single')
 
     # Emulate the button click
     switch.press_button()
@@ -415,10 +414,10 @@ def test_multifunction_single(switch):
 def test_multifunction_double(switch):
     # Ensure the switch is off on start, the mode is 'multifunction'
     assert switch.switch('OFF', False)[0] == 'OFF'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
 
     # This test is focused on 'double' relay mode
-    assert switch.set_attribute('relay_mode', 'double') == 'double'
+    switch.set_attribute('relay_mode', 'double')
 
     # Emulate the first click
     switch.press_button()
@@ -444,10 +443,10 @@ def test_multifunction_double(switch):
 def test_multifunction_tripple(switch):
     # Ensure the switch is off on start, the mode is 'multifunction'
     assert switch.switch('OFF', False)[0] == 'OFF'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
 
     # This test is focused on 'tripple' relay mode
-    assert switch.set_attribute('relay_mode', 'tripple') == 'tripple'
+    switch.set_attribute('relay_mode', 'tripple')
 
     # Emulate the first click
     switch.press_button()
@@ -478,11 +477,11 @@ def test_multifunction_tripple(switch):
 
 def test_multifunction_unlinked_single(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
     assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'unlinked' relay mode
-    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+    switch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate a single button click
     switch.press_button()
@@ -500,11 +499,11 @@ def test_multifunction_unlinked_single(switch):
 
 def test_multifunction_unlinked_double(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
     assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'unlinked' relay mode
-    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+    switch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate the first click
     switch.press_button()
@@ -528,11 +527,11 @@ def test_multifunction_unlinked_double(switch):
 
 def test_multifunction_unlinked_tripple(switch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
+    switch.set_attribute('switch_mode', 'multifunction')
     assert switch.switch('OFF', False)[0] == 'OFF'
 
     # This test is focused on 'unlinked' relay mode
-    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
+    switch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate the first click
     switch.press_button()
@@ -572,9 +571,9 @@ def genLevelCtrl_bindings(switch):
 
 def test_level_control(switch, genLevelCtrl_bindings):
     # Ensure the switch will generate levelCtrlDown messages on long press
-    assert switch.set_attribute('switch_mode', 'multifunction') == 'multifunction'
-    assert switch.set_attribute('relay_mode', 'unlinked') == 'unlinked'
-    assert switch.set_attribute('long_press_mode', 'levelCtrlDown') == 'levelCtrlDown'
+    switch.set_attribute('switch_mode', 'multifunction')
+    switch.set_attribute('relay_mode', 'unlinked')
+    switch.set_attribute('long_press_mode', 'levelCtrlDown')
 
     # Emulate the long button press, wait until the switch transits to the long press state
     switch.press_button()
