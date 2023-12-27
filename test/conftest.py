@@ -1,5 +1,9 @@
+import serial
 import pytest
-import json
+
+from smartswitch import *
+from zigbee import *
+from device import *
 
 def pytest_addoption(parser):
     parser.addini('port',               'COM port where the Zigbee Device is connected to')
@@ -9,56 +13,43 @@ def pytest_addoption(parser):
     parser.addini('bridge_mqtt_topic',  'Base MQTT topic for the zigbee2mqtt instance')
 
 
-def set_device_attribute(device, zigbee, attribute, state, expected_response):
-    # Make json payload like {"state_button_3", "ON"}
-    payload = {attribute: state}
-
-    # Prepare for waiting a zigbee2mqtt message on the default device topic
-    zigbee.subscribe()
-
-    # Publish the 'set state' command
-    zigbee.publish('set', payload)
-
-    # Verify that the device has received the state change command
-    device.wait_str(expected_response)
-
-    # Wait the reply from zigbee2mqtt with the device state
-    return zigbee.wait_msg()[attribute]
+@pytest.fixture(scope="session")
+def port(pytestconfig):
+    ser = serial.Serial(pytestconfig.getini("port"), baudrate=115200, timeout=1)
+    ser.dtr = False # Release reset signal so that the device can boot
+    yield ser
 
 
-def get_device_attribute(device, zigbee, attribute, expected_response):
-    # Make json payload like {"state_button_3", ""}
-    payload = {attribute: ""}
-
-    # Prepare for waiting a zigbee2mqtt message on the default device topic
-    zigbee.subscribe()
-
-    # Request the device state
-    zigbee.publish('get', payload)                      
-
-    # Verify the device received read attribute command
-    device.wait_str(expected_response)
-
-    # Wait the reply from zigbee2mqtt with the device state
-    return zigbee.wait_msg()[attribute]
+@pytest.fixture(scope="session")
+def device(port):
+    dev = ZigbeeDevice(port)
+    yield dev
 
 
-def send_bind_request(zigbee, clusters, src, dst):
-    # clusters attribute must be a list
-    if isinstance(clusters, str):
-        clusters = [clusters]
-
-    # Send the bind request
-    payload = {"clusters": clusters, "from": src, "to": dst}
-    zigbee.publish('request/device/bind', payload, bridge=True)
+@pytest.fixture(scope="session")
+def zigbee(pytestconfig):
+    net = ZigbeeNetwork(pytestconfig)
+    yield net
+    net.disconnect()
 
 
-def send_unbind_request(zigbee, clusters, src, dst):
-    # clusters attribute must be a list
-    if isinstance(clusters, str):
-        clusters = [clusters]
+# List of smart switch channels (endpoint number and z2m name)
+button_channels = [(2, "button_1"), (3, "button_2")]
 
-    # Send the bind request
-    payload = {"clusters": clusters, "from": src, "to": dst}
-    zigbee.publish('request/device/unbind', payload, bridge=True)
+# Make each test that uses switch fixture to run twice for both buttons. 
+# Using the ids parameter the button name will be displayed as a test parameter
+@pytest.fixture(scope = 'function', params = button_channels, ids=lambda x: x[1])
+def switch(device, zigbee, request):
+    return SmartSwitch(device, zigbee, request.param[0], request.param[1])
 
+# Make sure that no bindings that could possibly change test behavior is active. 
+# Cleanup bindings at exit. Use autouse=True to implicitly apply it to all tests
+@pytest.fixture(scope="session", autouse = True)
+def cleanup_bindings(zigbee):
+    for ep, _ in button_channels:
+        send_unbind_request(zigbee, "genLevelCtrl", f"my_test_switch/{ep}", "Coordinator")
+
+    yield
+
+    for ep, _ in button_channels:
+        send_unbind_request(zigbee, "genLevelCtrl", f"my_test_switch/{ep}", "Coordinator")

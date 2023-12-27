@@ -3,7 +3,6 @@ import time
 import json
 import paho.mqtt.client as mqtt
 
-
 class ZigbeeNetwork():
     def __init__(self, options):
         self.topic = options.getini('device_mqtt_topic')
@@ -62,10 +61,3 @@ class ZigbeeNetwork():
             
     def disconnect(self):
         self.client.disconnect()
-
-
-@pytest.fixture(scope="session")
-def zigbee(pytestconfig):
-    net = ZigbeeNetwork(pytestconfig)
-    yield net
-    net.disconnect()
