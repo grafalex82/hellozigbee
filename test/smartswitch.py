@@ -3,9 +3,9 @@ import pytest
 from device import *
 from zigbee import *
 
-def set_device_attribute(device, zigbee, attribute, state, expected_response):
+def set_device_attribute(device, zigbee, attribute, value, expected_response):
     # Make json payload like {"state_button_3", "ON"}
-    payload = {attribute: state}
+    payload = {attribute: value}
 
     # Prepare for waiting a zigbee2mqtt message on the default device topic
     zigbee.subscribe()
@@ -109,6 +109,18 @@ class SmartSwitch:
 
         return (state, level)
 
+
+    def set_level(self, level):
+        # Send brightness change request, and verify it is processed by the device
+        msg = f"SwitchEndpoint EP={self.ep}: do level change {level}"
+        set_device_attribute(self.device, self.zigbee, 'brightness_'+self.z2m_name, level, msg)
+
+        # Device will resp6ond with 2 reports: On/Off state and new brightness level
+        state = self.zigbee.wait_msg()['state_'+self.z2m_name]
+        newlevel = self.zigbee.wait_msg()['brightness_'+self.z2m_name]
+        assert newlevel == level
+
+        return (state, newlevel)
 
     def get_state(self):
         msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0006 Command=00 Attr=0000"
