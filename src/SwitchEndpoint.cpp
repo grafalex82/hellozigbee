@@ -181,6 +181,7 @@ void SwitchEndpoint::init()
     restoreConfiguration();
 
     // TODO: restore previous brightness from PDM
+    sLevelControlServerCluster.u8CurrentLevel = 255;
 }
 
 bool SwitchEndpoint::getState() const
