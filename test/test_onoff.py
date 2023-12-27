@@ -71,7 +71,9 @@ class SmartSwitch:
 
     def set_attribute(self, attr, value):
         msg = f"ZCL Write Attribute: Cluster 0007 Attrib {self.get_attr_id_by_name(attr)}"
-        return set_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, value, msg)
+        ret = set_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, value, msg)
+        self.wait_button_state('IDLE')
+        return ret
 
 
     def get_attribute(self, attr):
