@@ -424,7 +424,7 @@ void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
             break;
         default:
             DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Unsupported cluster command Cmd=%02x\n",
-                        u16ClusterId,
+                        psEvent->u8EndPoint,
                         u8CommandId);
             break;
     }
