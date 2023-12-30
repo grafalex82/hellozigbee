@@ -104,3 +104,13 @@ def test_restore_to_previous_level_via_level_ctrl(switch):
     assert level == 123
 
 
+def test_limits(switch):
+    # Check minimum level
+    state, level = switch.set_level(1)
+    assert state == "ON"
+    assert level == 1
+
+    # Check maximum level
+    state, level = switch.set_level(254)    # 254 is the maximum brightness as per Zigbee specification
+    assert state == "ON"
+    assert level == 254
