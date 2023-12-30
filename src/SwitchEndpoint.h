@@ -67,6 +67,7 @@ public:
 protected:
     void doStateChange(bool state);
     void doLevelChange(uint8 level, uint16 transitionTime, bool withOnOff);
+    uint8 calculateTransitionStep(uint8 targetLevel, uint16 transitionTime);
     void reportState();
     void sendCommandToBoundDevices();
     void sendLevelControlMoveCommand(bool up);

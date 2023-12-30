@@ -270,11 +270,31 @@ void SwitchEndpoint::doLevelChange(uint8 level, uint16 transitionTime, bool with
         previousLevel = sLevelControlServerCluster.u8CurrentLevel;
     }
 
-    DBG_vPrintf(TRUE, "#### New state=%d, New level=%d, Previous level=%d\n", 
-                sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, previousLevel);
+    uint8 step = calculateTransitionStep(level, transitionTime);
 
-    LEDTask::getInstance()->setFixedLevel(getEndpointId(), sLevelControlServerCluster.u8CurrentLevel);
+    DBG_vPrintf(TRUE, "#### New state=%d, New level=%d, Step=%d, Previous level=%d\n", 
+                sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, step, previousLevel);
+
+    LEDTask::getInstance()->setFixedLevel(getEndpointId(), sLevelControlServerCluster.u8CurrentLevel, step);
     reportStateChange();
+}
+
+uint8 SwitchEndpoint::calculateTransitionStep(uint8 targetLevel, uint16 transitionTime)
+{
+    // We do not use instant transition. Instead use default transition speed (10 levels per 50 ms)
+    if(transitionTime == 0)
+        return 10;  // TODO Put this constant somewhere in a configuration file
+
+    // Calculate the step (how many levels shall increase/decrease each 50 ms. TransitionTime is in 100ms quants)
+    uint8 curLevel = LEDTask::getInstance()->getLevel(getEndpointId());
+    uint8 diff = curLevel > targetLevel ? curLevel - targetLevel : targetLevel - curLevel;
+    uint8 step = diff / (2 * transitionTime);
+
+    // The step cannot be zero, even for the slowest transition.
+    if(step == 0)
+        step = 1;
+
+    return step;
 }
 
 void SwitchEndpoint::reportState()
