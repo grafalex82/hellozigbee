@@ -61,6 +61,7 @@ public:
     void update();
 
     void setFixedLevel(uint8 level, uint8 step = 10);
+    uint8 getLevel() const;
     void startEffect(const LEDProgramEntry * effect);
     void stopEffect();
 

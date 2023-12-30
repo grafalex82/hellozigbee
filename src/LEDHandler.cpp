@@ -251,6 +251,11 @@ void LEDHandler::setFixedLevel(uint8 level, uint8 step)
     moveToLevel(level, step);
 }
 
+uint8 LEDHandler::getLevel() const
+{
+    return curLevel;
+}
+
 void LEDHandler::startEffect(const LEDProgramEntry * effect)
 {
     programPtr = effect;

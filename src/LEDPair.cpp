@@ -14,18 +14,22 @@ void LEDPair::init(uint8 redTimer, uint8 blueTimer)
 
 LEDHandler & LEDPair::active()
 {
-    if(ZigbeeDevice::getInstance()->isJoined())
-        return blue;
-    else
-        return red;
+    return ZigbeeDevice::getInstance()->isJoined() ? blue : red;
+}
+
+const LEDHandler & LEDPair::active() const
+{
+    return ZigbeeDevice::getInstance()->isJoined() ? blue : red;
 }
 
 LEDHandler & LEDPair::inactive()
 {
-    if(ZigbeeDevice::getInstance()->isJoined())
-        return red;
-    else
-        return blue;
+    return ZigbeeDevice::getInstance()->isJoined() ? red : blue;
+}
+
+const LEDHandler & LEDPair::inactive() const
+{
+    return ZigbeeDevice::getInstance()->isJoined() ? red : blue;
 }
 
 void LEDPair::update()
@@ -38,6 +42,11 @@ void LEDPair::setFixedLevel(uint8 level, uint8 step)
 {
     active().setFixedLevel(level, step);
     inactive().setFixedLevel(0, step);
+}
+
+uint8 LEDPair::getLevel() const
+{
+    return active().getLevel();
 }
 
 void LEDPair::startEffect(const LEDProgramEntry * effect)

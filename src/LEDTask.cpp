@@ -36,12 +36,21 @@ void LEDTask::stopEffect()
     ch2.stopEffect();
 }
 
-void LEDTask::setFixedLevel(uint8 ep, uint8 level)
+void LEDTask::setFixedLevel(uint8 ep, uint8 level, uint8 step)
 {
     if(ep == HELLOZIGBEE_SWITCH1_ENDPOINT)
-        ch1.setFixedLevel(level);
+        ch1.setFixedLevel(level, step);
     if(ep == HELLOZIGBEE_SWITCH2_ENDPOINT)
-        ch2.setFixedLevel(level);
+        ch2.setFixedLevel(level, step);
+}
+
+uint8 LEDTask::getLevel(uint8 ep) const
+{
+    if(ep == HELLOZIGBEE_SWITCH1_ENDPOINT)
+        return ch1.getLevel();
+    if(ep == HELLOZIGBEE_SWITCH2_ENDPOINT)
+        return ch2.getLevel();
+    return 0;
 }
 
 void LEDTask::triggerEffect(uint8 ep, uint8 effect)

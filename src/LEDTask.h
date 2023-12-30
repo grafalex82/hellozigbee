@@ -30,7 +30,8 @@ public:
     void start();
 
     void stopEffect();
-    void setFixedLevel(uint8 ep, uint8 level);
+    void setFixedLevel(uint8 ep, uint8 level, uint8 step = 10);
+    uint8 getLevel(uint8 ep) const;
     void triggerEffect(uint8 ep, uint8 effect);
     void triggerSpecialEffect(LEDTaskSpecialEffect effect);
 
