@@ -48,6 +48,8 @@ protected:
 
     ButtonHandler buttonHandler;
 
+    uint8 previousLevel;
+
 public:
     SwitchEndpoint();
     void setPins(uint32 pinMask);

@@ -76,3 +76,31 @@ def test_on_set_zero_level(switch):
     state, level = switch.set_level(0)
     assert state == "OFF"
     assert level == 0
+
+
+def test_restore_to_previous_level_via_on_off(switch):
+    # Set a specific level
+    state, level = switch.set_level(123)
+    assert state == "ON"
+    assert level == 123
+
+    # Switch off and back to on
+    switch.switch('OFF')    # Use On/Off cluster to switch off
+    state, level = switch.switch('ON')
+    assert state == "ON"
+    assert level == 123
+
+
+def test_restore_to_previous_level_via_level_ctrl(switch):
+    # Set a specific level
+    state, level = switch.set_level(123)
+    assert state == "ON"
+    assert level == 123
+
+    # Switch off and back to on
+    switch.set_level(0)     # Use LevelCtrl cluster to switch off
+    state, level = switch.switch('ON')
+    assert state == "ON"
+    assert level == 123
+
+

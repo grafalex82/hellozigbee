@@ -182,6 +182,7 @@ void SwitchEndpoint::init()
 
     // TODO: restore previous brightness from PDM
     sLevelControlServerCluster.u8CurrentLevel = 255;
+    previousLevel = 255;
 }
 
 bool SwitchEndpoint::getState() const
@@ -227,10 +228,14 @@ void SwitchEndpoint::doStateChange(bool state)
         return;
     }
 
-    uint8 level = state ? max(sLevelControlServerCluster.u8CurrentLevel, 1) : 0;
+    //uint8 level = state ? max(sLevelControlServerCluster.u8CurrentLevel, 1) : 0;
+    uint8 level = state ? previousLevel : 0;
+    if(!state && sLevelControlServerCluster.u8CurrentLevel)
+        previousLevel = sLevelControlServerCluster.u8CurrentLevel;
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d. Setting level %d\n", getEndpointId(), state, level);
-    DBG_vPrintf(TRUE, "#### New level=%d, LevelCtrl cluster level=%d\n", level, sLevelControlServerCluster.u8CurrentLevel);
+    DBG_vPrintf(TRUE, "#### New level=%d, LevelCtrl cluster level=%d, old level=%d\n", level, sLevelControlServerCluster.u8CurrentLevel, previousLevel);
     sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
+    sLevelControlServerCluster.u8CurrentLevel = level;
 
     LEDTask::getInstance()->setFixedLevel(getEndpointId(), level);
 
@@ -251,22 +256,22 @@ void SwitchEndpoint::doLevelChange(uint8 level, uint16 transitionTime, bool with
                 transitionTime, 
                 withOnOff);
 
-    // Nothing to do if switch is Off and requested level is zero
-    if(!getState() && level == 0)
-        return;
-
     if(withOnOff)
     {
+        if(level == 0 && sLevelControlServerCluster.u8CurrentLevel)
+            previousLevel = sLevelControlServerCluster.u8CurrentLevel;
+
         sLevelControlServerCluster.u8CurrentLevel = level;
-        sOnOffServerCluster.bOnOff = level != 0;   
+        sOnOffServerCluster.bOnOff = level != 0 ? TRUE : FALSE;
     }
     else
     {
         sLevelControlServerCluster.u8CurrentLevel = max(level, 1);
+        previousLevel = sLevelControlServerCluster.u8CurrentLevel;
     }
 
-    DBG_vPrintf(TRUE, "#### New state=%d, New level=%d\n", 
-                sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel);
+    DBG_vPrintf(TRUE, "#### New state=%d, New level=%d, Previous level=%d\n", 
+                sOnOffServerCluster.bOnOff, sLevelControlServerCluster.u8CurrentLevel, previousLevel);
 
     LEDTask::getInstance()->setFixedLevel(getEndpointId(), sLevelControlServerCluster.u8CurrentLevel);
     reportStateChange();
