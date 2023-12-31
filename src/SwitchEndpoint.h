@@ -87,6 +87,7 @@ protected:
     virtual void handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent);
     virtual void handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
+    virtual void handleOnOffClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
 

@@ -229,6 +229,7 @@ void SwitchEndpoint::doStateChange(bool state)
         sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
 
         LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
+        reportStateChange();
     }
 }
 
@@ -240,7 +241,7 @@ void SwitchEndpoint::reportState()
     addr.eAddressMode = E_ZCL_AM_SHORT;
 
     // Send the report
-    DBG_vPrintf(TRUE, "Reporting attribute EP=%d value=%d... ", getEndpointId(), sOnOffServerCluster.bOnOff);
+    DBG_vPrintf(TRUE, "Reporting state change for EP=%d: State=%d... ", getEndpointId(), sOnOffServerCluster.bOnOff);
     PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
     teZCL_Status status = eZCL_ReportAttribute(&addr,
                                                GENERAL_CLUSTER_ID_ONOFF,
@@ -405,29 +406,13 @@ void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
 void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
 {
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    uint8 u8CommandId = msg->u8CommandId;
+    uint8 commandId = msg->u8CommandId;
 
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x\n",
                 psEvent->u8EndPoint,
-                u8CommandId);
+                commandId);
 
-    switch(u8CommandId)
-    {
-        case E_CLD_ONOFF_CMD_OFF:
-            doStateChange(false);
-            break;
-        case E_CLD_ONOFF_CMD_ON:
-            doStateChange(true);
-            break;
-        case E_CLD_ONOFF_CMD_TOGGLE:
-            doStateChange(!getState());
-            break;
-        default:
-            DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Unsupported cluster command Cmd=%02x\n",
-                        psEvent->u8EndPoint,
-                        u8CommandId);
-            break;
-    }
+    //doStateChange(!getState());
 }
 
 void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
@@ -464,6 +449,10 @@ void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
 
     switch(clusterId)
     {
+        case GENERAL_CLUSTER_ID_ONOFF:
+            handleOnOffClusterUpdate(psEvent);
+            break;
+
         case GENERAL_CLUSTER_ID_IDENTIFY:
             handleIdentifyClusterUpdate(psEvent);
             break;
@@ -471,6 +460,15 @@ void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
         default:
             break;
     }
+}
+
+void SwitchEndpoint::handleOnOffClusterUpdate(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off update message. New state: %d\n",
+                psEvent->u8EndPoint,
+                sOnOffServerCluster.bOnOff);
+
+    doStateChange(getState());
 }
 
 void SwitchEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent)
