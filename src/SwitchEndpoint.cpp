@@ -394,6 +394,10 @@ void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
             handleIdentifyClusterCommand(psEvent);
             break;
 
+        case GENERAL_CLUSTER_ID_GROUPS:
+            handleGroupsClusterCommand(psEvent);
+            break;
+
         default:
             DBG_vPrintf(TRUE, "SwitchEndpoint: EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", 
                         getEndpointId(), clusterId);
@@ -434,6 +438,15 @@ void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
         default:
             break;
     }
+}
+
+void SwitchEndpoint::handleGroupsClusterCommand(tsZCL_CallBackEvent *psEvent)
+{
+    tsCLD_GroupsCallBackMessage * msg = (tsCLD_GroupsCallBackMessage*)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    uint8 commandId = msg->u8CommandId;
+    uint8 ep = psEvent->u8EndPoint;
+
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Groups cluster command Cmd=%d\n", ep, commandId);
 }
 
 void SwitchEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
