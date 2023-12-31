@@ -359,29 +359,17 @@ void vDisplayDiscoveredNodes(void)
     for( i = 0; i < thisNib->sTblSize.u8NtDisc; i++)
     {
         DBG_vPrintf(TRUE, "  Index: %d", i );
-
         DBG_vPrintf(TRUE, "    EPID: %016llx", thisNib->sTbl.psNtDisc[i].u64ExtPanId);
-
         DBG_vPrintf(TRUE, "    PAN: %04x", thisNib->sTbl.psNtDisc[i].u16PanId);
-
         DBG_vPrintf(TRUE, "    SAddr: %04x", thisNib->sTbl.psNtDisc[i].u16NwkAddr);
-
         DBG_vPrintf(TRUE, "    LQI %d\n", thisNib->sTbl.psNtDisc[i].u8LinkQuality);
-
         DBG_vPrintf(TRUE, "    CH: %d", thisNib->sTbl.psNtDisc[i].u8LogicalChan);
-
         DBG_vPrintf(TRUE, "    PJ: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1JoinPermit);
-
         DBG_vPrintf(TRUE, "    Coord: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1PanCoord);
-
         DBG_vPrintf(TRUE, "    RT Cap: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1ZrCapacity);
-
         DBG_vPrintf(TRUE, "    ED Cap: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1ZedCapacity);
-
         DBG_vPrintf(TRUE, "    Depth: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u4Depth);
-
         DBG_vPrintf(TRUE, "    StPro: %d", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u4StackProfile);
-
         DBG_vPrintf(TRUE, "    PP: %d\r\n", thisNib->sTbl.psNtDisc[i].uAncAttrs.bfBitfields.u1PotentialParent);
     }
 }
@@ -431,6 +419,27 @@ void vDisplayBindTable()
                         entry->u8SourceEndpoint,
                         entry->u8DestinationEndPoint);
         }
+    }
+}
+
+
+void vDisplayGroupsTable()
+{
+    // Get pointers
+    ZPS_tsAplAib * aib = ZPS_psAplAibGetAib();
+    ZPS_tsAplApsmeAIBGroupTable * groupTable = aib->psAplApsmeGroupTable;
+    uint32 groupTableSize = groupTable->u32SizeOfGroupTable;
+    ZPS_tsAplApsmeGroupTableEntry * groupEntries = groupTable->psAplApsmeGroupTableId;
+
+    // Print the table
+    DBG_vPrintf(TRUE, "\n+++++++ Groups Table:\n");
+    for(uint32 i = 0; i < groupTableSize; i++)
+    {
+        DBG_vPrintf(TRUE, "    Group %04x:", groupEntries[i].u16Groupid);
+        for(uint8 j=0; j<(242 + 7)/8; j++)
+            DBG_vPrintf(TRUE, " %02x", groupEntries[i].au8Endpoint[j]);
+
+        DBG_vPrintf(TRUE, "\n");
     }
 }
 

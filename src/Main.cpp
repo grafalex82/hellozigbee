@@ -23,6 +23,7 @@ extern "C"
 #include "ZCLTimer.h"
 #include "LEDTask.h"
 #include "BlinkTask.h"
+#include "DumpFunctions.h"
 
 const uint8 HEARTBEAT_LED_PIN = 4;
 
@@ -332,6 +333,9 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Init the ZigbeeDevice, AF, BDB, and other network stuff
     ZigbeeDevice::getInstance();
+
+    // Groups debug (TODO: Cleanup this)
+    vDisplayGroupsTable();
 
     // Print Initialization finished message
     DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");

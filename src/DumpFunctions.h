@@ -22,6 +22,7 @@ extern "C"
     void vDisplayDiscoveredNodes();
     void vDisplayNeighbourTable();
     void vDisplayBindTable();
+    void vDisplayGroupsTable();
     void vDisplayAddressMap();
 
     void vDumpCurrentImageOTAHeader(uint8 otaEp);
