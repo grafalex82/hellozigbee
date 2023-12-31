@@ -125,7 +125,8 @@ void BasicClusterEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent
             break;
 
         default:
-            DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", clusterId);
+            DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", 
+                        getEndpointId(), clusterId);
             break;
     }
 }

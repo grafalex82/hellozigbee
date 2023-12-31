@@ -395,7 +395,8 @@ void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
             break;
 
         default:
-            DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", clusterId);
+            DBG_vPrintf(TRUE, "SwitchEndpoint: EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", 
+                        getEndpointId(), clusterId);
             break;
     }
 }
@@ -418,9 +419,7 @@ void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
     uint8 commandId = msg->u8CommandId;
     uint8 ep = psEvent->u8EndPoint;
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Identify cluster command Cmd=%d\n",
-                ep,
-                commandId);
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Identify cluster command Cmd=%d\n", ep, commandId);
 
     switch(commandId)
     {
