@@ -99,15 +99,14 @@ class SmartSwitch:
         msg = self.get_state_change_msg(expected_state)
         set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
 
-        # Device will respond with 2 reports: On/Off state and new brightness level
+        # Device will respond with On/Off state report
         state = self.zigbee.wait_msg()['state_'+self.z2m_name]
-        level = self.zigbee.wait_msg()['brightness_'+self.z2m_name]
 
         # Verify response from Z2M if possible
         if expected_state != None:
             assert state == expected_state
 
-        return (state, level)
+        return state
 
 
     def get_state(self):

@@ -77,7 +77,6 @@ def test_toggle_mode_btn_press(switch):
     # Check the device state changed, and the action is generated (in this particular order)
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 def test_toggle_mode_relay_unlinked(switch):
@@ -137,11 +136,9 @@ def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
     # Check the device state changed, and the action is generated (in this particular order)
     assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
     assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 @pytest.mark.parametrize("init_state, alter_state", [
@@ -181,11 +178,9 @@ def test_momentary_toggle(switch, init_state, alter_state):
     # On the release the state must return to the original state
     assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
     assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 
@@ -244,7 +239,6 @@ def test_multifunction_front(switch):
     # Check the device state changed, and the single click action is generated
     # As a side effect of current state machine implementation, action gets aftecr state change if relay mode is front
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
     
 
@@ -271,7 +265,6 @@ def test_multifunction_single(switch):
     # Check the device state changed, and the single click action is generated
     assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 def test_multifunction_double(switch):
@@ -300,7 +293,6 @@ def test_multifunction_double(switch):
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['action'] == "double_" + switch.z2m_name
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
 
 
 def test_multifunction_tripple(switch):
@@ -334,7 +326,6 @@ def test_multifunction_tripple(switch):
 
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['brightness_' + switch.z2m_name] != "0"
     assert switch.wait_zigbee_state()['action'] == "tripple_" + switch.z2m_name
 
 
