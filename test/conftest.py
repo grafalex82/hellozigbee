@@ -45,8 +45,8 @@ button_channels = [(2, "button_1"), (3, "button_2")]
 # Make each test that uses switch fixture to run twice for both buttons. 
 # Using the ids parameter the button name will be displayed as a test parameter
 @pytest.fixture(scope = 'function', params = button_channels, ids=lambda x: x[1])
-def switch(device, zigbee, request):
-    return SmartSwitch(device, zigbee, request.param[0], request.param[1])
+def switch(device, zigbee, request, pytestconfig):
+    return SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
 
 # Make sure that no bindings that could possibly change test behavior is active. 
 # Cleanup bindings at exit. Use autouse=True to implicitly apply it to all tests

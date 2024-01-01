@@ -81,12 +81,13 @@ class SmartSwitch:
     and moves communication burden from the test to the test harness.
     """
 
-    def __init__(self, device, zigbee, ep, z2m_name):
+    def __init__(self, device, zigbee, ep, ep_name, z2m_name):
         # Remember parameters for further use
         self.device = device
         self.zigbee = zigbee
         self.ep = ep
         self.button = ep-1
+        self.ep_name = ep_name
         self.z2m_name = z2m_name
 
         # Most of the tests will require device state MQTT messages. Subscribe for them
@@ -113,10 +114,10 @@ class SmartSwitch:
 
         # Send the On/Off/Toggle command, verify device log has the state change message
         msg = self.get_state_change_msg(expected_state)
-        set_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, cmd, msg)
+        set_device_attribute(self.device, self.zigbee, 'state_'+self.ep_name, cmd, msg)
 
         # Device will respond with On/Off state report
-        state = self.zigbee.wait_msg()['state_'+self.z2m_name]
+        state = self.zigbee.wait_msg()['state_'+self.ep_name]
 
         # Verify response from Z2M if possible
         if expected_state != None:
@@ -127,7 +128,7 @@ class SmartSwitch:
 
     def get_state(self):
         msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0006 Command=00 Attr=0000"
-        return get_device_attribute(self.device, self.zigbee, 'state_'+self.z2m_name, msg)
+        return get_device_attribute(self.device, self.zigbee, 'state_'+self.ep_name, msg)
 
 
     def wait_state_change_msg(self, expected_state):
@@ -155,13 +156,39 @@ class SmartSwitch:
 
     def set_attribute(self, attr, value):
         msg = f"ZCL Write Attribute: Cluster 0007 Attrib {self.get_attr_id_by_name(attr)}"
-        assert set_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, value, msg) == value
+        assert set_device_attribute(self.device, self.zigbee, attr + '_' + self.ep_name, value, msg) == value
         self.wait_button_state('IDLE')
 
 
     def get_attribute(self, attr):
         msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0007 Command=00 Attr={self.get_attr_id_by_name(attr)}"
-        return get_device_attribute(self.device, self.zigbee, attr + '_' + self.z2m_name, msg)
+        return get_device_attribute(self.device, self.zigbee, attr + '_' + self.ep_name, msg)
+
+
+    def add_to_group(self, group):
+        self.zigbee.subscribe("response/group/members/add", True)
+
+        payload = {
+            "device":f"{self.z2m_name}/{self.ep}", 
+            "group": group,
+            "skip_disable_reporting": "true"
+            }
+        self.zigbee.publish('request/group/members/add', payload, True)
+
+        return self.zigbee.wait_msg("response/group/members/add", True)
+
+
+    def remove_from_group(self, group):
+        self.zigbee.subscribe("response/group/members/remove", True)
+
+        payload = {
+            "device":f"{self.z2m_name}/{self.ep}", 
+            "group": group,
+            "skip_disable_reporting": "true"
+            }
+        self.zigbee.publish('request/group/members/remove', payload, True)
+
+        return self.zigbee.wait_msg("response/group/members/remove", True)
 
 
     def press_button(self):
