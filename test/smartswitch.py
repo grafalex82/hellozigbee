@@ -61,7 +61,7 @@ def create_group(zigbee, name, id):
     zigbee.subscribe("response/group/add", True)
 
     payload = {"friendly_name": name, "id": id}
-    zigbee.publish('zigbee2mqtt/bridge/request/group/add', payload, bridge=True)
+    zigbee.publish('request/group/add', payload, bridge=True)
     return zigbee.wait_msg("response/group/add", True)
 
 
@@ -69,7 +69,7 @@ def delete_group(zigbee, name, id):
     zigbee.subscribe("response/group/remove", True)
 
     payload = {"friendly_name": name, "id": id}
-    zigbee.publish('zigbee2mqtt/bridge/request/group/remove', payload, bridge=True)
+    zigbee.publish('request/group/remove', payload, bridge=True)
     return zigbee.wait_msg("response/group/remove", True)
 
 
