@@ -8,6 +8,7 @@ class ZigbeeNetwork():
         self.topic = options.getini('device_mqtt_topic')
         self.z2m_topic = options.getini('bridge_mqtt_topic')
         self.message_received = None
+        self.topic_to_wait = None
 
         self.client = mqtt.Client()
         self.client.on_message = self.on_message_received
@@ -16,7 +17,8 @@ class ZigbeeNetwork():
 
     def on_message_received(self, client, userdata, msg):
         print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
-        self.message_received = msg.payload
+        if not self.topic_to_wait or msg.topic.startswith(self.topic_to_wait):
+            self.message_received = msg.payload
 
 
     def get_topic(self, subtopic, bridge=False):
@@ -29,9 +31,10 @@ class ZigbeeNetwork():
         return self.topic
 
 
-    def subscribe(self, subtopic = ""):
-        self.client.subscribe(self.get_topic(subtopic))
+    def subscribe(self, subtopic = "", bridge=False):
+        self.client.subscribe(self.get_topic(subtopic, bridge))
         self.message_received = None
+        self.topic_to_wait = None
 
 
     def publish(self, subtopic, message, bridge=False):
@@ -44,9 +47,14 @@ class ZigbeeNetwork():
         self.client.publish(topic, message)
 
 
-    def wait_msg(self, timeout=60):
-        start_time = time.time()
+    def wait_msg(self, subtopic=None, bridge=False, timeout=60):
+        # Set the topic to wait if we are waiting for a specific one, or set to None if any topic needs to be listen to
+        self.topic_to_wait = None
+        if subtopic != None:
+            self.topic_to_wait = self.get_topic(subtopic, bridge)
 
+        # Wait for a topic in the loop until timeout is due
+        start_time = time.time()
         while self.message_received is None:
             self.client.loop(timeout=1)
 
@@ -56,6 +64,7 @@ class ZigbeeNetwork():
         
         payload = self.message_received.decode()
         self.message_received = None
+        self.topic_to_wait = None
         return json.loads(payload)
             
             
