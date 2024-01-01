@@ -3,38 +3,34 @@ import pytest
 from device import *
 from zigbee import *
 
-def set_device_attribute(device, zigbee, attribute, state, expected_response):
-    # Make json payload like {"state_button_3", "ON"}
-    payload = {attribute: state}
+def do_zigbee_request(device, zigbee, request_topic, payload, response_topic, expected_response):
+    # Prepare for waiting a zigbee2mqtt response
+    zigbee.subscribe(response_topic)
 
-    # Prepare for waiting a zigbee2mqtt message on the default device topic
-    zigbee.subscribe()
+    # Publish the request
+    zigbee.publish(request_topic, payload)
 
-    # Publish the 'set state' command
-    zigbee.publish('set', payload)
-
-    # Verify that the device has received the state change command
+    # Verify that the device has received the request, and properly process it
     device.wait_str(expected_response)
 
-    # Wait the reply from zigbee2mqtt with the device state
-    return zigbee.wait_msg()[attribute]
+    # Wait the response from zigbee2mqtt
+    return zigbee.wait_msg(response_topic)
+
+
+def set_device_attribute(device, zigbee, attribute, value, expected_response):
+    # Send payload like {"state_button_3", "ON"} to the <device>/set topic
+    # Wait for the new device state response
+    payload = {attribute: value}
+    response = do_zigbee_request(device, zigbee, 'set', payload, "", expected_response)
+    return response[attribute]
 
 
 def get_device_attribute(device, zigbee, attribute, expected_response):
-    # Make json payload like {"state_button_3", ""}
+    # Send payload like {"state_button_3", ""} to the <device>/get topic
+    # Wait for the new device state response
     payload = {attribute: ""}
-
-    # Prepare for waiting a zigbee2mqtt message on the default device topic
-    zigbee.subscribe()
-
-    # Request the device state
-    zigbee.publish('get', payload)                      
-
-    # Verify the device received read attribute command
-    device.wait_str(expected_response)
-
-    # Wait the reply from zigbee2mqtt with the device state
-    return zigbee.wait_msg()[attribute]
+    response = do_zigbee_request(device, zigbee, 'get', payload, "", expected_response)
+    return response[attribute]
 
 
 def send_bind_request(zigbee, clusters, src, dst):
