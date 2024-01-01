@@ -17,6 +17,17 @@ def do_zigbee_request(device, zigbee, request_topic, payload, response_topic, ex
     return zigbee.wait_msg(response_topic)
 
 
+def do_bridge_request(zigbee, request_topic, payload, response_topic):
+    # Prepare for waiting a zigbee2mqtt response
+    zigbee.subscribe(response_topic, True)
+
+    # Publish the request
+    zigbee.publish(request_topic, payload, True)
+
+    # Wait the response from zigbee2mqtt
+    return zigbee.wait_msg(response_topic, True)
+
+
 def set_device_attribute(device, zigbee, attribute, value, expected_response):
     # Send payload like {"state_button_3", "ON"} to the <device>/set topic
     # Wait for the new device state response
@@ -54,19 +65,13 @@ def send_unbind_request(zigbee, clusters, src, dst):
 
 
 def create_group(zigbee, name, id):
-    zigbee.subscribe("response/group/add", True)
-
     payload = {"friendly_name": name, "id": id}
-    zigbee.publish('request/group/add', payload, bridge=True)
-    return zigbee.wait_msg("response/group/add", True)
+    return do_bridge_request(zigbee, 'request/group/add', payload, 'response/group/add')
 
 
 def delete_group(zigbee, name, id):
-    zigbee.subscribe("response/group/remove", True)
-
     payload = {"friendly_name": name, "id": id}
-    zigbee.publish('request/group/remove', payload, bridge=True)
-    return zigbee.wait_msg("response/group/remove", True)
+    return do_bridge_request(zigbee, 'request/group/remove', payload, 'response/group/remove')
 
 
 class SmartSwitch:
@@ -162,29 +167,21 @@ class SmartSwitch:
 
 
     def add_to_group(self, group):
-        self.zigbee.subscribe("response/group/members/add", True)
-
         payload = {
             "device":f"{self.z2m_name}/{self.ep}", 
             "group": group,
             "skip_disable_reporting": "true"
             }
-        self.zigbee.publish('request/group/members/add', payload, True)
-
-        return self.zigbee.wait_msg("response/group/members/add", True)
+        return do_bridge_request(self.zigbee, 'request/group/members/add', payload, 'response/group/members/add')
 
 
     def remove_from_group(self, group):
-        self.zigbee.subscribe("response/group/members/remove", True)
-
         payload = {
             "device":f"{self.z2m_name}/{self.ep}", 
             "group": group,
             "skip_disable_reporting": "true"
             }
-        self.zigbee.publish('request/group/members/remove', payload, True)
-
-        return self.zigbee.wait_msg("response/group/members/remove", True)
+        return do_bridge_request(self.zigbee, 'request/group/members/remove', payload, 'response/group/members/remove')
 
 
     def press_button(self):
