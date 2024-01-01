@@ -9,8 +9,14 @@ def pytest_addoption(parser):
     parser.addini('port',               'COM port where the Zigbee Device is connected to')
     parser.addini('mqtt_server',        'IP or network name of the MQTT server')
     parser.addini('mqtt_port',          'MQTT server port')
+    parser.addini('device_name',        'Name of the device in zigbee2mqtt')
     parser.addini('device_mqtt_topic',  'Base MQTT topic of the tested device')
     parser.addini('bridge_mqtt_topic',  'Base MQTT topic for the zigbee2mqtt instance')
+
+
+@pytest.fixture(scope="session")
+def device_name(pytestconfig):
+    yield pytestconfig.getini('device_name')
 
 
 @pytest.fixture(scope="session")
@@ -45,11 +51,11 @@ def switch(device, zigbee, request):
 # Make sure that no bindings that could possibly change test behavior is active. 
 # Cleanup bindings at exit. Use autouse=True to implicitly apply it to all tests
 @pytest.fixture(scope="session", autouse = True)
-def cleanup_bindings(zigbee):
+def cleanup_bindings(zigbee, device_name):
     for ep, _ in button_channels:
-        send_unbind_request(zigbee, "genLevelCtrl", f"my_test_switch/{ep}", "Coordinator")
+        send_unbind_request(zigbee, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
 
     yield
 
     for ep, _ in button_channels:
-        send_unbind_request(zigbee, "genLevelCtrl", f"my_test_switch/{ep}", "Coordinator")
+        send_unbind_request(zigbee, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")

@@ -413,14 +413,14 @@ def test_multifunction_unlinked_tripple(switch):
 
 
 @pytest.fixture
-def genLevelCtrl_bindings(switch):
+def genLevelCtrl_bindings(switch, device_name):
     # Bind the endpoint with the coordinator
-    send_bind_request(switch.zigbee, "genLevelCtrl", f"my_test_switch/{switch.ep}", "Coordinator")
+    send_bind_request(switch.zigbee, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
 
     yield
 
     # Cleanup bindings
-    send_unbind_request(switch.zigbee, "genLevelCtrl", f"my_test_switch/{switch.ep}", "Coordinator")
+    send_unbind_request(switch.zigbee, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
 
 
 def test_level_control(switch, genLevelCtrl_bindings):
