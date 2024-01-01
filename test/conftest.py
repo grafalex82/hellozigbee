@@ -59,3 +59,19 @@ def cleanup_bindings(zigbee, device_name):
 
     for ep, _ in button_channels:
         send_unbind_request(zigbee, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
+
+
+# A handy fixture that dumps the test name before test starts, and after it ends
+@pytest.fixture(scope="function", autouse=True)
+def dump_test_name(zigbee, request, pytestconfig):
+    # Print test name before test start
+    # zigbee2mqtt ignores unknown bridge topics, so the message to test_name topic does no harm
+    payload = {"test_name": request.node.name, "phase": "begin"}
+    zigbee.publish("test_name", payload, True)
+    
+    # Do the test
+    yield
+
+    # Dump the test name after it is done
+    payload = {"test_name": request.node.name, "phase": "end"}
+    zigbee.publish("test_name", payload, True)
