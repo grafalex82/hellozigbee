@@ -4,14 +4,14 @@ import pytest
 from smartswitch import *
 from zigbee import *
 from device import *
+from bridge import *
 
 def pytest_addoption(parser):
     parser.addini('port',               'COM port where the Zigbee Device is connected to')
     parser.addini('mqtt_server',        'IP or network name of the MQTT server')
     parser.addini('mqtt_port',          'MQTT server port')
     parser.addini('device_name',        'Name of the device in zigbee2mqtt')
-    parser.addini('device_mqtt_topic',  'Base MQTT topic of the tested device')
-    parser.addini('bridge_mqtt_topic',  'Base MQTT topic for the zigbee2mqtt instance')
+    parser.addini('base_topic',         'Base MQTT topic of the zigbee2mqtt instance')
 
 
 @pytest.fixture(scope="session")
@@ -34,9 +34,15 @@ def device(port):
 
 @pytest.fixture(scope="session")
 def zigbee(pytestconfig):
-    net = ZigbeeNetwork(pytestconfig)
+    net = ZigbeeNetwork(pytestconfig.getini('mqtt_server'), pytestconfig.getini('mqtt_port'), pytestconfig.getini('base_topic'))
     yield net
     net.disconnect()
+
+
+@pytest.fixture(scope="session")
+def bridge(zigbee, pytestconfig):
+    bridge = Bridge(zigbee)
+    yield bridge
 
 
 # List of smart switch channels (endpoint number and z2m name)
@@ -51,27 +57,27 @@ def switch(device, zigbee, request, pytestconfig):
 # Make sure that no bindings that could possibly change test behavior is active. 
 # Cleanup bindings at exit. Use autouse=True to implicitly apply it to all tests
 @pytest.fixture(scope="session", autouse = True)
-def cleanup_bindings(zigbee, device_name):
+def cleanup_bindings(bridge, device_name):
     for ep, _ in button_channels:
-        send_unbind_request(zigbee, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
+        send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
 
     yield
 
     for ep, _ in button_channels:
-        send_unbind_request(zigbee, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
+        send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
 
 
 # A handy fixture that dumps the test name before test starts, and after it ends
 @pytest.fixture(scope="function", autouse=True)
-def dump_test_name(zigbee, request, pytestconfig):
+def dump_test_name(bridge, request, pytestconfig):
     # Print test name before test start
     # zigbee2mqtt ignores unknown bridge topics, so the message to test_name topic does no harm
     payload = {"test_name": request.node.name, "phase": "begin"}
-    zigbee.publish("test_name", payload, True)
+    bridge.publish("test_name", payload)
     
     # Do the test
     yield
 
     # Dump the test name after it is done
     payload = {"test_name": request.node.name, "phase": "end"}
-    zigbee.publish("test_name", payload, True)
+    bridge.publish("test_name", payload)
