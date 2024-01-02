@@ -31,8 +31,19 @@ def switch_on_group(switch, group):
 # - Verify the device handles these commands
 
 
-def test_on_off_toggle(switch_on_group):
-    pass
+def test_on_off(group, switch_on_group):
+    group.switch('ON')
+    assert switch_on_group.get_state() == 'ON'
 
-    # group.switch('ON')
-    # switch.wait_state('ON')
+    group.switch('OFF')
+    assert switch_on_group.get_state() == 'OFF'
+
+
+def test_toggle(group, switch_on_group):
+    group.switch('OFF')
+
+    group.switch('TOGGLE')
+    assert switch_on_group.get_state() == 'ON'
+
+    group.switch('TOGGLE')
+    assert switch_on_group.get_state() == 'OFF'

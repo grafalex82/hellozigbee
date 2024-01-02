@@ -35,3 +35,14 @@ class Group:
             }
         return self.bridge.request('request/group/members/remove', payload, 'response/group/members/remove')
 
+
+    def switch(self, state):
+        # Prepare for waiting a group state response
+        self.zigbee.subscribe(self.name)
+
+        # Publish the request
+        payload = {"state": state}
+        self.zigbee.publish(self.name + "/set", payload)
+
+        # Wait the response from zigbee2mqtt (actually the state may not be really relevant, but returning just in case)
+        return self.zigbee.wait_msg(self.name)

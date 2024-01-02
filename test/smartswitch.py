@@ -78,7 +78,7 @@ class SmartSwitch:
         # Send payload like {"state_button_3", "ON"} to the <device>/set topic
         # Wait for the new device state response
         payload = {attribute: value}
-        response = do_zigbee_request(self.device, self.zigbee, self.z2m_name + '/set', payload, "", expected_response)
+        response = do_zigbee_request(self.device, self.zigbee, self.z2m_name + '/set', payload, self.z2m_name, expected_response)
         return response[attribute]
 
 
@@ -86,7 +86,7 @@ class SmartSwitch:
         # Send payload like {"state_button_3", ""} to the <device>/get topic
         # Wait for the new device state response
         payload = {attribute: ""}
-        response = do_zigbee_request(self.device, self.zigbee, self.z2m_name + '/get', payload, "", expected_response)
+        response = do_zigbee_request(self.device, self.zigbee, self.z2m_name + '/get', payload, self.z2m_name, expected_response)
         return response[attribute]
 
 
@@ -197,4 +197,4 @@ class SmartSwitch:
 
 
     def wait_zigbee_state(self):
-        return self.zigbee.wait_msg()
+        return self.zigbee.wait_msg(self.z2m_name)
