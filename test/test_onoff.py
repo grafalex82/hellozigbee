@@ -75,8 +75,8 @@ def test_toggle_mode_btn_press(switch):
     switch.wait_button_state("IDLE")
 
     # Check the device state changed, and the action is generated (in this particular order)
-    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("single")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == "ON"
 
 
 def test_toggle_mode_relay_unlinked(switch):
@@ -96,7 +96,7 @@ def test_toggle_mode_relay_unlinked(switch):
     switch.wait_button_state("IDLE")
 
     # Check the action is generated, but the state has not changed
-    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("single")
     assert switch.get_state() == "OFF"
 
 
@@ -134,11 +134,11 @@ def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
     switch.wait_state_change_msg(init_state_bool)
 
     # Check the device state changed, and the action is generated (in this particular order)
-    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("hold")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == alter_state
 
-    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("release")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == init_state
 
 
 @pytest.mark.parametrize("init_state, alter_state", [
@@ -176,11 +176,11 @@ def test_momentary_toggle(switch, init_state, alter_state):
 
     # Check the device state changed, and the action is generated (in this particular order)
     # On the release the state must return to the original state
-    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == alter_state
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("hold")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == alter_state
 
-    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == init_state
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("release")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == init_state
 
 
 
@@ -211,8 +211,8 @@ def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
     switch.wait_button_state("IDLE")
 
     # Check that device actions were triggered, but the device state is unchanged
-    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("hold")
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("release")
     assert switch.get_state()  == init_state
 
 
@@ -238,8 +238,8 @@ def test_multifunction_front(switch):
 
     # Check the device state changed, and the single click action is generated
     # As a side effect of current state machine implementation, action gets aftecr state change if relay mode is front
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == "ON"
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("single")
     
 
 def test_multifunction_single(switch):
@@ -263,8 +263,8 @@ def test_multifunction_single(switch):
     switch.wait_state_change_msg(True)
 
     # Check the device state changed, and the single click action is generated
-    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("single")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == "ON"
 
 
 def test_multifunction_double(switch):
@@ -291,8 +291,8 @@ def test_multifunction_double(switch):
     switch.wait_state_change_msg(True)
 
     # Check the device state changed, and the double click action is generated
-    assert switch.wait_zigbee_state()['action'] == "double_" + switch.z2m_name
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("double")
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == "ON"
 
 
 def test_multifunction_tripple(switch):
@@ -325,8 +325,8 @@ def test_multifunction_tripple(switch):
     switch.wait_state_change_msg(True)
 
     # Check the device state changed, and the double click action is generated
-    assert switch.wait_zigbee_state()['state_' + switch.z2m_name] == "ON"
-    assert switch.wait_zigbee_state()['action'] == "tripple_" + switch.z2m_name
+    assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == "ON"
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("tripple")
 
 
 def test_multifunction_unlinked_single(switch):
@@ -347,7 +347,7 @@ def test_multifunction_unlinked_single(switch):
     switch.wait_button_state("IDLE")
 
     # Check the single click action is generated, but the state has not changed
-    assert switch.wait_zigbee_state()['action'] == "single_" + switch.z2m_name 
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("single")
     assert switch.get_state() == 'OFF'
 
 
@@ -375,7 +375,7 @@ def test_multifunction_unlinked_double(switch):
     switch.wait_button_state("IDLE")
 
     # Check the single click action is generated, but the state has not changed
-    assert switch.wait_zigbee_state()['action'] == "double_" + switch.z2m_name 
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("double")
     assert switch.get_state() == 'OFF'
 
 
@@ -408,19 +408,19 @@ def test_multifunction_unlinked_tripple(switch):
     switch.wait_button_state("IDLE")
 
     # Check the single click action is generated, but the state has not changed
-    assert switch.wait_zigbee_state()['action'] == "tripple_" + switch.z2m_name 
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("tripple")
     assert switch.get_state() == 'OFF'
 
 
 @pytest.fixture
-def genLevelCtrl_bindings(switch, device_name):
+def genLevelCtrl_bindings(bridge, switch, device_name):
     # Bind the endpoint with the coordinator
-    send_bind_request(switch.zigbee, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
+    send_bind_request(bridge, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
 
     yield
 
     # Cleanup bindings
-    send_unbind_request(switch.zigbee, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
+    send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
 
 
 def test_level_control(switch, genLevelCtrl_bindings):
@@ -437,7 +437,7 @@ def test_level_control(switch, genLevelCtrl_bindings):
     switch.wait_report_level_ctrl("Move")
 
     # Verify the Level Control Move command has been received by the coordinator
-    assert switch.wait_zigbee_state()['action'] == "hold_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("hold")
     assert switch.wait_zigbee_state()['level_ctrl'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
 
     # Do not forget to release the button
@@ -447,5 +447,5 @@ def test_level_control(switch, genLevelCtrl_bindings):
     switch.wait_report_level_ctrl("Stop")
 
     # Verify the Level Control Move command has been received by the coordinator
-    assert switch.wait_zigbee_state()['action'] == "release_" + switch.z2m_name
+    assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("release")
     assert switch.wait_zigbee_state()['level_ctrl']['command'] == 'commandStop'

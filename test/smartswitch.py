@@ -76,6 +76,10 @@ class SmartSwitch:
         self.wait_button_state('IDLE')
 
 
+    def get_z2m_attr_name(self, attribute):
+        return attribute + '_' + self.ep_name
+
+
     def do_set_request(self, attribute, value, expected_response):
         # Send payload like {"state_button_3", "ON"} to the <device>/set topic
         # Wait for the new device state response
