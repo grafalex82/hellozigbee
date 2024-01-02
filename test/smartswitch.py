@@ -37,16 +37,6 @@ def send_unbind_request(bridge, clusters, src, dst):
     bridge.publish('request/device/unbind', payload)
 
 
-def create_group(bridge, name, id):
-    payload = {"friendly_name": name, "id": id}
-    return bridge.request('request/group/add', payload, 'response/group/add')
-
-
-def delete_group(bridge, name, id):
-    payload = {"friendly_name": name, "id": id}
-    return bridge.request('request/group/remove', payload, 'response/group/remove')
-
-
 class SmartSwitch:
     """ 
     Smart Switch Test Harness
@@ -75,6 +65,10 @@ class SmartSwitch:
         self.device.reset()
         self.wait_button_state('IDLE')
 
+
+    def get_full_name(self):
+        return f"{self.z2m_name}/{self.ep}"
+    
 
     def get_z2m_attr_name(self, attribute):
         return attribute + '_' + self.ep_name

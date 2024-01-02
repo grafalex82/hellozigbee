@@ -5,6 +5,7 @@ from smartswitch import *
 from zigbee import *
 from device import *
 from bridge import *
+from group import *
 
 def pytest_addoption(parser):
     parser.addini('port',               'COM port where the Zigbee Device is connected to')
@@ -43,6 +44,25 @@ def zigbee(pytestconfig):
 def bridge(zigbee, pytestconfig):
     bridge = Bridge(zigbee)
     yield bridge
+
+# A fixture that creates a test_group, and cleans it up after all tests completed
+@pytest.fixture(scope="session")
+def group(zigbee, bridge):
+    grp = Group(zigbee, bridge, 'test_group', 1234)
+
+    # Remove previously created group (if any). Ignore errors if there was no group before.
+    resp = grp.delete()
+
+    # Create a brand new group
+    resp = grp.create()
+    assert resp['status'] == 'ok'
+
+    # Use the group
+    yield grp
+
+    # Cleanup our group
+    resp = grp.delete()
+    assert resp['status'] == 'ok'
 
 
 # List of smart switch channels (endpoint number and z2m name)
