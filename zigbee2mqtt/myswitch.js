@@ -295,11 +295,13 @@ const device = {
     fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_LevelCtrl],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
-        device.endpoints.forEach(async (ep) => {
-            await ep.read('genOnOff', ['onOff']);
-            await ep.read('genOnOffSwitchCfg', ['switchActions']);
-            await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284], manufacturerOptions.jennic);
-        });
+        for (const ep of device.endpoints) {
+            if(ep.supportsInputCluster('genOnOff')) {
+                await ep.read('genOnOff', ['onOff']);
+                await ep.read('genOnOffSwitchCfg', ['switchActions']);
+                await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284], manufacturerOptions.jennic);
+            }
+        }
     },
     exposes: [
         e.action(genSwitchActions(2)),
