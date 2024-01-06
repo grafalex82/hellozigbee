@@ -42,11 +42,11 @@ const fromZigbee_OnOffSwitchCfg = {
 
     convert: (model, msg, publish, options, meta) => {
 
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() publish=[${JSON.stringify(publish)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() publish=[${JSON.stringify(publish)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
 
         const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
         const result = {};
@@ -82,7 +82,7 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`long_press_mode_${ep_name}`] = longPressModeValues[msg.data['65284']];
         }
 
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
         return result;
     },
 }
@@ -92,10 +92,10 @@ const toZigbee_OnOffSwitchCfg = {
     key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode'],
 
     convertGet: async (entity, key, meta) => {
-        meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
+        // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
 
         if(key == 'switch_actions') {
-            meta.logger.debug(`+_+_+_ #1 getting value for key=[${key}]`);
+            // meta.logger.debug(`+_+_+_ #1 getting value for key=[${key}]`);
             await entity.read('genOnOffSwitchCfg', ['switchActions']);
         }
         else {
@@ -106,14 +106,14 @@ const toZigbee_OnOffSwitchCfg = {
                 min_long_press: 65283,
                 long_press_mode: 65284
             };
-            meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
+            // meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
         }
     },
 
     convertSet: async (entity, key, value, meta) => {
 
-        meta.logger.debug(`+_+_+_ toZigbeeConverter::convertSet() key=${key}, value=[${value}], epName=[${meta.endpoint_name}], entity=[${JSON.stringify(entity)}]`);
+        // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertSet() key=${key}, value=[${value}], epName=[${meta.endpoint_name}], entity=[${JSON.stringify(entity)}]`);
 
         let payload = {};
         let newValue = value;
@@ -122,14 +122,14 @@ const toZigbee_OnOffSwitchCfg = {
             case 'switch_mode':
                 newValue = switchModeValues.indexOf(value);
                 payload = {65280: {'value': newValue, 'type': DataType.enum8}};
-                meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
+                // meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
             case 'switch_actions':
                 newValue = switchActionValues.indexOf(value);
                 payload = {switchActions: newValue};
-                meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
+                // meta.logger.debug(`payload=[${JSON.stringify(payload)}]`);
                 await entity.write('genOnOffSwitchCfg', payload);
                 break;
 
@@ -161,7 +161,7 @@ const toZigbee_OnOffSwitchCfg = {
         }
 
         result = {state: {[key]: value}}
-        meta.logger.debug(`result2=[${JSON.stringify(result)}]`);
+        // meta.logger.debug(`result2=[${JSON.stringify(result)}]`);
         return result;
     },
 }
@@ -212,7 +212,7 @@ const fromZigbee_MultistateInput = {
         const action = actionLookup[value];
 
         const result = {action: utils.postfixWithEndpointName(action, msg, model, meta)};
-        meta.logger.debug(`+_+_+_ Multistate::fromZigbee() result=[${JSON.stringify(result)}]`);
+        // meta.logger.debug(`+_+_+_ Multistate::fromZigbee() result=[${JSON.stringify(result)}]`);
         return result;
     },
 }
@@ -223,20 +223,20 @@ const fromZigbee_LevelCtrl = {
            'commandStop', 'commandStopWithOnOff', 'commandStep', 'commandStepWithOnOff'],
 
     convert: (model, msg, publish, options, meta) => {
-        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
+        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
         const cmd = msg['type'];
         const payload = msg['data'];
 
         const result = {level_ctrl: {command: cmd, payload: payload}};
-        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(result)}]`);
+        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(result)}]`);
         return result;
     },
 }
 
 async function getImageMeta(current, logger, device) {
-    logger.debug(`My getImageMeta()`);
-    logger.debug(`device='${JSON.stringify(device)}'`);
-    logger.debug(`current='${JSON.stringify(current)}'`);
+    // logger.debug(`My getImageMeta()`);
+    // logger.debug(`device='${JSON.stringify(device)}'`);
+    // logger.debug(`current='${JSON.stringify(current)}'`);
 
     const modelId = device.modelID;
 
@@ -254,19 +254,19 @@ async function getImageMeta(current, logger, device) {
         sha512: hash.digest('hex'),
     };
 
-    logger.debug(`My getImageMeta(): ret='${JSON.stringify(ret)}'`);
+    // logger.debug(`My getImageMeta(): ret='${JSON.stringify(ret)}'`);
     return ret;
 }
 
 async function getNewImage(current, logger, device, getImageMeta, downloadImage) {
     const meta = await getImageMeta(current, logger, device);
-    logger.debug(`getNewImage for '${device.ieeeAddr}', meta ${JSON.stringify(meta)}`);
+    // logger.debug(`getNewImage for '${device.ieeeAddr}', meta ${JSON.stringify(meta)}`);
 
     const fileName = '/app/data/HelloZigbee.ota';
     const buffer = fs.readFileSync(fileName);
     const image = otacommon.parseImage(buffer);
 
-    logger.debug(`getNewImage for '${device.ieeeAddr}', image header ${JSON.stringify(image.header)}`);
+    // logger.debug(`getNewImage for '${device.ieeeAddr}', image header ${JSON.stringify(image.header)}`);
 
     if ('minimumHardwareVersion' in image.header && 'maximumHardwareVersion' in image.header) {
         assert(image.header.minimumHardwareVersion <= device.hardwareVersion &&
@@ -277,12 +277,12 @@ async function getNewImage(current, logger, device, getImageMeta, downloadImage)
 
 const MyOta = {
     isUpdateAvailable: async (device, logger, requestPayload=null) => {
-        logger.debug(`My isUpdateAvailable()`);
+        // logger.debug(`My isUpdateAvailable()`);
         return otacommon.isUpdateAvailable(device, logger, otacommon.isNewImageAvailable, requestPayload, getImageMeta);
     },
 
     updateToLatest: async (device, logger, onProgress) => {
-        logger.debug(`My updateToLatest()`);
+        // logger.debug(`My updateToLatest()`);
         return otacommon.updateToLatest(device, logger, onProgress, getNewImage, getImageMeta);
     }
 }
