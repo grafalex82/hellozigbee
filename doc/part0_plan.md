@@ -98,7 +98,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Build a Dimmable Light via Level Ctrl Server cluster ([Article](part20_dimmable_light.md))
 - Build comprehensive automated test suit ([Article](part21_test_automation.md))
 - Explore Identify cluster ([Article](part22_identify_cluster.md))
-- Explore Groups (Code ready, article pending)
+- Explore Groups ([Article](part23_groups.md))
 - Explore Scenes cluster
 - Explore Touchlink, Find-And-Bind, and ZLL Commisioning
 
