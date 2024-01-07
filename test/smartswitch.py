@@ -24,7 +24,7 @@ def send_bind_request(bridge, clusters, src, dst):
 
     # Send the bind request
     payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
-    bridge.publish('request/device/bind', payload)
+    bridge.publish('device/bind', payload)
 
 
 def send_unbind_request(bridge, clusters, src, dst):
@@ -34,7 +34,7 @@ def send_unbind_request(bridge, clusters, src, dst):
 
     # Send the bind request
     payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
-    bridge.publish('request/device/unbind', payload)
+    bridge.publish('device/unbind', payload)
 
 
 class SmartSwitch:
@@ -151,25 +151,7 @@ class SmartSwitch:
     def get_attribute(self, attr):
         msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0007 Command=00 Attr={self.get_attr_id_by_name(attr)}"
         return self.do_get_request(attr + '_' + self.ep_name, msg)
-
-
-    def add_to_group(self, group):
-        payload = {
-            "device":f"{self.z2m_name}/{self.ep}", 
-            "group": group,
-            "skip_disable_reporting": "true"
-            }
-        return do_bridge_request(self.zigbee, 'request/group/members/add', payload, 'response/group/members/add')
-
-
-    def remove_from_group(self, group):
-        payload = {
-            "device":f"{self.z2m_name}/{self.ep}", 
-            "group": group,
-            "skip_disable_reporting": "true"
-            }
-        return do_bridge_request(self.zigbee, 'request/group/members/remove', payload, 'response/group/members/remove')
-
+    
 
     def press_button(self):
         cmd = f"BTN{self.button}_PRESS"

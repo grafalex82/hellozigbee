@@ -10,12 +10,12 @@ class Group:
 
     def create(self):
         payload = {"friendly_name": self.name, "id": self.id}
-        return self.bridge.request('request/group/add', payload, 'response/group/add')
+        return self.bridge.request('group/add', payload)
 
 
     def delete(self):
         payload = {"friendly_name": self.name, "id": self.id}
-        return self.bridge.request('request/group/remove', payload, 'response/group/remove')
+        return self.bridge.request('group/remove', payload)
 
 
     def add_device(self, device):
@@ -24,7 +24,7 @@ class Group:
             "group": self.name,
             "skip_disable_reporting": "true"
             }
-        return self.bridge.request('request/group/members/add', payload, 'response/group/members/add')
+        return self.bridge.request('group/members/add', payload)
 
 
     def remove_device(self, device):
@@ -33,7 +33,7 @@ class Group:
             "group": self.name,
             "skip_disable_reporting": "true"
             }
-        return self.bridge.request('request/group/members/remove', payload, 'response/group/members/remove')
+        return self.bridge.request('group/members/remove', payload)
 
 
     def switch(self, state):
