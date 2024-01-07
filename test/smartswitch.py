@@ -119,7 +119,7 @@ class SmartSwitch:
         return self.do_get_request('state_'+self.ep_name, msg)
 
 
-    def wait_state_change_msg(self, expected_state):
+    def wait_device_state_change(self, expected_state):
         msg = self.get_state_change_msg(expected_state)
         self.device.wait_str(msg)
 

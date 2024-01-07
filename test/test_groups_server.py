@@ -33,28 +33,28 @@ def switch_on_group(switch, group):
 
 def test_on_off(group, switch_on_group):
     group.switch('ON')
-    switch_on_group.wait_state_change_msg('ON')
+    switch_on_group.wait_device_state_change('ON')
     switch_on_group.wait_zigbee_state()
     assert switch_on_group.wait_zigbee_state()[switch_on_group.get_z2m_attr_name('state')] == 'ON'
 
     group.switch('OFF')
-    switch_on_group.wait_state_change_msg('OFF')
+    switch_on_group.wait_device_state_change('OFF')
     switch_on_group.wait_zigbee_state()
     assert switch_on_group.wait_zigbee_state()[switch_on_group.get_z2m_attr_name('state')] == 'OFF'
 
 
 def test_toggle(group, switch_on_group):
     group.switch('OFF')
-    switch_on_group.wait_state_change_msg('OFF')
+    switch_on_group.wait_device_state_change('OFF')
     switch_on_group.wait_zigbee_state()
     assert switch_on_group.wait_zigbee_state()[switch_on_group.get_z2m_attr_name('state')] == 'OFF'
 
     group.switch('TOGGLE')
-    switch_on_group.wait_state_change_msg('ON')
+    switch_on_group.wait_device_state_change('ON')
     switch_on_group.wait_zigbee_state()
     assert switch_on_group.wait_zigbee_state()[switch_on_group.get_z2m_attr_name('state')] == 'ON'
 
     group.switch('TOGGLE')
-    switch_on_group.wait_state_change_msg('OFF')
+    switch_on_group.wait_device_state_change('OFF')
     switch_on_group.wait_zigbee_state()
     assert switch_on_group.wait_zigbee_state()[switch_on_group.get_z2m_attr_name('state')] == 'OFF'

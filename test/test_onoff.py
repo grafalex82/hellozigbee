@@ -68,7 +68,7 @@ def test_toggle_mode_btn_press(switch):
     switch.wait_button_state("PRESSED1")
 
     # In the toggle mode the switch is triggered immediately on button press
-    switch.wait_state_change_msg(True)
+    switch.wait_device_state_change(True)
 
     # Release the button
     switch.release_button()
@@ -124,14 +124,14 @@ def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
     switch.wait_button_state("PRESSED1")
 
     # In the momentary mode the switch is triggered immediately on button press. The state is changed from init_state to alter_state
-    switch.wait_state_change_msg(alter_state_bool)
+    switch.wait_device_state_change(alter_state_bool)
 
     # Release the button
     switch.release_button()
     switch.wait_button_state("IDLE")
 
     # Once the button is released, the state must get back to the init state
-    switch.wait_state_change_msg(init_state_bool)
+    switch.wait_device_state_change(init_state_bool)
 
     # Check the device state changed, and the action is generated (in this particular order)
     assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("hold")
@@ -165,14 +165,14 @@ def test_momentary_toggle(switch, init_state, alter_state):
     switch.wait_button_state("PRESSED1")
 
     # In the momentary-toggle mode the switch is toggled immediately on button press. The state is changed from init_state to alter_state
-    switch.wait_state_change_msg(alter_state_bool)
+    switch.wait_device_state_change(alter_state_bool)
 
     # Release the button
     switch.release_button()
     switch.wait_button_state("IDLE")
 
     # Once the button is released, the state must get back to the init state
-    switch.wait_state_change_msg(init_state_bool)
+    switch.wait_device_state_change(init_state_bool)
 
     # Check the device state changed, and the action is generated (in this particular order)
     # On the release the state must return to the original state
@@ -229,7 +229,7 @@ def test_multifunction_front(switch):
     switch.wait_button_state("PRESSED1")
 
     # In 'front' mode we expect the LED to toggle immediately on button press
-    switch.wait_state_change_msg(True)
+    switch.wait_device_state_change(True)
 
     # Do not forget to release the button
     switch.release_button()
@@ -260,7 +260,7 @@ def test_multifunction_single(switch):
     switch.wait_button_state("IDLE")
 
     # In the 'single' relay mode we expect the LED to toggle after the short button press
-    switch.wait_state_change_msg(True)
+    switch.wait_device_state_change(True)
 
     # Check the device state changed, and the single click action is generated
     assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("single")
@@ -288,7 +288,7 @@ def test_multifunction_double(switch):
     switch.wait_button_state("PAUSE2")
 
     # We expect the LED to toggle after the second button click
-    switch.wait_state_change_msg(True)
+    switch.wait_device_state_change(True)
 
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()['action'] == switch.get_z2m_attr_name("double")
@@ -322,7 +322,7 @@ def test_multifunction_tripple(switch):
     switch.wait_button_state("IDLE")
 
     # We expect the LED to toggle after the third click
-    switch.wait_state_change_msg(True)
+    switch.wait_device_state_change(True)
 
     # Check the device state changed, and the double click action is generated
     assert switch.wait_zigbee_state()[switch.get_z2m_attr_name('state')] == "ON"
