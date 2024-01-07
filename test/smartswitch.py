@@ -70,8 +70,8 @@ class SmartSwitch:
         return f"{self.z2m_name}/{self.ep}"
     
 
-    def get_z2m_attr_name(self, attribute):
-        return attribute + '_' + self.ep_name
+    def get_action_name(self, action):
+        return action + '_' + self.ep_name
 
 
     def do_set_request(self, attribute, value, expected_response):
@@ -196,5 +196,17 @@ class SmartSwitch:
         self.device.wait_str(state_str)
 
 
-    def wait_zigbee_state(self):
+    def wait_zigbee_msg(self):
         return self.zigbee.wait_msg(self.z2m_name)
+    
+
+    def wait_zigbee_state_change(self):
+        return self.zigbee.wait_msg(self.z2m_name)['state_' + self.ep_name]
+
+
+    def wait_zigbee_attribute_change(self, attribute):
+        return self.zigbee.wait_msg(self.z2m_name)[attribute + '_' + self.ep_name]
+
+
+    def wait_zigbee_action(self):
+        return self.zigbee.wait_msg(self.z2m_name)['action']
