@@ -23,7 +23,7 @@ def send_bind_request(bridge, clusters, src, dst):
         clusters = [clusters]
 
     # Send the bind request
-    payload = {"clusters": clusters, "from": src, "to": dst}
+    payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
     bridge.publish('request/device/bind', payload)
 
 
@@ -33,7 +33,7 @@ def send_unbind_request(bridge, clusters, src, dst):
         clusters = [clusters]
 
     # Send the bind request
-    payload = {"clusters": clusters, "from": src, "to": dst}
+    payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
     bridge.publish('request/device/unbind', payload)
 
 
@@ -105,7 +105,7 @@ class SmartSwitch:
         self.do_set_request('state_'+self.ep_name, cmd, msg)
 
         # Device will respond with On/Off state report
-        state = self.zigbee.wait_msg(self.z2m_name)['state_'+self.ep_name]
+        state = self.wait_zigbee_state_change()
 
         # Verify response from Z2M if possible
         if expected_state != None:
