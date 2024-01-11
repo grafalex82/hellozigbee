@@ -12,6 +12,11 @@ extern "C"
 uint8 au8MacAddress[]  __attribute__ ((section (".ro_mac_address"))) = {
                     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
+/* Pre-configured Link Key */
+uint8 s_au8LnkKeyArray[16] __attribute__ ((section (".ro_se_lnkKey")))
+= { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x5a, 0x69, 0x67, 0x62, 0x65, 0x65, 0x30,
+		0x30, 0x30, 0x30, 0x30 };
+
 
 
 void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
@@ -35,8 +40,6 @@ void OTAHandlers::initOTA(uint8 ep)
     #if TRACE_OTA_DEBUG
         vDumpCurrentImageOTAHeader(otaEp);
     #endif //TRACE_OTA_DEBUG
-
-    vDumpOverridenMacAddress(); // Dump MAC address anyway to avoid au8MacAddress to be optimized out
 }
 
 void OTAHandlers::restoreOTAAttributes()
@@ -90,14 +93,6 @@ void OTAHandlers::initFlash()
                             au8CAPublicKey);
     if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "OTAHandlers::initFlash(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
-}
-
-void OTAHandlers::vDumpOverridenMacAddress()
-{
-    DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", au8MacAddress);
-    for (int i=0; i<8; i++)
-        DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
-    DBG_vPrintf(TRUE, "\n");
 }
 
 void OTAHandlers::saveOTAContext()

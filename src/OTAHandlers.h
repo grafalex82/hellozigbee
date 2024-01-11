@@ -31,7 +31,6 @@ public:
 private:
     void restoreOTAAttributes();
     void initFlash();
-    void vDumpOverridenMacAddress();
     void saveOTAContext();
 };
 
