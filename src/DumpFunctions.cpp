@@ -51,6 +51,17 @@ void vDumpZclWriteAttributeRequest(tsZCL_CallBackEvent *psEvent)
             psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
 }
 
+void vDumpAttributeReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
+{
+    tsZCL_AttributeReportingConfigurationRecord * psRecord = &psEvent->uMessage.sAttributeReportingConfigurationRecord;
+    DBG_vPrintf(TRUE, "ZCL Configure Reporting: Cluster %04x Attrib %04x: min=%d, max=%d (Status=%02x)\n",
+        psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
+        psRecord->u16AttributeEnum, 
+        psRecord->u16MinimumReportingInterval,
+        psRecord->u16MaximumReportingInterval,
+        psEvent->eZCL_Status);
+}
+
 extern "C" void vDumpDiscoveryCompleteEvent(ZPS_tsAfNwkDiscoveryEvent * pEvent)
 {
     DBG_vPrintf(TRUE, "Network Discovery Complete: status 0x%02x\n", pEvent->eStatus);

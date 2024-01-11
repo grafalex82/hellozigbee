@@ -36,6 +36,7 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_buffer.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_command.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_common.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_configureReportingCommandHandle.c        
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_CustomCommandReceive.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_CustomCommandSend.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_defaultResponse.c
@@ -48,6 +49,7 @@ SET(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_readAttributesResponseHandle.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportManager.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportMaths.c
+        ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportScheduler.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportStringHandling.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_reportStructure.c
         ${SDK_PREFIX}/Components/ZCIF/Source/zcl_search.c

@@ -83,6 +83,14 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             handleClusterUpdate(psEvent);
             break;
 
+        case E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTES_CONFIGURE:
+            vDumpAttributeReportingConfigureRequest(psEvent);
+            break;
+
+        case E_ZCL_CBET_REPORT_ATTRIBUTES_CONFIGURE:
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Attributes reporting request has been processed\n");
+            break;
+
         default:
             DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Invalid event type (%d) in APP_ZCL_cbEndpointCallback\r\n", psEvent->eEventType);
             break;
