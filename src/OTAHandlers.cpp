@@ -39,6 +39,7 @@ void OTAHandlers::initOTA(uint8 ep)
     // Just dump current image OTA header and MAC address
     #if TRACE_OTA_DEBUG
         vDumpCurrentImageOTAHeader(otaEp);
+        vDumpOverridenMacAddress();
     #endif //TRACE_OTA_DEBUG
 }
 

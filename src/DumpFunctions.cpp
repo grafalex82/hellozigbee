@@ -458,6 +458,14 @@ void vDisplayAddressMap()
     }
 }
 
+void OTAHandlers::vDumpOverridenMacAddress()
+{
+    DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", au8MacAddress);
+    for (int i=0; i<8; i++)
+        DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
+    DBG_vPrintf(TRUE, "\n");
+}
+
 void vDumpCurrentImageOTAHeader(uint8 otaEp)
 {
     tsOTA_ImageHeader sOTAHeader;
