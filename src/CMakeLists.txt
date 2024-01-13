@@ -172,7 +172,6 @@ SET(SOURCES
         PdmIds.h
         GPIOPin.h
         PWMPin.h
-        AppQueue.cpp
         BlinkTask.cpp
         ButtonsTask.cpp
         LEDTask.cpp

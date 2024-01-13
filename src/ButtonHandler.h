@@ -3,7 +3,6 @@
 
 #include "ButtonModes.h"
 #include "IButtonHandler.h"
-#include "AppQueue.h"
 
 #include <jendefs.h>
 
@@ -64,7 +63,6 @@ protected:
     virtual void buttonStateMachineToggle(bool pressed);
     virtual void buttonStateMachineMomentary(bool pressed);
     virtual void buttonStateMachineMultistate(bool pressed);
-    void sendButtonEvent(ApplicationEventType evtType);
 
     const char * getStateName(ButtonState state);
 };

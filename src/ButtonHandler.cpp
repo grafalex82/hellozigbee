@@ -3,6 +3,7 @@
 
 extern "C"
 {
+    #include "dbg.h"
     #include "AppHardwareApi.h"
 }
 
@@ -23,11 +24,6 @@ ButtonHandler::ButtonHandler()
 void ButtonHandler::setEndpoint(SwitchEndpoint * ep)
 {
     endpoint = ep;
-}
-
-inline void ButtonHandler::sendButtonEvent(ApplicationEventType evtType)
-{
-//TODO Handle single/double/tripple/long presses here
 }
 
 const char * ButtonHandler::getStateName(ButtonState state)

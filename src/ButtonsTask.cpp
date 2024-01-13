@@ -1,6 +1,6 @@
 #include "ButtonsTask.h"
 #include "IButtonHandler.h"
-#include "AppQueue.h"
+#include "ZigbeeDevice.h"
 
 
 // Note: Object constructors are not executed by CRT if creating a global var of this object :(
@@ -104,13 +104,13 @@ void ButtonsTask::timerCallback()
     // pressed by to a heavy object. It may be reasonable to introduce some patter, e.g. press both button 2 times, and then hold.
     if(longPressCounter > 5000/ButtonPollCycle && allButtonsPressed)
     {
-        ApplicationEvent evt = {BUTTON_VERY_LONG_PRESS, 0};
-        appEventQueue.send(evt);
-
         for(uint8 h = 0; h < numHandlers; h++)
             handlers[h].handler->resetButtonStateMachine();
 
         longPressCounter = 0;
+
+        // Perform the join/leave
+        ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
     }
 }
 

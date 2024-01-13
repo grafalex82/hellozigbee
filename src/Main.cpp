@@ -14,7 +14,6 @@ extern "C"
 
 #include "Queue.h"
 #include "ButtonsTask.h"
-#include "AppQueue.h"
 #include "SwitchEndpoint.h"
 #include "EndpointManager.h"
 #include "BasicClusterEndpoint.h"
@@ -112,17 +111,6 @@ PUBLIC void wakeCallBack(void)
 
 PRIVATE void APP_vTaskSwitch(Context * context)
 {
-    ApplicationEvent evt;
-    if(appEventQueue.receive(&evt))
-    {
-        DBG_vPrintf(TRUE, "Processing button message type=%s, button=%d\n", getApplicationEventName(evt.eventType), evt.buttonId);
-
-        if(evt.eventType == BUTTON_VERY_LONG_PRESS)
-        {
-            ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
-        }
-    }
-
     if(ButtonsTask::getInstance()->canSleep() &&
        ZigbeeDevice::getInstance()->canSleep())
     {
@@ -257,10 +245,6 @@ extern "C" PUBLIC void vAppMain(void)
     // Init tasks
     DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
     ButtonsTask::getInstance();
-
-    // Initialize application queue
-    DBG_vPrintf(TRUE, "vAppMain(): init software queues...\n");
-    appEventQueue.init();
 
     // Initialize periodic tasks
     DBG_vPrintf(TRUE, "vAppMain(): init periodic tasks...\n");
