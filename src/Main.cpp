@@ -35,6 +35,11 @@ const uint32 SWITCH1_BTN_MASK = 1UL << SWITCH1_BTN_BIT;
 const uint8 SWITCH2_BTN_BIT = 2;
 const uint32 SWITCH2_BTN_MASK = 1UL << SWITCH2_BTN_BIT;
 
+// Pre-configured Link Key
+// TODO: Move it elsewhere when Touch Link functionality is implemented
+uint8 s_au8LnkKeyArray[16] __attribute__ ((section (".ro_se_lnkKey")))
+= { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x5a, 0x69, 0x67, 0x62, 0x65, 0x65, 0x30,
+		0x30, 0x30, 0x30, 0x30 };
 
 DeferredExecutor deferredExecutor;
 

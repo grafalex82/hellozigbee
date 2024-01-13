@@ -12,6 +12,13 @@ extern "C"
     #endif //_appZpsBeaconHandler_h_fixed_
 }
 
+// OTA linker scripts expect .ro_mac_address section to be defined even though the overriden
+// MAC address may not be used
+uint8 s_au8MacAddress[8]  __attribute__ ((section (".ro_mac_address"))) = {
+                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+};
+
+
 PRIVATE void vPrintAddr(ZPS_tuAddress addr, uint8 mode)
 {
     if(mode == ZPS_E_ADDR_MODE_IEEE)
@@ -469,11 +476,11 @@ void vDisplayAddressMap()
     }
 }
 
-void OTAHandlers::vDumpOverridenMacAddress()
-{
-    DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", au8MacAddress);
+void vDumpOverridenMacAddress()
+{    
+    DBG_vPrintf(TRUE, "MAC Address at address = %08x:  ", s_au8MacAddress);
     for (int i=0; i<8; i++)
-        DBG_vPrintf(TRUE, "%02x ",au8MacAddress[i] );
+        DBG_vPrintf(TRUE, "%02x ", s_au8MacAddress[i]);
     DBG_vPrintf(TRUE, "\n");
 }
 

@@ -7,18 +7,6 @@ extern "C"
     #include "string.h"
 }
 
-// OTA linker scripts expect .ro_mac_address section to be defined even though the overriden
-// MAC address may not be used
-uint8 au8MacAddress[]  __attribute__ ((section (".ro_mac_address"))) = {
-                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-};
-/* Pre-configured Link Key */
-uint8 s_au8LnkKeyArray[16] __attribute__ ((section (".ro_se_lnkKey")))
-= { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x5a, 0x69, 0x67, 0x62, 0x65, 0x65, 0x30,
-		0x30, 0x30, 0x30, 0x30 };
-
-
-
 void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
 {
     memset(persistedData, 0, sizeof(tsOTA_PersistedData));

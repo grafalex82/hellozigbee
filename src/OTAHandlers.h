@@ -16,7 +16,6 @@ extern "C"
     #endif //OTA_H_FIXED
 }
 
-
 class OTAHandlers
 {
     uint8 otaEp;
