@@ -13,7 +13,6 @@ extern "C"
 }
 
 #include "Queue.h"
-#include "DeferredExecutor.h"
 #include "ButtonsTask.h"
 #include "AppQueue.h"
 #include "SwitchEndpoint.h"
@@ -41,7 +40,6 @@ uint8 s_au8LnkKeyArray[16] __attribute__ ((section (".ro_se_lnkKey")))
 = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x5a, 0x69, 0x67, 0x62, 0x65, 0x65, 0x30,
 		0x30, 0x30, 0x30, 0x30 };
 
-DeferredExecutor deferredExecutor;
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
 extern "C"
@@ -57,7 +55,6 @@ extern "C"
 // - 1 in LEDTask
 // - 1 in Heartbeat BlinkTask
 // - 1 in PollTask
-// - 1 in DeferredExecutor (TODO: Do we still need it?)
 // - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
 ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
@@ -107,55 +104,6 @@ void vfExtendedStatusCallBack (ZPS_teExtendedStatus eExtendedStatus)
 {
     DBG_vPrintf(TRUE,"ERROR: Extended status %x\n", eExtendedStatus);
 }
-
-#if 0
-PRIVATE void vGetCoordinatorEndpoints(uint8)
-{
-    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
-
-    // Destination address - 0x0000 (Coordinator)
-    ZPS_tuAddress uDstAddr;
-    uDstAddr.u16Addr = 0;
-
-    // Active Endpoints request
-    ZPS_tsAplZdpActiveEpReq sNodeDescReq;
-    sNodeDescReq.u16NwkAddrOfInterest = uDstAddr.u16Addr;
-
-    // Send the request
-    uint8 u8SeqNumber;
-    ZPS_teStatus status = ZPS_eAplZdpActiveEpRequest(hAPduInst,
-                                                     uDstAddr,
-                                                     FALSE,       // bExtAddr
-                                                     &u8SeqNumber,
-                                                     &sNodeDescReq);
-
-    DBG_vPrintf(TRUE, "Sent Active endpoints request to coordinator %d\n", status);
-}
-
-PRIVATE void vSendSimpleDescriptorReq(uint8 ep)
-{
-    PDUM_thAPduInstance hAPduInst = PDUM_hAPduAllocateAPduInstance(apduZDP);
-
-    // Destination address - 0x0000 (Coordinator)
-    ZPS_tuAddress uDstAddr;
-    uDstAddr.u16Addr = 0;
-
-    // Simple Descriptor request
-    ZPS_tsAplZdpSimpleDescReq sSimpleDescReq;
-    sSimpleDescReq.u16NwkAddrOfInterest = uDstAddr.u16Addr;
-    sSimpleDescReq.u8EndPoint = ep;
-
-    // Send the request
-    uint8 u8SeqNumber;
-    ZPS_teStatus status = ZPS_eAplZdpSimpleDescRequest(hAPduInst,
-                                                     uDstAddr,
-                                                     FALSE,       // bExtAddr
-                                                     &u8SeqNumber,
-                                                     &sSimpleDescReq);
-
-    DBG_vPrintf(TRUE, "Sent Simple Descriptor request to coordinator for EP %d (status %d)\n", ep, status);
-}
-#endif //0
 
 PUBLIC void wakeCallBack(void)
 {
@@ -316,7 +264,6 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Initialize periodic tasks
     DBG_vPrintf(TRUE, "vAppMain(): init periodic tasks...\n");
-    deferredExecutor.init();
     ZCLTimer zclTimer;
     zclTimer.init();
     zclTimer.startTimer(1000);

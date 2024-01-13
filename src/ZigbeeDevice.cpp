@@ -204,23 +204,7 @@ void ZigbeeDevice::handlePollResponse(ZPS_tsAfPollConfEvent* pEvent)
 
 void ZigbeeDevice::handleZdoDataIndication(ZPS_tsAfEvent * pEvent)
 {
-    ZPS_tsAfZdpEvent zdpEvent;
-
-    switch(pEvent->uEvent.sApsDataIndEvent.u16ClusterId)
-    {
-        case ZPS_ZDP_ACTIVE_EP_RSP_CLUSTER_ID:
-        {
-            bool res = zps_bAplZdpUnpackActiveEpResponse(pEvent, &zdpEvent);
-            DBG_vPrintf(TRUE, "Unpacking Active Endpoint Response: Status: %02x res:%02x\n", zdpEvent.uZdpData.sActiveEpRsp.u8Status, res);
-            for(uint8 i=0; i<zdpEvent.uZdpData.sActiveEpRsp.u8ActiveEpCount; i++)
-            {
-                uint8 ep = zdpEvent.uLists.au8Data[i];
-                DBG_vPrintf(TRUE, "Scheduling simple descriptor request for EP %d\n", ep);
-
-                //deferredExecutor.runLater(1000, vSendSimpleDescriptorReq, ep);
-            }
-        }
-    }
+    DBG_vPrintf(TRUE, "ZDO Data indication event: %d\n", pEvent->eType);
 }
 
 void ZigbeeDevice::handleZdoBindUnbindEvent(ZPS_tsAfZdoBindEvent * pEvent, bool bind)

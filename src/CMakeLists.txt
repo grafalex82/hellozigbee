@@ -180,7 +180,6 @@ SET(SOURCES
         LEDPair.cpp
         ButtonHandler.cpp
         PollTask.cpp
-        DeferredExecutor.cpp
         DumpFunctions.cpp
         Endpoint.cpp
         SwitchEndpoint.cpp
