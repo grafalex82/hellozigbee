@@ -25,6 +25,7 @@ extern "C"
     void vDisplayGroupsTable();
     void vDisplayAddressMap();
 
+    void vDumpOverridenMacAddress();
     void vDumpCurrentImageOTAHeader(uint8 otaEp);
     void vDumpOTAMessage(tsOTA_CallBackMessage * pMsg);
 }

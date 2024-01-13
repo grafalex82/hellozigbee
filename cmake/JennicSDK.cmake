@@ -154,7 +154,7 @@ function(ADD_HEX_BIN_TARGETS TARGET)
 
     add_custom_target("${TARGET}.bin"
         DEPENDS ${TARGET}
-        COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -j .ro_mac_address -j .ro_ota_header -j .pad -S -O binary ${FILENAME} ${FILENAME}.tmp.bin
+        COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -j .ro_mac_address -j .ro_ota_header -j .ro_se_lnkKey -j .pad -S -O binary ${FILENAME} ${FILENAME}.tmp.bin
         COMMAND ${JET} -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n 1 -t 1 -u 0x1037 -j "HelloZigbee2021                 " -o ${FILENAME}.bin
     )
 endfunction()
