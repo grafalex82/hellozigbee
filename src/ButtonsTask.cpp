@@ -71,7 +71,8 @@ void ButtonsTask::timerCallback()
     uint32 input = u32AHI_DioReadInput();
     input &= ~buttonsOverride;
 
-    bool someButtonPressed = false;
+    bool someButtonPressed = false;     // Used to reset idle counter
+    bool allButtonsPressed = true;      // User to initiate join/leave
 
     //DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): input=%08x\n", input);
     for(uint8 h = 0; h < numHandlers; h++)
@@ -82,6 +83,8 @@ void ButtonsTask::timerCallback()
 
         if(pressed)
             someButtonPressed = true;
+
+        allButtonsPressed &= pressed;
     }
 
     // Reset the idle counter when user interacts with a button
@@ -96,8 +99,10 @@ void ButtonsTask::timerCallback()
         longPressCounter = 0;
     }
 
-    // Process a very long press to join/leave the network
-    if(longPressCounter > 5000/ButtonPollCycle)
+    // Process a very long press of all buttons to join/leave the network
+    // TODO: Perhaps just a long press is not a good key combination for join/rejoin. For example buttons may be accidentally
+    // pressed by to a heavy object. It may be reasonable to introduce some patter, e.g. press both button 2 times, and then hold.
+    if(longPressCounter > 5000/ButtonPollCycle && allButtonsPressed)
     {
         ApplicationEvent evt = {BUTTON_VERY_LONG_PRESS, 0};
         appEventQueue.send(evt);

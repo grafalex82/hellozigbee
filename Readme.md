@@ -78,13 +78,13 @@ After z2m restart the device features will be supported by zigbee2mqtt.
 
 # How to use
 
-## Network joining notes
+## Network joining
 
-The device implements a common type of home automation devices. On the first start the device is not connected to the network. Press and hold any of the device buttons for 5 seconds in order to initiate the network joining. Make sure your network permits joining, otherwise the device is not able to join. 
+The device implements a common type of home automation devices. On the first start the device is not connected to the network. Press and hold both device buttons for 5 seconds in order to initiate the network joining. Make sure your network permits joining, otherwise the device is not able to join. 
 
 Once the device joined the network, zigbee2mqtt will start intervieweing the device, which will take up to 15 seconds. If the zigbee2mqtt external converter is installed, the z2m system will provide full access to the device features.
 
-Device automatically tries to rejoin the network if network conditions change (e.g. parent/neighbour router no longer responds). Device joining and rejoining, as well as failure recovery is implemented using BDB component (a part of Zigbee SDK). The device performs several rejoin attempts before giving up. Pressing a button for 5 seconds will force device to leave the network.
+Device automatically tries to rejoin the network if network conditions change (e.g. parent/neighbour router no longer responds). Device joining and rejoining, as well as failure recovery is implemented using BDB component (a part of Zigbee SDK). The device performs several rejoin attempts before giving up. Pressing both device buttons for 5 seconds will force device to leave the network.
 
 ## Main functionality
 
