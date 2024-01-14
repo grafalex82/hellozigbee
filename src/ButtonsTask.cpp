@@ -74,11 +74,11 @@ void ButtonsTask::timerCallback()
     bool someButtonPressed = false;                 // Used to reset idle counter
     bool allButtonsPressed = input == buttonsMask;  // Used to initiate join/leave
 
-    DBG_vPrintf(TRUE, "Input=%08x\n", input);
+    // DBG_vPrintf(TRUE, "Input=%08x\n", input);
     for(uint8 h = 0; h < numHandlers; h++)
     {
         bool pressed = (input == handlers[h].pinMask);
-        DBG_vPrintf(TRUE, "PinMask=%08x pressed=%d\n", handlers[h].pinMask, pressed);
+        // DBG_vPrintf(TRUE, "PinMask=%08x pressed=%d\n", handlers[h].pinMask, pressed);
         handlers[h].handler->handleButtonState(pressed);
 
         if(pressed)
