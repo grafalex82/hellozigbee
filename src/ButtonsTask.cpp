@@ -1,6 +1,6 @@
+#include "ZigbeeDevice.h"
 #include "ButtonsTask.h"
 #include "IButtonHandler.h"
-#include "ZigbeeDevice.h"
 
 
 // Note: Object constructors are not executed by CRT if creating a global var of this object :(
@@ -68,17 +68,17 @@ void ButtonsTask::registerHandler(uint32 pinMask, IButtonHandler * handler)
 
 void ButtonsTask::timerCallback()
 {
-    uint32 input = u32AHI_DioReadInput();
-    input &= ~buttonsOverride;
+    uint32 input = ~u32AHI_DioReadInput() & buttonsMask;
+    input |= buttonsOverride;
 
     bool someButtonPressed = false;     // Used to reset idle counter
     bool allButtonsPressed = true;      // User to initiate join/leave
 
-    //DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): input=%08x\n", input);
+    // DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): input=%08x\n", input);
     for(uint8 h = 0; h < numHandlers; h++)
     {
-        bool pressed = ((input & handlers[h].pinMask) == 0);
-        //DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): handler pinMask=%08x (pressed=%d)\n", handlers[h].pinMask, pressed);
+        bool pressed = (input == handlers[h].pinMask);
+        // DBG_vPrintf(TRUE, "ButtonsTask::timerCallback(): handler pinMask=%08x (pressed=%d)\n", handlers[h].pinMask, pressed);
         handlers[h].handler->handleButtonState(pressed);
 
         if(pressed)

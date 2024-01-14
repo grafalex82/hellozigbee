@@ -64,6 +64,7 @@ struct Context
     BasicClusterEndpoint basicEndpoint;
     SwitchEndpoint switch1;
     SwitchEndpoint switch2;
+    SwitchEndpoint switchBoth;
 };
 
 
@@ -263,9 +264,11 @@ extern "C" PUBLIC void vAppMain(void)
     Context context;
     context.switch1.setPins(SWITCH1_BTN_MASK);
     context.switch2.setPins(SWITCH2_BTN_MASK);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &context.switch1);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &context.switch2);
+    context.switchBoth.setPins(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_BASIC_ENDPOINT, &context.basicEndpoint);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH1_ENDPOINT, &context.switch1);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH2_ENDPOINT, &context.switch2);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCHB_ENDPOINT, &context.switchBoth);
 
     // Init the ZigbeeDevice, AF, BDB, and other network stuff
     ZigbeeDevice::getInstance();

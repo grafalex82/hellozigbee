@@ -1,14 +1,14 @@
 #ifndef BUTTONSTASK_H
 #define BUTTONSTASK_H
 
-#include "PeriodicTask.h"
-#include "Queue.h"
-
 extern "C"
 {
     #include "zcl.h"
     #include "zcl_options.h"
 }
+
+#include "PeriodicTask.h"
+#include "Queue.h"
 
 class IButtonHandler;
 

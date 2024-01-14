@@ -3,7 +3,7 @@
 
 #include <jendefs.h>
 
-static const uint32 ButtonPollCycle = 10;
+static const uint32 ButtonPollCycle = 20;
 
 class IButtonHandler
 {
