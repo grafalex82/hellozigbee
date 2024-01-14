@@ -20,15 +20,16 @@ SwitchEndpoint::SwitchEndpoint()
 {
 }
 
-void SwitchEndpoint::setPins(uint32 pinMask)
+void SwitchEndpoint::setConfiguration(uint32 pinMask, bool disableServer)
 {
+    clientOnly = disableServer;
     ButtonsTask::getInstance()->registerHandler(pinMask, &buttonHandler);
 }
 
 void SwitchEndpoint::registerServerCluster()
 {
     // Initialize On/Off server cluser
-    teZCL_Status status = eCLD_OnOffCreateOnOff(&sClusterInstance.sOnOffServer,
+    teZCL_Status status = eCLD_OnOffCreateOnOff(&sClusterInstance.server.sOnOffServer,
                                                 TRUE,                               // Server
                                                 &sCLD_OnOff,
                                                 &sOnOffServerCluster,
@@ -41,7 +42,7 @@ void SwitchEndpoint::registerServerCluster()
 void SwitchEndpoint::registerClientCluster()
 {
     // Initialize On/Off client cluser
-    teZCL_Status status = eCLD_OnOffCreateOnOff(&sClusterInstance.sOnOffClient,
+    teZCL_Status status = eCLD_OnOffCreateOnOff(&sClusterInstance.client.sOnOffClient,
                                                 FALSE,                              // Client
                                                 &sCLD_OnOff,
                                                 &sOnOffClientCluster,
@@ -54,7 +55,7 @@ void SwitchEndpoint::registerClientCluster()
 void SwitchEndpoint::registerOnOffConfigServerCluster()
 {
     // Initialize On/Off config server cluser
-    teZCL_Status status = eCLD_OOSCCreateOnOffSwitchConfig(&sClusterInstance.sOnOffConfigServer,
+    teZCL_Status status = eCLD_OOSCCreateOnOffSwitchConfig(&sClusterInstance.client.sOnOffConfigServer,
                                                            TRUE,                              // Server
                                                            &sCLD_OOSC,
                                                            &sOnOffConfigServerCluster,
@@ -67,7 +68,7 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
 {
     // Initialize Multistate Input server cluser
     teZCL_Status status = eCLD_MultistateInputBasicCreateMultistateInputBasic(
-                &sClusterInstance.sMultistateInputServer,
+                &sClusterInstance.client.sMultistateInputServer,
                 TRUE,                              // Server
                 &sCLD_MultistateInputBasic,
                 &sMultistateInputServerCluster,
@@ -79,7 +80,7 @@ void SwitchEndpoint::registerMultistateInputServerCluster()
 void SwitchEndpoint::registerLevelControlClientCluster()
 {
     // Initialize Level Control client cluser
-    teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.sLevelControlClient,
+    teZCL_Status status = eCLD_LevelControlCreateLevelControl(&sClusterInstance.client.sLevelControlClient,
                                                               FALSE,                              // Client
                                                               &sCLD_LevelControl,
                                                               &sLevelControlClientCluster,
@@ -92,7 +93,7 @@ void SwitchEndpoint::registerLevelControlClientCluster()
 void SwitchEndpoint::registerIdentifyCluster()
 {
     // Create an instance of a basic cluster as a server
-    teZCL_Status status = eCLD_IdentifyCreateIdentify(&sClusterInstance.sIdentifyServer,
+    teZCL_Status status = eCLD_IdentifyCreateIdentify(&sClusterInstance.client.sIdentifyServer,
                                                 TRUE,
                                                 &sCLD_Identify,
                                                 &sIdentifyServerCluster,
@@ -107,7 +108,7 @@ void SwitchEndpoint::registerGroupsCluster()
 {
     DBG_vPrintf(TRUE, "Registering groups cluster\n");
     // Create an instance of a groups cluster as a server
-    teZCL_Status status = eCLD_GroupsCreateGroups(&sClusterInstance.sGroupsServer,
+    teZCL_Status status = eCLD_GroupsCreateGroups(&sClusterInstance.server.sGroupsServer,
                                                   TRUE,
                                                   &sCLD_Groups,
                                                   &sGroupsServerCluster,
@@ -120,12 +121,19 @@ void SwitchEndpoint::registerGroupsCluster()
 
 void SwitchEndpoint::initEndpointStructure()
 {
+    // Calculate number of clusters, depending on client/server mode
+    uint16 numClusters = sizeof(OnOffClientClusterInstances) / sizeof(tsZCL_ClusterInstance);
+    if(!clientOnly)
+        numClusters = sizeof(OnOffClusterInstances) / sizeof(tsZCL_ClusterInstance);
+
+    DBG_vPrintf(TRUE, "SwitchEndpoint::initEndpointStructure(): Registering %d clusters\n", numClusters);
+
     // Initialize endpoint structure
     sEndPoint.u8EndPointNumber = getEndpointId();
     sEndPoint.u16ManufacturerCode = ZCL_MANUFACTURER_CODE;
     sEndPoint.u16ProfileEnum = HA_PROFILE_ID;
     sEndPoint.bIsManufacturerSpecificProfile = FALSE;
-    sEndPoint.u16NumberOfClusters = sizeof(OnOffClusterInstances) / sizeof(tsZCL_ClusterInstance);
+    sEndPoint.u16NumberOfClusters = numClusters;
     sEndPoint.psClusterInstance = (tsZCL_ClusterInstance*)&sClusterInstance;
     sEndPoint.bDisableDefaultResponse = ZCL_DISABLE_DEFAULT_RESPONSES;
     sEndPoint.pCallBackFunctions = &EndpointManager::handleZclEvent;
@@ -165,13 +173,16 @@ void SwitchEndpoint::init()
 {
     // Register all clusters and endpoint itself
     initEndpointStructure();
-    registerServerCluster();
     registerClientCluster();
     registerOnOffConfigServerCluster();
     registerMultistateInputServerCluster();
     registerLevelControlClientCluster();
     registerIdentifyCluster();
-    registerGroupsCluster();
+    if(!clientOnly)
+    {
+        registerServerCluster();
+        registerGroupsCluster();
+    }
     registerEndpoint();
 
     // Let button handler know about this Endpoint instanct so that it can properly report new states
@@ -193,6 +204,9 @@ bool SwitchEndpoint::getState() const
 
 void SwitchEndpoint::switchOn()
 {
+    if(clientOnly)
+        return;
+
     bool newValue = true;
 
     // Invert the value in inverse mode
@@ -204,6 +218,9 @@ void SwitchEndpoint::switchOn()
 
 void SwitchEndpoint::switchOff()
 {
+    if(clientOnly)
+        return;
+
     bool newValue = false;
 
     // Invert the value in inverse mode
@@ -215,6 +232,9 @@ void SwitchEndpoint::switchOff()
 
 void SwitchEndpoint::toggle()
 {
+    if(clientOnly)
+        return;
+
     doStateChange(!getState());
 }
 
@@ -232,6 +252,9 @@ void SwitchEndpoint::doStateChange(bool state)
 
 void SwitchEndpoint::reportState()
 {
+    if(clientOnly)
+        return;
+
     // Destination address - 0x0000 (coordinator)
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
@@ -410,6 +433,13 @@ void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
     tsCLD_OnOffCallBackMessage * msg = (tsCLD_OnOffCallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 commandId = msg->u8CommandId;
 
+    if(clientOnly){
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Warning: On/Off Cluster command received on CLIENT ONLY endpoint Cmd=%02x\n",
+                psEvent->u8EndPoint,
+                commandId);
+        return;
+    }
+
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x\n",
                 psEvent->u8EndPoint,
                 commandId);
@@ -445,6 +475,11 @@ void SwitchEndpoint::handleGroupsClusterCommand(tsZCL_CallBackEvent *psEvent)
     tsCLD_GroupsCallBackMessage * msg = (tsCLD_GroupsCallBackMessage*)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     uint8 commandId = msg->u8CommandId;
     uint8 ep = psEvent->u8EndPoint;
+
+    if(clientOnly) {
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Warning: Groups cluster command Cmd=%d received on CLIENT ONLY endpoint\n", ep, commandId);
+        return;
+    }
 
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Groups cluster command Cmd=%d\n", ep, commandId);
 }
@@ -530,6 +565,9 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
 
 bool SwitchEndpoint::runsInServerMode() const
 {
+    if(clientOnly)
+        return false;
+
     return !hasBindings(getEndpointId(), GENERAL_CLUSTER_ID_ONOFF);
 }
 

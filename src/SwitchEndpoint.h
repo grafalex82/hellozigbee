@@ -18,17 +18,35 @@ extern "C"
 #include "ButtonHandler.h"
 
 // List of cluster instances (descriptor objects) that are included into the endpoint
-struct OnOffClusterInstances
+// The clusters defined in this list work for both client and server modes. 
+//
+// Note: Do not mix up endpoint client/server mode with individual cluster client/server instance
+//       The switch client mode means it can work only like a controller device (e.g. smart button), but does not
+//       have relay control and internal state. At the same time it has number of server clusters (Multistate Input,
+//       OOSC) for configuration and reporting actions.
+struct OnOffClientClusterInstances
 {
     tsZCL_ClusterInstance sOnOffClient;
-    tsZCL_ClusterInstance sOnOffServer;
     tsZCL_ClusterInstance sOnOffConfigServer;
     tsZCL_ClusterInstance sMultistateInputServer;
     tsZCL_ClusterInstance sLevelControlClient;
     tsZCL_ClusterInstance sIdentifyServer;
+} __attribute__ ((aligned(4)));
+
+// List of additional clusters for server mode
+// Note: In server mode the switch has its internal state, can report state attributes, and can be assigned to a group
+struct OnOffServerClusterInstances
+{
+    tsZCL_ClusterInstance sOnOffServer;
     tsZCL_ClusterInstance sGroupsServer;
 } __attribute__ ((aligned(4)));
 
+// This structure is used just to ensure client and server clusters are layed out consecutively in memory
+struct OnOffClusterInstances
+{
+    OnOffClientClusterInstances client;
+    OnOffServerClusterInstances server;
+} __attribute__ ((aligned(4)));
 
 class SwitchEndpoint: public Endpoint
 {    
@@ -48,10 +66,11 @@ protected:
     tsCLD_GroupsCustomDataStructure sGroupsServerCustomDataStructure;
 
     ButtonHandler buttonHandler;
+    bool clientOnly;
 
 public:
     SwitchEndpoint();
-    void setPins(uint32 pinMask);
+    void setConfiguration(uint32 pinMask, bool disableServer = false);
     virtual void init();
 
     bool getState() const;

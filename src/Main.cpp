@@ -262,9 +262,9 @@ extern "C" PUBLIC void vAppMain(void)
 
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     Context context;
-    context.switch1.setPins(SWITCH1_BTN_MASK);
-    context.switch2.setPins(SWITCH2_BTN_MASK);
-    context.switchBoth.setPins(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
+    context.switch1.setConfiguration(SWITCH1_BTN_MASK);
+    context.switch2.setConfiguration(SWITCH2_BTN_MASK);
+    context.switchBoth.setConfiguration(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK, true);
     EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_BASIC_ENDPOINT, &context.basicEndpoint);
     EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH1_ENDPOINT, &context.switch1);
     EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH2_ENDPOINT, &context.switch2);
