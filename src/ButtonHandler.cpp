@@ -12,6 +12,9 @@ ButtonHandler::ButtonHandler()
 {
     endpoint = NULL;
 
+    prevState = false;
+    debounceTimer = 0;
+
     currentState = INVALID;
     currentStateDuration = 0;
 
@@ -260,10 +263,16 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
 
 void ButtonHandler::handleButtonState(bool pressed)
 {
-    // Let at least 20ms to stabilize button value, do not make any early decisions
+    // Let at least 60ms to stabilize button value, do not make any early decisions
     // When button state is stabilized - go through the corresponding state machine
-    currentStateDuration++;
-    if(currentStateDuration < 2)
+    if(pressed != prevState)
+    {
+        prevState = pressed;
+        debounceTimer = 0;
+    }
+
+    debounceTimer++;
+    if(debounceTimer <= 3)
         return;
 
     // On a mode change the state is set to INVALID. This is needed to avoid immediate handling of a pressed button (if any).
