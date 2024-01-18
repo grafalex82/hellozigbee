@@ -106,7 +106,6 @@ void SwitchEndpoint::registerIdentifyCluster()
 
 void SwitchEndpoint::registerGroupsCluster()
 {
-    DBG_vPrintf(TRUE, "Registering groups cluster\n");
     // Create an instance of a groups cluster as a server
     teZCL_Status status = eCLD_GroupsCreateGroups(&sClusterInstance.server.sGroupsServer,
                                                   TRUE,
