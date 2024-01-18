@@ -275,6 +275,9 @@ void ButtonHandler::handleButtonState(bool pressed)
     if(debounceTimer <= 3)
         return;
 
+    // Increment current state duration - some states use this variable to calculate timings before switching to a new state
+    currentStateDuration++;
+
     // On a mode change the state is set to INVALID. This is needed to avoid immediate handling of a pressed button (if any).
     // This check performs exit from INVALID state to IDLE upon button release
     if(currentState == INVALID)
