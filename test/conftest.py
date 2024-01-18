@@ -79,11 +79,13 @@ def switch(device, zigbee, request, pytestconfig):
 @pytest.fixture(scope="session", autouse = True)
 def cleanup_bindings(bridge, device_name):
     for ep, _ in button_channels:
+        send_unbind_request(bridge, "genOnOff", f"{device_name}/{ep}", "Coordinator")
         send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
 
     yield
 
     for ep, _ in button_channels:
+        send_unbind_request(bridge, "genOnOff", f"{device_name}/{ep}", "Coordinator")
         send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
 
 
