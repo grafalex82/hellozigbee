@@ -202,6 +202,10 @@ bool SwitchEndpoint::getState() const
 
 void SwitchEndpoint::switchOn()
 {
+    // Handle toggle mode separately
+    if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_TOGGLE)
+        return toggle();
+
     // Invert the value in inverse mode
     bool newState = true;
     if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
@@ -217,6 +221,10 @@ void SwitchEndpoint::switchOn()
 
 void SwitchEndpoint::switchOff()
 {
+    // Handle toggle mode separately
+    if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_TOGGLE)
+        return toggle();
+
     // Invert the value in inverse mode
     bool newState = false;
     if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
