@@ -138,6 +138,8 @@ class SmartSwitch:
                 return 'ff03'
             case 'long_press_mode':
                 return 'ff04'
+            case 'operation_mode':
+                return 'ff05'
             case _:
                 raise RuntimeError("Unknown attribute name")
 
