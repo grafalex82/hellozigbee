@@ -2,413 +2,382 @@ import pytest
 
 from smartswitch import *
 
-def test_on_off(switch):
-    switch.switch('ON')
-    switch.switch('OFF')
+
+# Make sure the switch is in server mode for the tests below
+@pytest.fixture(scope='function')
+def sswitch(switch):
+    switch.set_attribute('operation_mode', 'server')
+    yield switch
+
+def test_on_off(sswitch):
+    sswitch.switch('ON')
+    sswitch.switch('OFF')
 
 
-def test_toggle(switch):
-    switch.switch('OFF')
-    assert switch.get_state() == 'OFF'
+def test_toggle(sswitch):
+    sswitch.switch('OFF')
+    assert sswitch.get_state() == 'OFF'
 
-    switch.switch('TOGGLE', 'ON')
-    assert switch.get_state() == 'ON'
+    sswitch.switch('TOGGLE', 'ON')
+    assert sswitch.get_state() == 'ON'
 
-    switch.switch('TOGGLE', 'OFF')
-    assert switch.get_state() == 'OFF'
+    sswitch.switch('TOGGLE', 'OFF')
+    assert sswitch.get_state() == 'OFF'
 
 
-def test_toggle_mode_btn_press(switch):
+def test_toggle_mode_btn_press(sswitch):
     # Ensure the switch is off on start, and the mode is 'toggle'
-    switch.switch('OFF')
-    switch.set_attribute('switch_mode', 'toggle')
+    sswitch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'toggle')
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed
-    switch.set_attribute('relay_mode', 'front')
+    sswitch.set_attribute('relay_mode', 'front')
 
     # Emulate short button press
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # In the toggle mode the switch is triggered immediately on button press
-    switch.wait_device_state_change(True)
+    sswitch.wait_device_state_change(True)
 
     # Release the button
-    switch.release_button()
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("IDLE")
 
     # Check the device state changed, and the action is generated (in this particular order)
-    assert switch.wait_zigbee_action() == switch.get_action_name("single")
-    assert switch.wait_zigbee_state_change() == "ON"
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("single")
+    assert sswitch.wait_zigbee_state_change() == "ON"
 
 
-def test_toggle_mode_relay_unlinked(switch):
+def test_toggle_mode_relay_unlinked(sswitch):
     # Ensure the switch is off on start, and the mode is 'toggle'
-    switch.switch('OFF')
-    switch.set_attribute('switch_mode', 'toggle')
+    sswitch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'toggle')
 
     # Set relay_mode to unlinked - the device will not change its state, but only send the single press action
-    switch.set_attribute('relay_mode', 'unlinked')
+    sswitch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate short button press
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # Release the button
-    switch.release_button()
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("IDLE")
 
     # Check the action is generated, but the state has not changed
-    assert switch.wait_zigbee_action() == switch.get_action_name("single")
-    assert switch.get_state() == "OFF"
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("single")
+    assert sswitch.get_state() == "OFF"
 
 
 @pytest.mark.parametrize("switch_actions, init_state, alter_state", [
     ('onOff', "OFF", "ON"),
     ('offOn', "ON", "OFF")
 ])
-def test_momentary_on_off(switch, switch_actions, init_state, alter_state):
+def test_momentary_on_off(sswitch, switch_actions, init_state, alter_state):
     # Just handy variables
     init_state_bool = init_state == 'ON'
     alter_state_bool = alter_state == 'ON'
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
-    switch.set_attribute('switch_mode', 'momentary')
-    switch.switch(init_state)
+    sswitch.set_attribute('switch_mode', 'momentary')
+    sswitch.switch(init_state)
 
     # This test is focused on onOff and offOn switch actions
-    switch.set_attribute('switch_actions', switch_actions)
+    sswitch.set_attribute('switch_actions', switch_actions)
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed, and then change again when depressed
-    switch.set_attribute('relay_mode', 'front')
+    sswitch.set_attribute('relay_mode', 'front')
 
     # Emulate short button press
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # In the momentary mode the switch is triggered immediately on button press. The state is changed from init_state to alter_state
-    switch.wait_device_state_change(alter_state_bool)
+    sswitch.wait_device_state_change(alter_state_bool)
 
     # Release the button
-    switch.release_button()
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("IDLE")
 
     # Once the button is released, the state must get back to the init state
-    switch.wait_device_state_change(init_state_bool)
+    sswitch.wait_device_state_change(init_state_bool)
 
     # Check the device state changed, and the action is generated (in this particular order)
-    assert switch.wait_zigbee_action() == switch.get_action_name("hold")
-    assert switch.wait_zigbee_state_change() == alter_state
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("hold")
+    assert sswitch.wait_zigbee_state_change() == alter_state
 
-    assert switch.wait_zigbee_action() == switch.get_action_name("release")
-    assert switch.wait_zigbee_state_change() == init_state
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("release")
+    assert sswitch.wait_zigbee_state_change() == init_state
 
 
 @pytest.mark.parametrize("init_state, alter_state", [
     ("OFF", "ON"),
-    #("ON", "OFF")      # BUG: The code does not really toggles the state. but rather works as offOn mode
+    ("ON", "OFF")
 ])
-def test_momentary_toggle(switch, init_state, alter_state):
+def test_momentary_toggle(sswitch, init_state, alter_state):
     # Just handy variables
     init_state_bool = init_state == 'ON'
     alter_state_bool = alter_state == 'ON'
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
-    switch.set_attribute('switch_mode', 'momentary')
-    switch.switch(init_state)
+    sswitch.set_attribute('switch_mode', 'momentary')
+    sswitch.switch(init_state)
 
     # This test is focused on the 'toggle' switch actions mode (withing 'momentary' switch mode)
-    switch.set_attribute('switch_actions', 'toggle')
+    sswitch.set_attribute('switch_actions', 'toggle')
 
     # Set relay_mode other than unlinked - the device will switch state when button is pressed, and then change again when depressed
-    switch.set_attribute('relay_mode', 'front')
+    sswitch.set_attribute('relay_mode', 'front')
 
     # Emulate short button press
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # In the momentary-toggle mode the switch is toggled immediately on button press. The state is changed from init_state to alter_state
-    switch.wait_device_state_change(alter_state_bool)
+    sswitch.wait_device_state_change(alter_state_bool)
 
     # Release the button
-    switch.release_button()
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("IDLE")
 
     # Once the button is released, the state must get back to the init state
-    switch.wait_device_state_change(init_state_bool)
+    sswitch.wait_device_state_change(init_state_bool)
 
     # Check the device state changed, and the action is generated (in this particular order)
     # On the release the state must return to the original state
-    assert switch.wait_zigbee_action() == switch.get_action_name("hold")
-    assert switch.wait_zigbee_state_change() == alter_state
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("hold")
+    assert sswitch.wait_zigbee_state_change() == alter_state
 
-    assert switch.wait_zigbee_action() == switch.get_action_name("release")
-    assert switch.wait_zigbee_state_change() == init_state
-
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("release")
+    assert sswitch.wait_zigbee_state_change() == init_state
 
 
 @pytest.mark.parametrize("switch_actions, init_state", [
     ('onOff', "OFF"),
     ('offOn', "ON")
 ])
-def test_momentary_on_off_unlinked(switch, switch_actions, init_state):
+def test_momentary_on_off_unlinked(sswitch, switch_actions, init_state):
     # Just handy variables
     init_state_bool = init_state == 'ON'
 
     # Ensure the switch is in init_state on start, and the mode is 'momentary'
-    switch.set_attribute('switch_mode', 'momentary')
-    switch.switch(init_state)
+    sswitch.set_attribute('switch_mode', 'momentary')
+    sswitch.switch(init_state)
 
     # This test is focused on onOff and offOn switch actions
-    switch.set_attribute('switch_actions', switch_actions)
+    sswitch.set_attribute('switch_actions', switch_actions)
 
     # Set relay_mode to unlinked - the device will generate actions, but do not really toggle the state
-    switch.set_attribute('relay_mode', 'unlinked')
+    sswitch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate short button press
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # Release the button
-    switch.release_button()
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("IDLE")
 
     # Check that device actions were triggered, but the device state is unchanged
-    assert switch.wait_zigbee_action() == switch.get_action_name("hold")
-    assert switch.wait_zigbee_action() == switch.get_action_name("release")
-    assert switch.get_state()  == init_state
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("hold")
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("release")
+    assert sswitch.get_state()  == init_state
 
 
-def test_multifunction_front(switch):
+def test_multifunction_front(sswitch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    switch.set_attribute('switch_mode', 'multifunction')
-    switch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
 
     # This test is focused on 'front' relay mode
-    switch.set_attribute('relay_mode', 'front')
+    sswitch.set_attribute('relay_mode', 'front')
 
     # Emulate the button click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # In 'front' mode we expect the LED to toggle immediately on button press
-    switch.wait_device_state_change(True)
+    sswitch.wait_device_state_change(True)
 
     # Do not forget to release the button
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
+    sswitch.wait_button_state("IDLE")
 
     # Check the device state changed, and the single click action is generated
     # As a side effect of current state machine implementation, action gets aftecr state change if relay mode is front
-    assert switch.wait_zigbee_state_change() == "ON"
-    assert switch.wait_zigbee_action() == switch.get_action_name("single")
+    assert sswitch.wait_zigbee_state_change() == "ON"
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("single")
     
 
-def test_multifunction_single(switch):
+def test_multifunction_single(sswitch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    switch.set_attribute('switch_mode', 'multifunction')
-    switch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
 
     # This test is focused on 'single' relay mode
-    switch.set_attribute('relay_mode', 'single')
+    sswitch.set_attribute('relay_mode', 'single')
 
     # Emulate the button click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
 
     # Then release the button and wait until single press is detected
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
-    switch.wait_button_state("IDLE")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
+    sswitch.wait_button_state("IDLE")
 
     # In the 'single' relay mode we expect the LED to toggle after the short button press
-    switch.wait_device_state_change(True)
+    sswitch.wait_device_state_change(True)
 
     # Check the device state changed, and the single click action is generated
-    assert switch.wait_zigbee_action() == switch.get_action_name("single")
-    assert switch.wait_zigbee_state_change() == "ON"
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("single")
+    assert sswitch.wait_zigbee_state_change() == "ON"
 
 
-def test_multifunction_double(switch):
+def test_multifunction_double(sswitch):
     # Ensure the switch is off on start, the mode is 'multifunction'
-    switch.switch('OFF')
-    switch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
 
     # This test is focused on 'double' relay mode
-    switch.set_attribute('relay_mode', 'double')
+    sswitch.set_attribute('relay_mode', 'double')
 
     # Emulate the first click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
 
     # Emulate the second click
-    switch.press_button()
-    switch.wait_button_state("PRESSED2")
-    switch.release_button()
-    switch.wait_button_state("PAUSE2")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED2")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE2")
 
     # We expect the LED to toggle after the second button click
-    switch.wait_device_state_change(True)
+    sswitch.wait_device_state_change(True)
 
     # Check the device state changed, and the double click action is generated
-    assert switch.wait_zigbee_action() == switch.get_action_name("double")
-    assert switch.wait_zigbee_state_change() == "ON"
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("double")
+    assert sswitch.wait_zigbee_state_change() == "ON"
 
 
-def test_multifunction_tripple(switch):
+def test_multifunction_tripple(sswitch):
     # Ensure the switch is off on start, the mode is 'multifunction'
-    switch.switch('OFF')
-    switch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
 
     # This test is focused on 'tripple' relay mode
-    switch.set_attribute('relay_mode', 'tripple')
+    sswitch.set_attribute('relay_mode', 'tripple')
 
     # Emulate the first click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
 
     # Emulate the second click
-    switch.press_button()
-    switch.wait_button_state("PRESSED2")
-    switch.release_button()
-    switch.wait_button_state("PAUSE2")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED2")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE2")
 
     # Emulate the third click
-    switch.press_button()
-    switch.wait_button_state("PRESSED3")
-    switch.release_button()
-    switch.wait_button_state("IDLE")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED3")
+    sswitch.release_button()
+    sswitch.wait_button_state("IDLE")
 
     # We expect the LED to toggle after the third click
-    switch.wait_device_state_change(True)
+    sswitch.wait_device_state_change(True)
 
     # Check the device state changed, and the double click action is generated
-    assert switch.wait_zigbee_state_change() == "ON"
-    assert switch.wait_zigbee_action() == switch.get_action_name("tripple")
+    assert sswitch.wait_zigbee_state_change() == "ON"
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("tripple")
 
 
-def test_multifunction_unlinked_single(switch):
+def test_multifunction_unlinked_single(sswitch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    switch.set_attribute('switch_mode', 'multifunction')
-    switch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
 
     # This test is focused on 'unlinked' relay mode
-    switch.set_attribute('relay_mode', 'unlinked')
+    sswitch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate a single button click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
 
     # Wait intil button state machine detects single click
-    switch.wait_button_state("IDLE")
+    sswitch.wait_button_state("IDLE")
 
     # Check the single click action is generated, but the state has not changed
-    assert switch.wait_zigbee_action() == switch.get_action_name("single")
-    assert switch.get_state() == 'OFF'
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("single")
+    assert sswitch.get_state() == 'OFF'
 
 
-def test_multifunction_unlinked_double(switch):
+def test_multifunction_unlinked_double(sswitch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    switch.set_attribute('switch_mode', 'multifunction')
-    switch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
 
     # This test is focused on 'unlinked' relay mode
-    switch.set_attribute('relay_mode', 'unlinked')
+    sswitch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate the first click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
 
     # Emulate the second click
-    switch.press_button()
-    switch.wait_button_state("PRESSED2")
-    switch.release_button()
-    switch.wait_button_state("PAUSE2")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED2")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE2")
 
     # Wait intil button state machine detects double click
-    switch.wait_button_state("IDLE")
+    sswitch.wait_button_state("IDLE")
 
     # Check the single click action is generated, but the state has not changed
-    assert switch.wait_zigbee_action() == switch.get_action_name("double")
-    assert switch.get_state() == 'OFF'
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("double")
+    assert sswitch.get_state() == 'OFF'
 
 
-def test_multifunction_unlinked_tripple(switch):
+def test_multifunction_unlinked_tripple(sswitch):
     # Ensure the switch is OFF on start, and the mode is 'multifunction'
-    switch.set_attribute('switch_mode', 'multifunction')
-    switch.switch('OFF')
+    sswitch.set_attribute('switch_mode', 'multifunction')
+    sswitch.switch('OFF')
 
     # This test is focused on 'unlinked' relay mode
-    switch.set_attribute('relay_mode', 'unlinked')
+    sswitch.set_attribute('relay_mode', 'unlinked')
 
     # Emulate the first click
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
-    switch.release_button()
-    switch.wait_button_state("PAUSE1")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED1")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE1")
 
     # Emulate the second click
-    switch.press_button()
-    switch.wait_button_state("PRESSED2")
-    switch.release_button()
-    switch.wait_button_state("PAUSE2")
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED2")
+    sswitch.release_button()
+    sswitch.wait_button_state("PAUSE2")
 
     # Emulate the third click
-    switch.press_button()
-    switch.wait_button_state("PRESSED3")
-    switch.release_button()
+    sswitch.press_button()
+    sswitch.wait_button_state("PRESSED3")
+    sswitch.release_button()
     
     # Wait intil button state machine detects double click
-    switch.wait_button_state("IDLE")
+    sswitch.wait_button_state("IDLE")
 
     # Check the single click action is generated, but the state has not changed
-    assert switch.wait_zigbee_action() == switch.get_action_name("tripple")
-    assert switch.get_state() == 'OFF'
+    assert sswitch.wait_zigbee_action() == sswitch.get_action_name("tripple")
+    assert sswitch.get_state() == 'OFF'
 
 
-@pytest.fixture
-def genLevelCtrl_bindings(bridge, switch, device_name):
-    # Bind the endpoint with the coordinator
-    send_bind_request(bridge, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
-
-    yield
-
-    # Cleanup bindings
-    send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
-
-
-def test_level_control(switch, genLevelCtrl_bindings):
-    # Ensure the switch will generate levelCtrlDown messages on long press
-    switch.set_attribute('switch_mode', 'multifunction')
-    switch.set_attribute('relay_mode', 'unlinked')
-    switch.set_attribute('long_press_mode', 'levelCtrlDown')
-
-    # Emulate the long button press, wait until the switch transits to the long press state
-    switch.press_button()
-    switch.wait_button_state("PRESSED1")
-    switch.wait_button_state("LONG_PRESS")
-    switch.wait_report_multistate(255)  # 255 means button long press
-    switch.wait_report_level_ctrl("Move")
-
-    # Verify the Level Control Move command has been received by the coordinator
-    assert switch.wait_zigbee_action() == switch.get_action_name("hold")
-    assert switch.wait_zigbee_msg()['level_ctrl'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
-
-    # Do not forget to release the button
-    switch.release_button()
-    switch.wait_button_state("IDLE")
-    switch.wait_report_multistate(0)
-    switch.wait_report_level_ctrl("Stop")
-
-    # Verify the Level Control Move command has been received by the coordinator
-    assert switch.wait_zigbee_action() == switch.get_action_name("release")
-    assert switch.wait_zigbee_msg()['level_ctrl']['command'] == 'commandStop'
