@@ -14,6 +14,16 @@ def test_on_off(sswitch):
     sswitch.switch('OFF')
 
 
+def test_on_off_unlinked(sswitch):
+    # Set 'unlinked' mode to indicate the button is unlinked from the relay
+    sswitch.switch('OFF')
+    sswitch.set_attribute('relay_mode', 'unlinked')
+
+    # Verify that the relay still can be toggled remotely
+    sswitch.switch('ON')
+    sswitch.switch('OFF')
+
+
 def test_toggle(sswitch):
     sswitch.switch('OFF')
     assert sswitch.get_state() == 'OFF'
