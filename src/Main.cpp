@@ -273,9 +273,6 @@ extern "C" PUBLIC void vAppMain(void)
     // Init the ZigbeeDevice, AF, BDB, and other network stuff
     ZigbeeDevice::getInstance();
 
-    // Groups debug (TODO: Cleanup this)
-    vDisplayGroupsTable();
-
     // Print Initialization finished message
     DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");
     DBG_vPrintf(TRUE, "Initialization of the Hello Zigbee Platform Finished\n");
