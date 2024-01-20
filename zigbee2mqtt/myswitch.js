@@ -230,18 +230,33 @@ const fromZigbee_MultistateInput = {
     },
 }
 
+// Special handler used in automation testing to catch OnOff commands from the device, and then verify values in tests
+const fromZigbee_OnOff = {
+    cluster: 'genOnOff',
+    type: ['commandOn', 'commandOff', 'commandToggle'],
+
+    convert: (model, msg, publish, options, meta) => {
+        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
+        const cmd = msg['type'];
+        const payload = msg['data'];
+        const srcEp = msg['endpoint']['ID']
+
+        const result = {debug: {command: cmd, payload: payload, endpoint: srcEp}};
+        return result;
+    },
+}
+
+// Special handler used in automation testing to catch LevelCtrl commands from the device, and then verify values in tests
 const fromZigbee_LevelCtrl = {
     cluster: 'genLevelCtrl',
     type: ['commandMoveToLevel', 'commandMoveToLevelWithOnOff', 'commandMove', 'commandMoveWithOnOff', 
            'commandStop', 'commandStopWithOnOff', 'commandStep', 'commandStepWithOnOff'],
 
     convert: (model, msg, publish, options, meta) => {
-        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
         const cmd = msg['type'];
         const payload = msg['data'];
 
-        const result = {level_ctrl: {command: cmd, payload: payload}};
-        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(result)}]`);
+        const result = {debug: {command: cmd, payload: payload}};
         return result;
     },
 }
@@ -305,7 +320,7 @@ const device = {
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_LevelCtrl],
+    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         for (const ep of device.endpoints) {

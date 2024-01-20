@@ -4,7 +4,7 @@ from smartswitch import *
 
 
 # Make sure the switch is in server mode for the tests below
-@pytest.fixture(scope='function')
+@pytest.fixture
 def sswitch(switch):
     switch.set_attribute('operation_mode', 'server')
     yield switch
