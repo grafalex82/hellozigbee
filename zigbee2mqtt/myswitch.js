@@ -24,6 +24,7 @@ const switchModeValues = ['toggle', 'momentary', 'multifunction'];
 const switchActionValues = ['onOff', 'offOn', 'toggle'];
 const relayModeValues = ['unlinked', 'front', 'single', 'double', 'tripple', 'long'];
 const longPressModeValues = ['none', 'levelCtrlUp', 'levelCtrlDown'];
+const operationModeValues = ['server', 'client'];
 
 
 const manufacturerOptions = {
@@ -66,7 +67,6 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`relay_mode_${ep_name}`] = relayModeValues[msg.data['65281']];
         }
 
-
         // Maximum pause between button clicks to be treates a single multiclick
         if(msg.data.hasOwnProperty('65282')) {
             result[`max_pause_${ep_name}`] = msg.data['65282'];
@@ -82,6 +82,11 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`long_press_mode_${ep_name}`] = longPressModeValues[msg.data['65284']];
         }
 
+        // Operation mode
+        if(msg.data.hasOwnProperty('65285')) {
+            result[`operation_mode_${ep_name}`] = operationModeValues[msg.data['65285']];
+        }
+
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
         return result;
     },
@@ -89,7 +94,7 @@ const fromZigbee_OnOffSwitchCfg = {
 
 
 const toZigbee_OnOffSwitchCfg = {
-    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode'],
+    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode', 'operation_mode'],
 
     convertGet: async (entity, key, meta) => {
         // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
@@ -104,7 +109,8 @@ const toZigbee_OnOffSwitchCfg = {
                 relay_mode: 65281,
                 max_pause: 65282,
                 min_long_press: 65283,
-                long_press_mode: 65284
+                long_press_mode: 65284,
+                operation_mode: 65285,
             };
             // meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
@@ -155,6 +161,12 @@ const toZigbee_OnOffSwitchCfg = {
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
+            case 'operation_mode':
+                newValue = operationModeValues.indexOf(value);
+                payload = {65285: {'value': newValue, 'type': DataType.enum8}};
+                await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+                break;
+    
             default:
                 meta.logger.debug(`convertSet(): Unrecognized key=${key} (value=${value})`);
                 break;
@@ -170,6 +182,7 @@ const toZigbee_OnOffSwitchCfg = {
 function genSwitchEndpoint(epName) {
     return [
         e.switch().withEndpoint(epName),
+        exposes.enum('operation_mode', ea.ALL, operationModeValues).withEndpoint(epName),
         exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
         exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
@@ -299,7 +312,7 @@ const device = {
             if(ep.supportsInputCluster('genOnOff')) {
                 await ep.read('genOnOff', ['onOff']);
                 await ep.read('genOnOffSwitchCfg', ['switchActions']);
-                await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284], manufacturerOptions.jennic);
+                await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284, 65285], manufacturerOptions.jennic);
             }
         }
     },

@@ -85,10 +85,9 @@ public:
 protected:
     void doStateChange(bool state);
     void reportState();
-    void sendCommandToBoundDevices();
+    void sendCommandToBoundDevices(teCLD_OnOff_Command cmd);
     void sendLevelControlMoveCommand(bool up);
     void sendLevelControlStopCommand();
-    void reportStateChange();
 
 protected:
     virtual void initEndpointStructure();

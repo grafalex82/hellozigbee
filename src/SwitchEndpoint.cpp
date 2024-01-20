@@ -125,8 +125,6 @@ void SwitchEndpoint::initEndpointStructure()
     if(!clientOnly)
         numClusters = sizeof(OnOffClusterInstances) / sizeof(tsZCL_ClusterInstance);
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint::initEndpointStructure(): Registering %d clusters\n", numClusters);
-
     // Initialize endpoint structure
     sEndPoint.u8EndPointNumber = getEndpointId();
     sEndPoint.u16ManufacturerCode = ZCL_MANUFACTURER_CODE;
@@ -191,6 +189,7 @@ void SwitchEndpoint::init()
     restoreConfiguration();
 
     // TODO: restore previous brightness from PDM
+    // TODO: restore previous reporting configuration from PDM
 }
 
 bool SwitchEndpoint::getState() const
@@ -203,56 +202,69 @@ bool SwitchEndpoint::getState() const
 
 void SwitchEndpoint::switchOn()
 {
-    if(clientOnly)
-        return;
-
-    bool newValue = true;
-
     // Invert the value in inverse mode
+    bool newState = true;
     if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
-        newValue = false;
-
-    doStateChange(newValue);
+        newState = false;
+    
+    if(runsInServerMode())  
+        // In Server mode we will switch internal relay
+        doStateChange(newState);
+    else 
+        // In Client mode we will send On/Off command
+        sendCommandToBoundDevices(newState ? E_CLD_ONOFF_CMD_ON : E_CLD_ONOFF_CMD_OFF);
 }
 
 void SwitchEndpoint::switchOff()
 {
-    if(clientOnly)
-        return;
-
-    bool newValue = false;
-
     // Invert the value in inverse mode
+    bool newState = false;
     if(sOnOffConfigServerCluster.eSwitchActions == E_CLD_OOSC_ACTION_S2OFF_S1ON)
-        newValue = true;
+        newState = true;
 
-    doStateChange(newValue);
+    if(runsInServerMode())  
+        // In Server mode we will switch internal relay
+        doStateChange(newState);
+    else
+        // In Client mode we will send On/Off command
+        sendCommandToBoundDevices(newState ? E_CLD_ONOFF_CMD_ON : E_CLD_ONOFF_CMD_OFF);
 }
 
 void SwitchEndpoint::toggle()
 {
-    if(clientOnly)
-        return;
-
-    doStateChange(!getState());
+    if(runsInServerMode())  
+        // In Server mode we will toggle internal relay state
+        doStateChange(!getState());
+    else 
+        // In Client mode we will send Toggle command
+        sendCommandToBoundDevices(E_CLD_ONOFF_CMD_TOGGLE);
 }
 
 void SwitchEndpoint::doStateChange(bool state)
 {
-    if(runsInServerMode())
-    {
-        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
-        sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
+    // Disabled in Client mode
+    if(!runsInServerMode())
+        return;
 
-        LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
-        reportStateChange();
-    }
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: do state change %d\n", getEndpointId(), state);
+    sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
+
+    LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
+    reportState();
 }
 
 void SwitchEndpoint::reportState()
 {
-    if(clientOnly)
+    // Disabled in Client mode
+    if(!runsInServerMode())
         return;
+
+    // Can send reports only when connected
+    if(!ZigbeeDevice::getInstance()->isJoined())
+    {
+        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore reporting the change.\n");
+        return;
+    }
 
     // Destination address - 0x0000 (coordinator)
     tsZCL_Address addr;
@@ -272,8 +284,15 @@ void SwitchEndpoint::reportState()
     DBG_vPrintf(TRUE, "status: %02x\n", status);
 }
 
-void SwitchEndpoint::sendCommandToBoundDevices()
+void SwitchEndpoint::sendCommandToBoundDevices(teCLD_OnOff_Command cmd)
 {
+    // Can send commands only when connected
+    if(!ZigbeeDevice::getInstance()->isJoined())
+    {
+        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore sending commands\n");
+        return;
+    }
+
     // Destination address does not matter - we will send to all bound devices
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
@@ -285,30 +304,39 @@ void SwitchEndpoint::sendCommandToBoundDevices()
                                    1,
                                    &addr,
                                    &sequenceNo,
-                                   E_CLD_ONOFF_CMD_TOGGLE);
+                                   cmd);
     DBG_vPrintf(TRUE, "Sending On/Off command status: %02x\n", status);
 }
 
 void SwitchEndpoint::reportLongPress(bool pressed)
 {
+    // Can send commands only when connected
+    if(!ZigbeeDevice::getInstance()->isJoined())
+    {
+        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore sending LevelCtrl command.\n");
+        return;
+    }
+
     switch(sOnOffConfigServerCluster.eLongPressMode)
     {
-    case E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_UP:
-        if(pressed)
-            sendLevelControlMoveCommand(true);
-        else
-            sendLevelControlStopCommand();
-        break;
+        case E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_UP:
+            if(pressed)
+                sendLevelControlMoveCommand(true);
+            else
+                sendLevelControlStopCommand();
+            break;
 
-    case E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_DOWN:
-        if(pressed)
-            sendLevelControlMoveCommand(false);
-        else
-            sendLevelControlStopCommand();
-        break;
+        case E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_DOWN:
+            if(pressed)
+                sendLevelControlMoveCommand(false);
+            else
+                sendLevelControlStopCommand();
+            break;
 
-    default:
-        break;
+        // TODO: Add more valuable options/commands here
+
+        default:
+            break;
     }
 }
 
@@ -388,20 +416,6 @@ void SwitchEndpoint::reportAction(ButtonActionType action)
     DBG_vPrintf(TRUE, "status: %02x\n", status);
 }
 
-void SwitchEndpoint::reportStateChange()
-{
-    if(!ZigbeeDevice::getInstance()->isJoined())
-    {
-        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore reporting the change.\n");
-        return;
-    }
-
-    if(runsInServerMode())
-        reportState();
-    else
-        sendCommandToBoundDevices();
-}
-
 void SwitchEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent)
 {
     uint16 clusterId = psEvent->uMessage.sClusterCustomMessage.u16ClusterId;
@@ -439,11 +453,9 @@ void SwitchEndpoint::handleOnOffClusterCommand(tsZCL_CallBackEvent *psEvent)
         return;
     }
 
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x\n",
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: On/Off Cluster command received Cmd=%02x. Ignored.\n",
                 psEvent->u8EndPoint,
                 commandId);
-
-    //doStateChange(!getState());
 }
 
 void SwitchEndpoint::handleIdentifyClusterCommand(tsZCL_CallBackEvent *psEvent)
@@ -567,7 +579,9 @@ bool SwitchEndpoint::runsInServerMode() const
     if(clientOnly)
         return false;
 
-    return !hasBindings(getEndpointId(), GENERAL_CLUSTER_ID_ONOFF);
+    bool serverMode = (sOnOffConfigServerCluster.eOperationMode == E_CLD_OOSC_OPERATION_MODE_SERVER);
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: ServerMode=%d (mode=%d)\n", getEndpointId(), serverMode, sOnOffConfigServerCluster.eOperationMode);
+    return serverMode;
 }
 
 void SwitchEndpoint::handleDeviceJoin()
