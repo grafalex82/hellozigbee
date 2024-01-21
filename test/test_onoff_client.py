@@ -74,6 +74,74 @@ def test_momentary(cswitch, switch_actions, press_command, release_command):
     assert cswitch.wait_zigbee_msg()['debug']['command'] == release_command
 
 
+def test_momentary_unlinked(cswitch):
+    # Ensure the switch is in 'momentary' mode, do not care about current switch_action mode
+    cswitch.set_attribute('switch_mode', 'momentary')
+
+    # long press mode shall be 'none' in order to not mix up with level ctrl messages
+    cswitch.set_attribute('long_press_mode', 'none')
+
+    # The relay mode in this test is 'unlinked', to ensure only actions are sent
+    cswitch.set_attribute('relay_mode', 'unlinked')
+
+    # Emulate short button press
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+
+    # Check the device state changed, and the action is generated (in this particular order)
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("hold")
+
+    # Release the button
+    cswitch.release_button()
+    cswitch.wait_button_state("IDLE")
+
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("release")
+
+
+def test_multifunction_front(cswitch):
+    # Ensure the switch is in 'multifunction' mode
+    cswitch.set_attribute('switch_mode', 'multifunction')
+
+    # This test is focused on 'front' relay mode
+    cswitch.set_attribute('relay_mode', 'front')
+
+    # Emulate the button click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+
+    # The toggle command is sent immediately
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
+
+    # Do not forget to release the button
+    cswitch.release_button()
+    cswitch.wait_button_state("PAUSE1")
+    cswitch.wait_button_state("IDLE")
+
+    # The switch can detect single state only after the button is released
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("single")
+
+
+def test_multifunction_single(cswitch):
+    # Ensure the switch is in 'multifunction' mode
+    cswitch.set_attribute('switch_mode', 'multifunction')
+
+    # This test is focused on 'single' relay mode
+    cswitch.set_attribute('relay_mode', 'single')
+
+    # Emulate the button click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+
+    # Then release the button and wait until single press is detected
+    cswitch.release_button()
+    cswitch.wait_button_state("PAUSE1")
+    cswitch.wait_button_state("IDLE")
+
+    # Check the single click action is generated, and command to bound device is sent
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("single")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
+
+
 
 # @pytest.fixture
 # def genLevelCtrl_bindings(bridge, switch, device_name):
