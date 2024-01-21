@@ -142,6 +142,59 @@ def test_multifunction_single(cswitch):
     assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
 
 
+def test_multifunction_double(cswitch):
+    # Ensure the switch is in 'multifunction' mode
+    cswitch.set_attribute('switch_mode', 'multifunction')
+
+    # This test is focused on 'double' relay mode
+    cswitch.set_attribute('relay_mode', 'double')
+
+    # Emulate the first click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+    cswitch.release_button()
+    cswitch.wait_button_state("PAUSE1")
+
+    # Emulate the second click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED2")
+    cswitch.release_button()
+    cswitch.wait_button_state("PAUSE2")
+
+    # Check that double click action is generated, and the switch sends toggle command to the bound device
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("double")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
+
+
+def test_multifunction_tripple(cswitch):
+    # Ensure the switch is in 'multifunction' mode
+    cswitch.set_attribute('switch_mode', 'multifunction')
+
+    # This test is focused on 'tripple' relay mode
+    cswitch.set_attribute('relay_mode', 'tripple')
+
+    # Emulate the first click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+    cswitch.release_button()
+    cswitch.wait_button_state("PAUSE1")
+
+    # Emulate the second click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED2")
+    cswitch.release_button()
+    cswitch.wait_button_state("PAUSE2")
+
+    # Emulate the third click
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED3")
+    cswitch.release_button()
+    cswitch.wait_button_state("IDLE")
+
+    # Check the device state changed, and the double click action is generated
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("tripple")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
+
 
 # @pytest.fixture
 # def genLevelCtrl_bindings(bridge, switch, device_name):
