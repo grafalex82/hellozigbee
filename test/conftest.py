@@ -74,19 +74,27 @@ button_channels = [(2, "button_1"), (3, "button_2")]
 def switch(device, zigbee, request, pytestconfig):
     return SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
 
+
+# Iterate on all bindings that device currently has, and cleanup all On/Off and LevelCtrl bindings to the Coordinator
+# These bindings change the device behavior, and must be cleared on start to avoid undesired behavior
+def clear_coordinator_bindings(bridge, device_name):
+    coordinator_addr = bridge.get_coordinator_address()
+
+    for binding in bridge.get_device_bindings(device_name):
+        if binding['cluster'] == "genOnOff" or binding['cluster'] == "genLevelCtrl":
+            if binding['target_addr'] == coordinator_addr:
+                send_unbind_request(bridge, binding['cluster'], f"{device_name}/{binding['endpoint']}", 'Coordinator')
+
+
 # Make sure that no bindings that could possibly change test behavior is active. 
 # Cleanup bindings at exit. Use autouse=True to implicitly apply it to all tests
 @pytest.fixture(scope="session", autouse = True)
 def cleanup_bindings(bridge, device_name):
-    for ep, _ in button_channels:
-        send_unbind_request(bridge, "genOnOff", f"{device_name}/{ep}", "Coordinator")
-        send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
+    clear_coordinator_bindings(bridge, device_name)
 
     yield
 
-    for ep, _ in button_channels:
-        send_unbind_request(bridge, "genOnOff", f"{device_name}/{ep}", "Coordinator")
-        send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{ep}", "Coordinator")
+    clear_coordinator_bindings(bridge, device_name)
 
 
 # A handy fixture that dumps the test name before test starts, and after it ends
