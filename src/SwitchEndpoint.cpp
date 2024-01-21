@@ -157,10 +157,19 @@ void SwitchEndpoint::restoreConfiguration()
                                    (RelayMode)sOnOffConfigServerCluster.eRelayMode,
                                    sOnOffConfigServerCluster.iMaxPause,
                                    sOnOffConfigServerCluster.iMinLongPress);
+
+    // Dump the restored configuration
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Restored configuration:\n", getEndpointId());
+    DBG_vPrintf(TRUE, "    Operation mode = %d\n", sOnOffConfigServerCluster.eOperationMode);
+    DBG_vPrintf(TRUE, "    Switch mode = %d\n", sOnOffConfigServerCluster.eSwitchMode);
+    DBG_vPrintf(TRUE, "    Relay mode = %d\n", sOnOffConfigServerCluster.eRelayMode);
+    DBG_vPrintf(TRUE, "    Switch actions = %d\n", sOnOffConfigServerCluster.eSwitchActions);
+    DBG_vPrintf(TRUE, "    Long press mode = %d\n", sOnOffConfigServerCluster.eLongPressMode);
 }
 
 void SwitchEndpoint::saveConfiguration()
 {
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Save configuration\n", getEndpointId());
     PDM_eSaveRecordData(getPdmIdForEndpoint(getEndpointId(), 0),
                         &sOnOffConfigServerCluster,
                         sizeof(sOnOffConfigServerCluster));

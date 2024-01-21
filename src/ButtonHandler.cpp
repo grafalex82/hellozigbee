@@ -47,12 +47,12 @@ const char * ButtonHandler::getStateName(ButtonState state)
     return "";
 }
 
-void ButtonHandler::setConfiguration(SwitchMode switchMode, RelayMode relayMode, uint16 maxPause, uint16 minLongPress)
+void ButtonHandler::setConfiguration(SwitchMode sMode, RelayMode rMode, uint16 maxPause, uint16 minLongPress)
 {
     // This function does the same as 4 functions below all together, but as a single transaction.
     // This is needed to avoid cluttering log with multiple changeState messages
-    switchMode = switchMode;
-    relayMode = relayMode;
+    switchMode = sMode;
+    relayMode = rMode;
     maxPause = maxPause/ButtonPollCycle;
     longPressDuration = minLongPress/ButtonPollCycle;
 
