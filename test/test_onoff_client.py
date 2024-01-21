@@ -1,4 +1,5 @@
 import pytest
+import time
 
 from smartswitch import *
 
@@ -35,6 +36,42 @@ def test_toggle_mode_btn_press(cswitch):
     # Check the device has sent the 'single' action to coordinator, and the 'toggle' command to the bound device
     assert cswitch.wait_zigbee_action() == cswitch.get_action_name("single")
     assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
+
+
+@pytest.mark.parametrize("switch_actions, press_command, release_command", [
+    ('onOff', "commandOn", "commandOff"),
+    ('offOn', "commandOff", "commandOn"),
+    ('toggle', "commandToggle", "commandToggle")
+])
+def test_momentary(cswitch, switch_actions, press_command, release_command):
+    # Ensure the switch is in 'momentary' mode
+    cswitch.set_attribute('switch_mode', 'momentary')
+
+    # long press mode shall be 'none' in order to not mix up with level ctrl messages
+    cswitch.set_attribute('long_press_mode', 'none')
+
+    # The relay mode shall be any other than 'unlinked', otherwise sending On/Off commands will be switched off
+    cswitch.set_attribute('relay_mode', 'front')
+
+    # This test is focused on various switch_actions options
+    cswitch.set_attribute('switch_actions', switch_actions)
+
+    # Emulate short button press
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+
+    # Check the device state changed, and the action is generated (in this particular order)
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("hold")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == press_command
+
+    time.sleep(1)
+
+    # Release the button
+    cswitch.release_button()
+    cswitch.wait_button_state("IDLE")
+
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("release")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == release_command
 
 
 
