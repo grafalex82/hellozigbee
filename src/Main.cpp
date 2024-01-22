@@ -334,13 +334,13 @@ PWRM_CALLBACK(Wakeup)
     DBG_vPrintf(TRUE, "\nWaking...\n");
     DBG_vUartFlush();
 
+    // Restore Mac settings (turns radio on)
+    vMAC_RestoreSettings();
+
     // Re-initialize hardware and interrupts
     TARGET_INITIALISE();
     SET_IPL(0);
     portENABLE_INTERRUPTS();
-
-    // Restore Mac settings (turns radio on)
-    vMAC_RestoreSettings();
 
     // Wake the timers
     ZTIMER_vWake();
