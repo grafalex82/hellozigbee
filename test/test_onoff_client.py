@@ -223,29 +223,29 @@ def test_multifunction_long_press(cswitch):
     assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandOff'
 
 
-# def test_level_control(switch, genLevelCtrl_bindings):
-#     # Ensure the switch will generate levelCtrlDown messages on long press
-#     switch.set_attribute('switch_mode', 'multifunction')
-#     switch.set_attribute('relay_mode', 'unlinked')
-#     switch.set_attribute('long_press_mode', 'levelCtrlDown')
+def test_level_control(cswitch):
+    # Ensure the switch will generate levelCtrlDown messages on long press
+    cswitch.set_attribute('switch_mode', 'multifunction')
+    cswitch.set_attribute('relay_mode', 'unlinked')
+    cswitch.set_attribute('long_press_mode', 'levelCtrlDown')
 
-#     # Emulate the long button press, wait until the switch transits to the long press state
-#     switch.press_button()
-#     switch.wait_button_state("PRESSED1")
-#     switch.wait_button_state("LONG_PRESS")
-#     switch.wait_report_multistate(255)  # 255 means button long press
-#     switch.wait_report_level_ctrl("Move")
+    # Emulate the long button press, wait until the switch transits to the long press state
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+    cswitch.wait_button_state("LONG_PRESS")
+    cswitch.wait_report_multistate(255)  # 255 means button long press
+    cswitch.wait_report_level_ctrl("Move")
 
-#     # Verify the Level Control Move command has been received by the coordinator
-#     assert switch.wait_zigbee_action() == switch.get_action_name("hold")
-#     assert switch.wait_zigbee_msg()['level_ctrl'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
+    # Verify the Level Control Move command has been received by the coordinator
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("hold")
+    assert cswitch.wait_zigbee_msg()['debug'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
 
-#     # Do not forget to release the button
-#     switch.release_button()
-#     switch.wait_button_state("IDLE")
-#     switch.wait_report_multistate(0)
-#     switch.wait_report_level_ctrl("Stop")
+    # Do not forget to release the button
+    cswitch.release_button()
+    cswitch.wait_button_state("IDLE")
+    cswitch.wait_report_multistate(0)
+    cswitch.wait_report_level_ctrl("Stop")
 
-#     # Verify the Level Control Move command has been received by the coordinator
-#     assert switch.wait_zigbee_action() == switch.get_action_name("release")
-#     assert switch.wait_zigbee_msg()['level_ctrl']['command'] == 'commandStop'
+    # Verify the Level Control Move command has been received by the coordinator
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("release")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandStop'
