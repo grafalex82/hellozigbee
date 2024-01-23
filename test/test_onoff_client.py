@@ -196,15 +196,31 @@ def test_multifunction_tripple(cswitch):
     assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandToggle'
 
 
-# @pytest.fixture
-# def genLevelCtrl_bindings(bridge, switch, device_name):
-#     # Bind the endpoint with the coordinator
-#     send_bind_request(bridge, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
+def test_multifunction_long_press(cswitch):
+    # Ensure the switch will generate action messages and toggle on long press
+    cswitch.set_attribute('switch_mode', 'multifunction')
+    cswitch.set_attribute('relay_mode', 'long')
+    cswitch.set_attribute('long_press_mode', 'none')
+    cswitch.set_attribute('switch_actions', 'onOff')
 
-#     yield
+    # Emulate the long button press, wait until the switch transits to the long press state
+    cswitch.press_button()
+    cswitch.wait_button_state("PRESSED1")
+    cswitch.wait_button_state("LONG_PRESS")
+    cswitch.wait_report_multistate(255)  # 255 means button long press
 
-#     # Cleanup bindings
-#     send_unbind_request(bridge, "genLevelCtrl", f"{device_name}/{switch.ep}", "Coordinator")
+    # Verify the Level Control Move command has been received by the coordinator
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("hold")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandOn'
+
+    # Do not forget to release the button
+    cswitch.release_button()
+    cswitch.wait_button_state("IDLE")
+    cswitch.wait_report_multistate(0)
+
+    # Verify the Level Control Move command has been received by the coordinator
+    assert cswitch.wait_zigbee_action() == cswitch.get_action_name("release")
+    assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandOff'
 
 
 # def test_level_control(switch, genLevelCtrl_bindings):

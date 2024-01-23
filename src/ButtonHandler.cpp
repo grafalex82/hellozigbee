@@ -181,7 +181,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 endpoint->reportAction(BUTTON_PRESSED);
 
                 if(relayMode == RELAY_MODE_LONG)
-                    endpoint->toggle();
+                    endpoint->switchOn();
 
                 endpoint->reportLongPress(true);
             }
@@ -251,6 +251,9 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             {
                 changeState(IDLE);
 
+                if(relayMode == RELAY_MODE_LONG)
+                    endpoint->switchOff();
+                    
                 endpoint->reportAction(BUTTON_RELEASED);
                 endpoint->reportLongPress(false);
             }
