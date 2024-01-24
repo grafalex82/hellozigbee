@@ -223,11 +223,15 @@ def test_multifunction_long_press(cswitch):
     assert cswitch.wait_zigbee_msg()['debug']['command'] == 'commandOff'
 
 
-def test_level_control(cswitch):
+@pytest.mark.parametrize("long_press_mode, command, up_down", [
+    ('levelCtrlDown', "commandMove", 1),        # Move down decreases brightness to minimum, but does not switch off
+    ('levelCtrlUp', "commandMoveWithOnOff", 0)  # Move up will switch light on when moving up
+])
+def test_level_control(cswitch, long_press_mode, command, up_down):
     # Ensure the switch will generate levelCtrlDown messages on long press
     cswitch.set_attribute('switch_mode', 'multifunction')
     cswitch.set_attribute('relay_mode', 'unlinked')
-    cswitch.set_attribute('long_press_mode', 'levelCtrlDown')
+    cswitch.set_attribute('long_press_mode', long_press_mode)
 
     # Emulate the long button press, wait until the switch transits to the long press state
     cswitch.press_button()
@@ -238,7 +242,7 @@ def test_level_control(cswitch):
 
     # Verify the Level Control Move command has been received by the coordinator
     assert cswitch.wait_zigbee_action() == cswitch.get_action_name("hold")
-    assert cswitch.wait_zigbee_msg()['debug'] == {'command': 'commandMove', 'payload': {'movemode': 1, 'rate': 80}}
+    assert cswitch.wait_zigbee_msg()['debug'] == {'command': command, 'payload': {'movemode': up_down, 'rate': 80}}
 
     # Do not forget to release the button
     cswitch.release_button()
