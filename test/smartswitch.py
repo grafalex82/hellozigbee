@@ -24,7 +24,7 @@ def send_bind_request(bridge, clusters, src, dst):
 
     # Send the bind request
     payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
-    bridge.publish('device/bind', payload)
+    bridge.request('device/bind', payload)
 
 
 def send_unbind_request(bridge, clusters, src, dst):
@@ -34,7 +34,7 @@ def send_unbind_request(bridge, clusters, src, dst):
 
     # Send the bind request
     payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
-    bridge.publish('device/unbind', payload)
+    bridge.request('device/unbind', payload)
 
 
 class SmartSwitch:
