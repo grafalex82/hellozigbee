@@ -12,6 +12,7 @@ extern "C"
     #include "zps_gen.h"
 }
 
+#include "Configuration.h"
 #include "Queue.h"
 #include "ButtonsTask.h"
 #include "SwitchEndpoint.h"
@@ -23,15 +24,6 @@ extern "C"
 #include "BlinkTask.h"
 #include "DumpFunctions.h"
 
-const uint8 HEARTBEAT_LED_PIN = 4;
-
-const uint8 SWITCH1_LED_PIN = 17;
-const uint8 SWITCH2_LED_PIN = 12;
-
-const uint8 SWITCH1_BTN_BIT = 1;
-const uint32 SWITCH1_BTN_MASK = 1UL << SWITCH1_BTN_BIT;
-const uint8 SWITCH2_BTN_BIT = 2;
-const uint32 SWITCH2_BTN_MASK = 1UL << SWITCH2_BTN_BIT;
 
 // Pre-configured Link Key
 // TODO: Move it elsewhere when Touch Link functionality is implemented

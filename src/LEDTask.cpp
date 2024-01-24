@@ -6,7 +6,7 @@ extern "C"
 }
 
 #include "LEDTask.h"
-
+#include "Configuration.h"
 
 // Note: Object constructors are not executed by CRT if creating a global var of this object :(
 // So has to be created explicitely in vAppMain() otherwise VTABLE will not be initialized properly
@@ -14,8 +14,8 @@ LEDTask::LEDTask()
 {
     PeriodicTask::init(50);
 
-    ch1.init(E_AHI_TIMER_3, E_AHI_TIMER_4);
-    ch2.init(E_AHI_TIMER_1, E_AHI_TIMER_2);
+    ch1.init(LED1_RED_TIMER, LED1_BLUE_TIMER);
+    ch2.init(LED2_RED_TIMER, LED2_BLUE_TIMER);
 }
 
 LEDTask * LEDTask::getInstance()
