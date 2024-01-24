@@ -51,14 +51,6 @@ extern "C"
 ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
 
 
-struct Context
-{
-    BasicClusterEndpoint basicEndpoint;
-    SwitchEndpoint switch1;
-    SwitchEndpoint switch2;
-};
-
-
 extern "C" void __cxa_pure_virtual(void) __attribute__((__noreturn__));
 extern "C" void __cxa_deleted_virtual(void) __attribute__((__noreturn__));
 
@@ -101,7 +93,7 @@ PUBLIC void wakeCallBack(void)
     DBG_vPrintf(TRUE, "=-=-=- wakeCallBack()\n");
 }
 
-PRIVATE void APP_vTaskSwitch(Context * context)
+PRIVATE void APP_vTaskSwitch()
 {
     if(ButtonsTask::getInstance()->canSleep() &&
        ZigbeeDevice::getInstance()->canSleep())
@@ -251,13 +243,21 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
 
+    // Configure Endpoints objects
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
-    Context context;
-    context.switch1.setPins(SWITCH1_BTN_MASK);
-    context.switch2.setPins(SWITCH2_BTN_MASK);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &context.basicEndpoint);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &context.switch1);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &context.switch2);
+    BasicClusterEndpoint basicEndpoint;
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &basicEndpoint);
+
+    SwitchEndpoint switch1;
+    switch1.setPins(SWITCH1_BTN_MASK);
+    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &switch1);
+
+    #ifdef SWITCH2_BTN_MASK
+        SwitchEndpoint switch2;
+        switch2.setPins(SWITCH2_BTN_MASK);
+        EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &switch2);
+    #endif //SWITCH2_BTN_MASK
+
 
     // Init the ZigbeeDevice, AF, BDB, and other network stuff
     ZigbeeDevice::getInstance();
@@ -284,7 +284,7 @@ extern "C" PUBLIC void vAppMain(void)
 
         APP_vHandleDebugInput(debugInput);
 
-        APP_vTaskSwitch(&context);
+        APP_vTaskSwitch();
 
         vAHI_WatchdogRestart();
 
