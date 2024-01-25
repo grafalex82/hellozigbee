@@ -16,19 +16,15 @@ def switch_on_group(switch, group):
     print(resp)
     assert resp['status'] == 'ok'
 
+    # Make sure the switch is in server mode for the tests below
+    switch.set_attribute('operation_mode', 'server')
+
     yield switch
 
     # Cleanup group membership
     resp = group.remove_device(switch)
     print(resp)
     assert resp['status'] == 'ok'
-
-
-# Test 1:
-# - Create a test group (if not yet created)
-# - Add endpoint to the group (if not yet created)
-# - Send On/Off/Toggle (and later LevelCtrl) commands to the group
-# - Verify the device handles these commands
 
 
 def test_on_off(group, switch_on_group):
