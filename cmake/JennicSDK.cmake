@@ -124,6 +124,7 @@ function(generate_zps_and_pdum_targets ZPSCFG_FILE)
         OUTPUT
             pdum_gen.c
             pdum_gen.h
+            pdum_apdu.S
         COMMAND ${PDUM_CONFIG}
                 -z ${PROJECT_NAME}
                 -f ${ZPSCFG_FILE}
