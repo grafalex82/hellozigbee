@@ -3,12 +3,6 @@ import pytest
 from smartswitch import *
 
 
-# Make sure the switch is in server mode for the tests below
-@pytest.fixture
-def sswitch(switch):
-    switch.set_attribute('operation_mode', 'server')
-    yield switch
-
 def test_on_off(sswitch):
     sswitch.switch('ON')
     sswitch.switch('OFF')

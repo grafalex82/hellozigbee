@@ -6,23 +6,20 @@ from smartswitch import *
 
 # A fixture that adds the switch to the test group
 @pytest.fixture(scope="function")
-def switch_on_group(switch, group):
+def switch_on_group(sswitch, group):
     # Remove device from the group if it was there already
-    resp = group.remove_device(switch)
+    resp = group.remove_device(sswitch)
     print(resp)
 
     # Create a brand new group
-    resp = group.add_device(switch)
+    resp = group.add_device(sswitch)
     print(resp)
     assert resp['status'] == 'ok'
 
-    # Make sure the switch is in server mode for the tests below
-    switch.set_attribute('operation_mode', 'server')
-
-    yield switch
+    yield sswitch
 
     # Cleanup group membership
-    resp = group.remove_device(switch)
+    resp = group.remove_device(sswitch)
     print(resp)
     assert resp['status'] == 'ok'
 

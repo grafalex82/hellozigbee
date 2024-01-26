@@ -68,11 +68,28 @@ def group(zigbee, bridge):
 # List of smart switch channels (endpoint number and z2m name)
 button_channels = [(2, "button_1"), (3, "button_2")]
 
-# Make each test that uses switch fixture to run twice for both buttons. 
+# Make each test that uses sswitch fixture to run twice for both buttons. 
+# sswitch stands a Switch object in a server mode
 # Using the ids parameter the button name will be displayed as a test parameter
 @pytest.fixture(scope = 'function', params = button_channels, ids=lambda x: x[1])
-def switch(device, zigbee, request, pytestconfig):
-    return SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+def sswitch(device, zigbee, request, pytestconfig):
+    switch = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+    switch.set_attribute('operation_mode', 'server')
+    return switch
+
+
+# List of logical client switch channels (endpoint number and z2m name)
+client_channels = [(2, "button_1"), (3, "button_2")]
+
+# Make each test that uses cswitch fixture to run for all logical channels (buttons + virtual channels)
+# cswitch stands a Switch object in a client mode
+# Using the ids parameter the button name will be displayed as a test parameter
+@pytest.fixture(scope = 'function', params = client_channels, ids=lambda x: x[1])
+def cswitch(device, zigbee, request, pytestconfig):
+    switch = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+    switch.set_attribute('operation_mode', 'client')
+    return switch
+
 
 
 # Iterate on all bindings that device currently has, and cleanup all On/Off and LevelCtrl bindings to the Coordinator
