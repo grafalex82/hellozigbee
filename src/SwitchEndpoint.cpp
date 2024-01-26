@@ -313,7 +313,7 @@ void SwitchEndpoint::sendCommandToBoundDevices(teCLD_OnOff_Command cmd)
     // Destination address does not matter - we will send to all bound devices
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
-    addr.eAddressMode = E_ZCL_AM_BOUND;
+    addr.eAddressMode = E_ZCL_AM_BOUND_NON_BLOCKING;
 
     // Send the toggle command
     uint8 sequenceNo;
@@ -362,7 +362,7 @@ void SwitchEndpoint::sendLevelControlMoveCommand(bool up)
     // Destination address does not matter - we will send to all bound devices
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
-    addr.eAddressMode = E_ZCL_AM_BOUND;
+    addr.eAddressMode = E_ZCL_AM_BOUND_NON_BLOCKING;
 
     // Send the move command
     uint8 sequenceNo;
@@ -386,7 +386,7 @@ void SwitchEndpoint::sendLevelControlStopCommand()
     // Destination address does not matter - we will send to all bound devices
     tsZCL_Address addr;
     addr.uAddress.u16DestinationAddress = 0x0000;
-    addr.eAddressMode = E_ZCL_AM_BOUND;
+    addr.eAddressMode = E_ZCL_AM_BOUND_NON_BLOCKING;
 
     // Send the move command
     uint8 sequenceNo;
