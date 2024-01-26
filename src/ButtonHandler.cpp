@@ -102,6 +102,7 @@ void ButtonHandler::buttonStateMachineToggle(bool pressed)
             if(pressed)
             {
                 changeState(PRESSED1);
+
                 endpoint->reportAction(BUTTON_ACTION_SINGLE);
 
                 if(relayMode != RELAY_MODE_UNLINKED)
@@ -238,10 +239,11 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             {
                 changeState(IDLE);
 
+                endpoint->reportAction(BUTTON_ACTION_TRIPPLE);
+
                 if(relayMode == RELAY_MODE_TRIPPLE)
                     endpoint->toggle();
 
-                endpoint->reportAction(BUTTON_ACTION_TRIPPLE);
             }
 
             break;
@@ -251,10 +253,11 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             {
                 changeState(IDLE);
 
+                endpoint->reportAction(BUTTON_RELEASED);
+
                 if(relayMode == RELAY_MODE_LONG)
                     endpoint->switchOff();
                     
-                endpoint->reportAction(BUTTON_RELEASED);
                 endpoint->reportLongPress(false);
             }
 

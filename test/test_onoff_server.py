@@ -298,8 +298,8 @@ def test_multifunction_tripple(sswitch):
     sswitch.wait_device_state_change(True)
 
     # Check the device state changed, and the double click action is generated
-    assert sswitch.wait_zigbee_state_change() == "ON"
     assert sswitch.wait_zigbee_action() == sswitch.get_action_name("tripple")
+    assert sswitch.wait_zigbee_state_change() == "ON"
 
 
 def test_multifunction_unlinked_single(sswitch):
