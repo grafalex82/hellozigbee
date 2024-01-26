@@ -22,6 +22,9 @@ def test_toggle_mode_btn_press(bound_switch):
     # In the toggle mode the switch will send a single 'toggle' command on button press
     bound_switch.set_attribute('switch_mode', 'toggle')
 
+    # The relay mode shall be any other than 'unlinked', otherwise sending On/Off commands will be switched off
+    bound_switch.set_attribute('relay_mode', 'front')    
+
     # Emulate short button press
     bound_switch.press_button()
     bound_switch.wait_button_state("PRESSED1")
