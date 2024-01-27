@@ -43,13 +43,15 @@ const fromZigbee_OnOffSwitchCfg = {
 
     convert: (model, msg, publish, options, meta) => {
 
-        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
-        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
-        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
-        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() publish=[${JSON.stringify(publish)}]`);
-        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() publish=[${JSON.stringify(publish)}]`);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
 
         const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() model endpoint=[${JSON.stringify(model.endpoint(msg.device))}}]`);
+        meta.logger.debug(`+_+_+_ fromZigbeeConverter() epName=[${ep_name}}]`);
         const result = {};
 
         // switch type
@@ -97,10 +99,10 @@ const toZigbee_OnOffSwitchCfg = {
     key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode', 'operation_mode'],
 
     convertGet: async (entity, key, meta) => {
-        // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
+        meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
 
         if(key == 'switch_actions') {
-            // meta.logger.debug(`+_+_+_ #1 getting value for key=[${key}]`);
+            meta.logger.debug(`+_+_+_ #1 getting value for key=[${key}]`);
             await entity.read('genOnOffSwitchCfg', ['switchActions']);
         }
         else {
@@ -112,14 +114,14 @@ const toZigbee_OnOffSwitchCfg = {
                 long_press_mode: 65284,
                 operation_mode: 65285,
             };
-            // meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
+            meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
         }
     },
 
     convertSet: async (entity, key, value, meta) => {
 
-        // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertSet() key=${key}, value=[${value}], epName=[${meta.endpoint_name}], entity=[${JSON.stringify(entity)}]`);
+        meta.logger.debug(`+_+_+_ toZigbeeConverter::convertSet() key=${key}, value=[${value}], epName=[${meta.endpoint_name}], entity=[${JSON.stringify(entity)}]`);
 
         let payload = {};
         let newValue = value;
@@ -173,15 +175,13 @@ const toZigbee_OnOffSwitchCfg = {
         }
 
         result = {state: {[key]: value}}
-        // meta.logger.debug(`result2=[${JSON.stringify(result)}]`);
+        meta.logger.debug(`result = [${JSON.stringify(result)}]`);
         return result;
     },
 }
 
-
-function genSwitchEndpoint(epName) {
+function genSwitchSettings(epName) {
     return [
-        e.switch().withEndpoint(epName),
         exposes.enum('operation_mode', ea.ALL, operationModeValues).withEndpoint(epName),
         exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
         exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
@@ -192,27 +192,17 @@ function genSwitchEndpoint(epName) {
     ]
 }
 
-function genSwitchEndpoints(endpoinsCount) {
-    let features = [];
-
-    for (let i = 1; i <= endpoinsCount; i++) {
-        const epName = `button_${i}`;
-        features.push(...genSwitchEndpoint(epName));
-    }
-
-    return features;
+function genSwitchEndpoint(epName) {
+    return [
+        e.switch().withEndpoint(epName),
+        //exposes.enum('operation_mode', ea.ALL, operationModeValues).withEndpoint(epName),
+        ...genSwitchSettings(epName),
+    ]
 }
 
-
-function genSwitchActions(endpoinsCount) {
-    let actions = [];
-
-    for (let i = 1; i <= endpoinsCount; i++) {
-        const epName = `button_${i}`;
-        actions.push(... ['single', 'double', 'triple', 'hold', 'release'].map(action => action + "_" + epName));
-    }
-
-    return actions;
+function genSwitchActions(endpoints) {
+    const actions = ['single', 'double', 'triple', 'hold', 'release'];
+    return endpoints.flatMap(endpoint => actions.map(action => action + "_" + endpoint))
 }
 
 const fromZigbee_MultistateInput = {
@@ -326,20 +316,26 @@ const device = {
         for (const ep of device.endpoints) {
             if(ep.supportsInputCluster('genOnOff')) {
                 await ep.read('genOnOff', ['onOff']);
+            }
+            if(ep.supportsOutputCluster('genOnOff')) {
                 await ep.read('genOnOffSwitchCfg', ['switchActions']);
                 await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284, 65285], manufacturerOptions.jennic);
             }
         }
     },
     exposes: [
-        e.action(genSwitchActions(2)),
-        ...genSwitchEndpoints(2)
+        e.action(genSwitchActions(["left", "right", "center"])),
+        ...genSwitchEndpoint("left"),
+        ...genSwitchEndpoint("right"),
+        ...genSwitchEndpoint("center"),
+//        ...genSwitchSettings("center"),
     ],
     endpoint: (device) => {
         return {
-            basic: 1,
-            button_1: 2,
-            button_2: 3
+            "basic": 1,
+            "left": 2,
+            "right": 3,
+            "center": 4
         };
     },
     meta: {multiEndpoint: true},
