@@ -77,3 +77,23 @@ class Bridge:
                         bindings.append({"endpoint": ep, "cluster": cluster, "target_addr": target_addr, "target_ep": target_ep})
     
         return bindings
+    
+
+    def send_bind_request(self, clusters, src, dst):
+        # clusters attribute must be a list
+        if isinstance(clusters, str):
+            clusters = [clusters]
+
+        # Send the bind request
+        payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
+        self.request('device/bind', payload)
+
+
+    def send_unbind_request(self, clusters, src, dst):
+        # clusters attribute must be a list
+        if isinstance(clusters, str):
+            clusters = [clusters]
+
+        # Send the bind request
+        payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
+        self.request('device/unbind', payload)

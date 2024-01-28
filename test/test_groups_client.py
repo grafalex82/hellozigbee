@@ -13,12 +13,12 @@ from smartswitch import *
 @pytest.fixture
 def bound_switch(cswitch, bridge, group):
     # Set all necessary bindings for the switch functions
-    send_bind_request(bridge, "genOnOff", cswitch.get_full_name(), group.get_name())
+    bridge.send_bind_request("genOnOff", cswitch.get_full_name(), group.get_name())
 
     yield cswitch
 
     # Cleanup bindings
-    send_unbind_request(bridge, "genOnOff", cswitch.get_full_name(), group.get_name())
+    bridge.send_unbind_request("genOnOff", cswitch.get_full_name(), group.get_name())
 
 
 def test_toggle_mode_btn_press(bound_switch):

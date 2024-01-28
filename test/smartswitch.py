@@ -3,26 +3,6 @@ import pytest
 from device import *
 from zigbee import *
 
-def send_bind_request(bridge, clusters, src, dst):
-    # clusters attribute must be a list
-    if isinstance(clusters, str):
-        clusters = [clusters]
-
-    # Send the bind request
-    payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
-    bridge.request('device/bind', payload)
-
-
-def send_unbind_request(bridge, clusters, src, dst):
-    # clusters attribute must be a list
-    if isinstance(clusters, str):
-        clusters = [clusters]
-
-    # Send the bind request
-    payload = {"clusters": clusters, "from": src, "to": dst, "skip_disable_reporting": "true"}
-    bridge.request('device/unbind', payload)
-
-
 class SmartSwitch:
     """ 
     Smart Switch Test Harness

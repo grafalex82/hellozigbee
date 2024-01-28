@@ -8,14 +8,14 @@ from smartswitch import *
 @pytest.fixture
 def bound_switch(cswitch, bridge):
     # Set all necessary bindings for the switch functions
-    send_bind_request(bridge, "genLevelCtrl", cswitch.get_full_name(), "Coordinator")
-    send_bind_request(bridge, "genOnOff", cswitch.get_full_name(), "Coordinator")
+    bridge.send_bind_request("genLevelCtrl", cswitch.get_full_name(), "Coordinator")
+    bridge.send_bind_request("genOnOff", cswitch.get_full_name(), "Coordinator")
 
     yield cswitch
 
     # Cleanup bindings
-    send_unbind_request(bridge, "genLevelCtrl", cswitch.get_full_name(), "Coordinator")
-    send_unbind_request(bridge, "genOnOff", cswitch.get_full_name(), "Coordinator")
+    bridge.send_unbind_request("genLevelCtrl", cswitch.get_full_name(), "Coordinator")
+    bridge.send_unbind_request("genOnOff", cswitch.get_full_name(), "Coordinator")
 
 
 def test_toggle_mode_btn_press(bound_switch):
