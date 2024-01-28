@@ -67,9 +67,13 @@ class Bridge:
 
                 for binding in device['endpoints'][ep]['bindings']:
                     cluster = binding['cluster']
-                    target_addr = binding['target']['ieee_address']
-                    target_ep = binding['target']['endpoint']
 
-                    bindings.append({"endpoint": ep, "cluster": cluster, "target_addr": target_addr, "target_ep": target_ep})
-        
+                    if binding['target']['type'] == 'group':
+                        target_addr = binding['target']['id']
+                        bindings.append({"endpoint": ep, "cluster": cluster, "target_addr": target_addr})
+                    else:
+                        target_addr = binding['target']['ieee_address']
+                        target_ep = binding['target']['endpoint']
+                        bindings.append({"endpoint": ep, "cluster": cluster, "target_addr": target_addr, "target_ep": target_ep})
+    
         return bindings

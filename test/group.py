@@ -8,6 +8,10 @@ class Group:
         self.id = id
 
 
+    def get_name(self):
+        return self.name
+
+
     def create(self):
         payload = {"friendly_name": self.name, "id": self.id}
         return self.bridge.request('group/add', payload)
