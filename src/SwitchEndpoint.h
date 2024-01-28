@@ -111,6 +111,7 @@ protected:
     virtual void handleOnOffClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
+    virtual teZCL_CommandStatus handleCheckAttributeRange(tsZCL_CallBackEvent *psEvent);
 
     virtual void handleDeviceJoin();
     virtual void handleDeviceLeave();

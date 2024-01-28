@@ -36,6 +36,12 @@ void Endpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     DBG_vPrintf(TRUE, "Endpoint: Warning: using default write attribute handler\n");
 }
 
+teZCL_CommandStatus Endpoint::handleCheckAttributeRange(tsZCL_CallBackEvent *psEvent)
+{
+    // By default we do not perform attribute value validation
+    return E_ZCL_CMDS_SUCCESS;
+}
+
 void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
 {
     switch (psEvent->eEventType)
@@ -54,7 +60,11 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             break;
 
         case E_ZCL_CBET_CHECK_ATTRIBUTE_RANGE:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Check attribute %04x range. No action\n", psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
+            psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus = handleCheckAttributeRange(psEvent);
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Check attribute %04x on cluster %04x range status %d\n", 
+                        psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum,
+                        psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
+                        psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus);
             break;
 
         case E_ZCL_CBET_UNHANDLED_EVENT:
@@ -70,8 +80,9 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             break;
 
         case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Read Attrib Rsp %d %02x\n", psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
-                *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Read Attrib Rsp %d %02x\n", 
+                        psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
+                        *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
             break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:

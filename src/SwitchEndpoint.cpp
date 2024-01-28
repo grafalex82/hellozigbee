@@ -158,6 +158,10 @@ void SwitchEndpoint::restoreConfiguration()
                                    sOnOffConfigServerCluster.iMaxPause,
                                    sOnOffConfigServerCluster.iMinLongPress);
 
+    // Make sure that client only endpoints have client mode set
+    if(clientOnly)
+        sOnOffConfigServerCluster.eOperationMode = E_CLD_OOSC_OPERATION_MODE_CLIENT;
+
     // Dump the restored configuration
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Restored configuration:\n", getEndpointId());
     DBG_vPrintf(TRUE, "    Operation mode = %d\n", sOnOffConfigServerCluster.eOperationMode);
@@ -589,6 +593,23 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
 
     // Store received values into PDM
     saveConfiguration();
+}
+
+teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 attribute = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
+    uint16 cluster = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+
+    // Prevent switching client only endpoint to a server mode
+    if(cluster == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION && attribute == E_CLD_OOSC_ATTR_ID_SWITCH_OPERATION_MODE)
+    {
+        uint8 value = *(uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData;
+        if(clientOnly && value != E_CLD_OOSC_OPERATION_MODE_CLIENT)
+            return E_ZCL_CMDS_INVALID_VALUE;
+    }
+
+    // By default we do not perform attribute value validation
+    return E_ZCL_CMDS_SUCCESS;
 }
 
 bool SwitchEndpoint::runsInServerMode() const
