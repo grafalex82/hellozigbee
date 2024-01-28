@@ -3,20 +3,6 @@ import pytest
 from device import *
 from zigbee import *
 
-def do_zigbee_request(device, zigbee, request_topic, payload, response_topic, expected_response):
-    # Prepare for waiting a zigbee2mqtt response
-    zigbee.subscribe(response_topic)
-
-    # Publish the request
-    zigbee.publish(request_topic, payload)
-
-    # Verify that the device has received the request, and properly process it
-    device.wait_str(expected_response)
-
-    # Wait the response from zigbee2mqtt
-    return zigbee.wait_msg(response_topic)
-
-
 def send_bind_request(bridge, clusters, src, dst):
     # clusters attribute must be a list
     if isinstance(clusters, str):
@@ -74,11 +60,25 @@ class SmartSwitch:
         return action + '_' + self.ep_name
 
 
+    def do_zigbee_request(self, request_topic, payload, response_topic, expected_response):
+        # Prepare for waiting a zigbee2mqtt response
+        self.zigbee.subscribe(response_topic)
+
+        # Publish the request
+        self.zigbee.publish(request_topic, payload)
+
+        # Verify that the device has received the request, and properly process it
+        self.device.wait_str(expected_response)
+
+        # Wait the response from zigbee2mqtt
+        return self.zigbee.wait_msg(response_topic)
+
+
     def do_set_request(self, attribute, value, expected_response):
         # Send payload like {"state_button_3", "ON"} to the <device>/set topic
         # Wait for the new device state response
         payload = {attribute: value}
-        response = do_zigbee_request(self.device, self.zigbee, self.z2m_name + '/set', payload, self.z2m_name, expected_response)
+        response = self.do_zigbee_request(self.z2m_name + '/set', payload, self.z2m_name, expected_response)
         return response[attribute]
 
 
@@ -86,7 +86,7 @@ class SmartSwitch:
         # Send payload like {"state_button_3", ""} to the <device>/get topic
         # Wait for the new device state response
         payload = {attribute: ""}
-        response = do_zigbee_request(self.device, self.zigbee, self.z2m_name + '/get', payload, self.z2m_name, expected_response)
+        response = self.do_zigbee_request(self.z2m_name + '/get', payload, self.z2m_name, expected_response)
         return response[attribute]
 
 
@@ -148,6 +148,18 @@ class SmartSwitch:
         msg = f"ZCL Write Attribute: Cluster 0007 Attrib {self.get_attr_id_by_name(attr)}"
         assert self.do_set_request(attr + '_' + self.ep_name, value, msg) == value
         self.wait_button_state('IDLE')
+
+
+    def set_incorrect_attribute(self, attr, value):
+        # Send the 'set' request to change the attribute value
+        payload = {attr + '_' + self.ep_name: value}
+        self.zigbee.publish(self.z2m_name + '/set', payload)
+
+        # Verify that the device has received and rejected the request
+        msg = f"ZCL Endpoint Callback: Check attribute {self.get_attr_id_by_name(attr)} on cluster 0007 range status 135"
+        self.device.wait_str(msg)
+
+        # As soon as device rejects the set request, do not expect anything from the z2m
 
 
     def get_attribute(self, attr):

@@ -21,9 +21,16 @@ def test_attribute_relay_mode(cswitch, relay_mode):
 
 
 @pytest.mark.parametrize("operation_mode", ["server", "client"])
-def test_attribute_operation_mode(cswitch, operation_mode):
-    cswitch.set_attribute('operation_mode', operation_mode)
-    assert cswitch.get_attribute('operation_mode') == operation_mode
+def test_attribute_operation_mode(sswitch, operation_mode):
+    # Check operation mode to accept `server` and `client` values only for server endpoints
+    sswitch.set_attribute('operation_mode', operation_mode)
+    assert sswitch.get_attribute('operation_mode') == operation_mode
+
+
+def test_attribute_client_only_operation_mode(bswitch):
+    # Check that client only endpoint does not allow setting server mode
+    bswitch.set_incorrect_attribute('operation_mode', 'server')
+    assert bswitch.get_attribute('operation_mode') == 'client'
 
 
 def test_attributes_survive_reboot(cswitch):

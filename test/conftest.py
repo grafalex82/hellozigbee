@@ -91,6 +91,12 @@ def cswitch(device, zigbee, request, pytestconfig):
     switch.set_attribute('operation_mode', 'client')
     return switch
 
+# A fixture that creates SmartSwitch object for both buttons endpoint
+@pytest.fixture(scope = 'function')
+def bswitch(device, zigbee, pytestconfig):
+    switch = SmartSwitch(device, zigbee, 4, 'center', pytestconfig.getini('device_name'))
+    return switch
+
 
 
 # Iterate on all bindings that device currently has, and cleanup all On/Off and LevelCtrl bindings to the Coordinator
