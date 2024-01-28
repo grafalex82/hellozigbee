@@ -245,8 +245,9 @@ const fromZigbee_LevelCtrl = {
     convert: (model, msg, publish, options, meta) => {
         const cmd = msg['type'];
         const payload = msg['data'];
+        const srcEp = msg['endpoint']['ID']
 
-        const result = {debug: {command: cmd, payload: payload}};
+        const result = {debug: {command: cmd, endpoint: srcEp, payload: payload}};
         return result;
     },
 }

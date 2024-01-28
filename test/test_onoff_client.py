@@ -242,7 +242,7 @@ def test_level_control(bound_switch, long_press_mode, command, up_down):
 
     # Verify the Level Control Move command has been received by the coordinator
     assert bound_switch.wait_zigbee_action() == bound_switch.get_action_name("hold")
-    assert bound_switch.wait_zigbee_msg()['debug'] == {'command': command, 'payload': {'movemode': up_down, 'rate': 80}}
+    assert bound_switch.wait_zigbee_msg()['debug'] == {'command': command, 'endpoint': bound_switch.ep, 'payload': {'movemode': up_down, 'rate': 80}}
 
     # Do not forget to release the button
     bound_switch.release_button()
