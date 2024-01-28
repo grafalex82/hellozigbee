@@ -187,7 +187,13 @@ PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
             DBG_vPrintf(TRUE, "Matched BTN2_PRESS\n");
         }
 
-        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE"))
+        if(debugInput.matchCommand("BTN3_PRESS"))   // Use button #3 to indicate both buttons
+        {
+            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
+            DBG_vPrintf(TRUE, "Matched BTN3_PRESS\n");
+        }
+
+        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE") || debugInput.matchCommand("BTN3_RELEASE"))
         {
             ButtonsTask::getInstance()->setButtonsOverride(0);
             DBG_vPrintf(TRUE, "Matched BTNx_RELEASE\n");

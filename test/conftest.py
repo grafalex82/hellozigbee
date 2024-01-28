@@ -66,7 +66,7 @@ def group(zigbee, bridge):
 
 
 # List of smart switch channels (endpoint number and z2m name)
-button_channels = [(2, "button_1"), (3, "button_2")]
+button_channels = [(2, "left"), (3, "right")]
 
 # Make each test that uses sswitch fixture to run twice for both buttons. 
 # sswitch stands a Switch object in a server mode
@@ -79,7 +79,8 @@ def sswitch(device, zigbee, request, pytestconfig):
 
 
 # List of logical client switch channels (endpoint number and z2m name)
-client_channels = [(2, "button_1"), (3, "button_2")]
+# TODO: Rename endpoint that is associated with both buttons actions to 'both' when z2m supports this. It is named 'center' for now.
+client_channels = [(2, "left"), (3, "right"), (4, "center")]
 
 # Make each test that uses cswitch fixture to run for all logical channels (buttons + virtual channels)
 # cswitch stands a Switch object in a client mode
