@@ -180,24 +180,71 @@ const toZigbee_OnOffSwitchCfg = {
     },
 }
 
-function genSwitchSettings(epName) {
-    return [
-        exposes.enum('operation_mode', ea.ALL, operationModeValues).withEndpoint(epName),
-        exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
-        exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
-        exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
-        exposes.enum('long_press_mode', ea.ALL, longPressModeValues).withEndpoint(epName),
-        exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
-        exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
-    ]
+function addSwitchSettings(sw) {
+    // const switch_mode_description = `Toggle - each press toggles the light state (fastest feedback).
+    // Momentary - activates on button press, deactivates on release.
+    // Multifunction - smart mode, supports single, double, triple, and long presses with customizable actions.`;
+    sw.withFeature(e.enum('switch_mode', ea.ALL, switchModeValues));
+
+    // const switch_actions_description = `onOff - activates on press, deactivates on release.
+	// offOn - deactivates on press, activates on release.
+	// toggle - toggles state with each press or release.`;
+    sw.withFeature(e.enum('switch_actions', ea.ALL, switchActionValues));
+
+    // const relay_mode_description = `unlinked - relay decoupled, button triggers only logical actions.
+	// front - relay toggles on initial press for immediate response.
+    // single - relay toggles on one press, generates 'single' action.
+	// double - relay toggles on two presses, generates 'double' action.
+	// triple - relay toggles on three presses, generates 'triple' action.
+	// long - relay toggles on press-and-hold, generates 'hold' action, and 'release' action upon button release`;
+    sw.withFeature(e.enum('relay_mode', ea.ALL, relayModeValues));
+
+    // const long_press_mode_description = `None - long press has no extra function, only emits 'hold' action.
+	// levelCtrlUp - press to emit 'MoveUpWithOnOff', release for 'Stop'.
+	// levelCtrlDown - press for 'MoveDownWithOnOff', release for 'Stop'.`;
+    sw.withFeature(e.enum('long_press_mode', ea.ALL, longPressModeValues));
+
+    // const max_pause_description = `Maximum time between button clicks so that consecutive clicks are consodered as a part of a multi-click action`;
+    // sw.withFeature(e.numeric('max_pause', ea.ALL));
+
+    // const min_long_press_description = `Defines the minimum duration for pressing the button to trigger a 'hold' action`;
+    // sw.withFeature(e.numeric('min_long_press', ea.ALL));
+
+    return sw;
 }
 
 function genSwitchEndpoint(epName) {
-    return [
-        e.switch().withEndpoint(epName),
-        //exposes.enum('operation_mode', ea.ALL, operationModeValues).withEndpoint(epName),
-        ...genSwitchSettings(epName),
-    ]
+    // Create composite section for switch settings
+    let sw = e.composite(epName + " Button", epName, ea.ALL);
+    sw.withDescription('Settings for the ' + epName + ' button');
+
+    // The switch toggle
+    sw.withFeature(e.binary('On/Off state', ea.ALL, 'ON', 'OFF').withValueToggle('TOGGLE').withProperty('state'));
+
+    // Add the operation mode selector (applicable only for switch endpoints that allow server mode)
+    sw.withFeature(e.enum('operation_mode', ea.ALL, operationModeValues));
+
+    // Add other switch settings
+    addSwitchSettings(sw);
+
+    // Make sure whole created block acts as a group of parameters, rather than a single composite object
+    sw.withProperty('').withEndpoint(epName);
+
+    return sw;
+}
+
+function genBothButtonsEndpoint(epName) {
+    // Create composite section for switch settings
+    let sw = e.composite("Both Buttons", epName, ea.ALL);
+    sw.withDescription('Settings for the both button pressed together');
+
+    // Add other switch settings
+    addSwitchSettings(sw);
+
+    // Make sure whole created block acts as a group of parameters, rather than a single composite object
+    sw.withProperty('').withEndpoint(epName);
+
+    return sw;
 }
 
 function genSwitchActions(endpoints) {
@@ -326,10 +373,9 @@ const device = {
     },
     exposes: [
         e.action(genSwitchActions(["left", "right", "center"])),
-        ...genSwitchEndpoint("left"),
-        ...genSwitchEndpoint("right"),
-        ...genSwitchEndpoint("center"),
-//        ...genSwitchSettings("center"),
+        genSwitchEndpoint("left"),
+        genSwitchEndpoint("right"),
+        genBothButtonsEndpoint("center")
     ],
     endpoint: (device) => {
         return {
