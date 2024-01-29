@@ -79,6 +79,10 @@ class Bridge:
         return bindings
     
 
+    def get_groups(self):
+        return self.zigbee.get_retained_topic(self.topic + '/groups')
+
+
     def send_bind_request(self, clusters, src, dst):
         # clusters attribute must be a list
         if isinstance(clusters, str):

@@ -45,24 +45,24 @@ def bridge(zigbee, pytestconfig):
     bridge = Bridge(zigbee)
     yield bridge
 
+
 # A fixture that creates a test_group, and cleans it up after all tests completed
 @pytest.fixture(scope="session")
 def group(zigbee, bridge):
+    # Prepare the group object
     grp = Group(zigbee, bridge, 'test_group', 1234)
 
-    # Remove previously created group (if any). Ignore errors if there was no group before.
-    resp = grp.delete()
+    # No need to (re)create a group if it exists already
+    for item in bridge.get_groups():
+        if item['friendly_name'] == 'test_group':
+            assert item['id'] == 1234
+            return grp
 
     # Create a brand new group
     resp = grp.create()
     assert resp['status'] == 'ok'
 
-    # Use the group
-    yield grp
-
-    # Cleanup our group
-    resp = grp.delete()
-    assert resp['status'] == 'ok'
+    return grp
 
 
 # List of smart switch channels (endpoint number and z2m name)
@@ -107,7 +107,7 @@ def clear_coordinator_bindings(bridge, device_name):
     for binding in bridge.get_device_bindings(device_name):
         if binding['cluster'] == "genOnOff" or binding['cluster'] == "genLevelCtrl":
             if binding['target_addr'] == coordinator_addr:
-                send_unbind_request(bridge, binding['cluster'], f"{device_name}/{binding['endpoint']}", 'Coordinator')
+                bridge.send_unbind_request(binding['cluster'], f"{device_name}/{binding['endpoint']}", 'Coordinator')
 
 
 # Make sure that no bindings that could possibly change test behavior is active. 
