@@ -185,7 +185,9 @@ const toZigbee_OnOffSwitchCfg = {
             case 'interlock_mode':
                 newValue = interlockModeValues.indexOf(value);
                 payload = {65286: {'value': newValue, 'type': DataType.enum8}};
-                await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+                // Intentionally no `await` as interlocked endpoint may send state change message
+                // and tests will go out of sync.
+                /*await*/ entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
 
                 // Schedule reading of buddy endpoint setting to update setting on the Z2M dashboard.
                 // Intentionally no `await` here to keep the order of requests for automated tests

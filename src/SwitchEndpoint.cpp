@@ -638,10 +638,12 @@ void SwitchEndpoint::setInterlockMode(teCLD_OOSC_InterlockMode mode)
 
 void SwitchEndpoint::setInterlockState(bool buddyState)
 {
+    // In mutual exclusion mode prevent both endpoints to be ON
     if(sOnOffConfigServerCluster.eInterlockMode == E_CLD_OOSC_INTERLOCK_MODE_MUTEX)
-        if(getState() && buddyState)
-            doStateChange(false, true);
+        // Always call doStateChange() to prevent tests go out of sync
+        doStateChange(getState() && !buddyState, true);
 
+    // In opposite mode endpoints always have different states
     if(sOnOffConfigServerCluster.eInterlockMode == E_CLD_OOSC_INTERLOCK_MODE_OPPOSITE)
         doStateChange(!buddyState, true);
 }
