@@ -25,6 +25,7 @@ const switchActionValues = ['onOff', 'offOn', 'toggle'];
 const relayModeValues = ['unlinked', 'front', 'single', 'double', 'tripple', 'long'];
 const longPressModeValues = ['none', 'levelCtrlUp', 'levelCtrlDown'];
 const operationModeValues = ['server', 'client'];
+const interlockModeValues = ['none', 'mutualExclusion', 'opposite'];
 
 
 const manufacturerOptions = {
@@ -42,16 +43,15 @@ const fromZigbee_OnOffSwitchCfg = {
     type: ['attributeReport', 'readResponse'],
 
     convert: (model, msg, publish, options, meta) => {
-
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() publish=[${JSON.stringify(publish)}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() publish=[${JSON.stringify(publish)}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
 
         const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() model endpoint=[${JSON.stringify(model.endpoint(msg.device))}}]`);
-        meta.logger.debug(`+_+_+_ fromZigbeeConverter() epName=[${ep_name}}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() model endpoint=[${JSON.stringify(model.endpoint(msg.device))}}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() epName=[${ep_name}}]`);
         const result = {};
 
         // switch type
@@ -89,6 +89,11 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`operation_mode_${ep_name}`] = operationModeValues[msg.data['65285']];
         }
 
+        // Interlock mode
+        if(msg.data.hasOwnProperty('65286')) {
+            result[`interlock_mode_${ep_name}`] = interlockModeValues[msg.data['65286']];
+        }
+
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
         return result;
     },
@@ -96,13 +101,13 @@ const fromZigbee_OnOffSwitchCfg = {
 
 
 const toZigbee_OnOffSwitchCfg = {
-    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode', 'operation_mode'],
+    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode', 'operation_mode', 'interlock_mode'],
 
     convertGet: async (entity, key, meta) => {
-        meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
+        // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
 
         if(key == 'switch_actions') {
-            meta.logger.debug(`+_+_+_ #1 getting value for key=[${key}]`);
+            // meta.logger.debug(`+_+_+_ #1 getting value for key=[${key}]`);
             await entity.read('genOnOffSwitchCfg', ['switchActions']);
         }
         else {
@@ -113,15 +118,16 @@ const toZigbee_OnOffSwitchCfg = {
                 min_long_press: 65283,
                 long_press_mode: 65284,
                 operation_mode: 65285,
+                interlock_mode: 65286,
             };
-            meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
+            // meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
         }
     },
 
     convertSet: async (entity, key, value, meta) => {
 
-        meta.logger.debug(`+_+_+_ toZigbeeConverter::convertSet() key=${key}, value=[${value}], epName=[${meta.endpoint_name}], entity=[${JSON.stringify(entity)}]`);
+        // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertSet() key=${key}, value=[${value}], epName=[${meta.endpoint_name}], entity=[${JSON.stringify(entity)}]`);
 
         let payload = {};
         let newValue = value;
@@ -166,6 +172,12 @@ const toZigbee_OnOffSwitchCfg = {
             case 'operation_mode':
                 newValue = operationModeValues.indexOf(value);
                 payload = {65285: {'value': newValue, 'type': DataType.enum8}};
+                await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+                break;
+    
+            case 'interlock_mode':
+                newValue = interlockModeValues.indexOf(value);
+                payload = {65286: {'value': newValue, 'type': DataType.enum8}};
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
     
@@ -222,10 +234,18 @@ function genSwitchEndpoint(epName) {
     sw.withFeature(e.binary('On/Off state', ea.ALL, 'ON', 'OFF').withValueToggle('TOGGLE').withProperty('state'));
 
     // Add the operation mode selector (applicable only for switch endpoints that allow server mode)
+    // const operation_mode_description = `Server - the endpoint maintains internal state, generate reports on its change.
+    // Client - the endpoint generates On/Off/Toggle commands to bound devices`;
     sw.withFeature(e.enum('operation_mode', ea.ALL, operationModeValues));
 
     // Add other switch settings
     addSwitchSettings(sw);
+
+    // Add the interlock mode selector (applicable only for switch endpoints that allow server mode)
+    // const interlock_mode_description = `None - Switch endpoints work independently.
+    // Mutual Exclusion - two endpoints cannot be ON at the same time,
+    // Opposite - two endpoints always have state opposite to each other.`;
+    sw.withFeature(e.enum('interlock_mode', ea.ALL, interlockModeValues));
 
     // Make sure whole created block acts as a group of parameters, rather than a single composite object
     sw.withProperty('').withEndpoint(epName);

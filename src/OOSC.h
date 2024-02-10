@@ -30,6 +30,7 @@ typedef enum
     E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_DUR    = 0xff03,
     E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_MODE   = 0xff04,
     E_CLD_OOSC_ATTR_ID_SWITCH_OPERATION_MODE    = 0xff05,
+    E_CLD_OOSC_ATTR_ID_SWITCH_INTERLOCK_MODE    = 0xff06,
 } teCLD_OOSC_ClusterID;
 
 
@@ -64,6 +65,14 @@ typedef enum
     E_CLD_OOSC_OPERATION_MODE_CLIENT
 } teCLD_OOSC_OperationMode;
 
+// Interlock mode
+typedef enum 
+{
+    E_CLD_OOSC_INTERLOCK_MODE_NONE,
+    E_CLD_OOSC_INTERLOCK_MODE_MUTEX,
+    E_CLD_OOSC_INTERLOCK_MODE_OPPOSITE
+} teCLD_OOSC_InterlockMode;
+
 
 // On/Off Switch Configuration Cluster
 typedef struct
@@ -78,6 +87,7 @@ typedef struct
     zuint16                 iMinLongPress;
     zenum8                  eLongPressMode;
     zenum8                  eOperationMode;
+    zenum8                  eInterlockMode;
 
 #endif    
     zuint16                 u16ClusterRevision;
