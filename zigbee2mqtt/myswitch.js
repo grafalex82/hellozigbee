@@ -38,6 +38,13 @@ const getKey = (object, value) => {
     }
 };
 
+function getInterlockEp(ep) {
+    // endpoints 2 (left) and 3 (right) are interlocked to each other
+    if (ep == 2) return 3;
+    if (ep == 3) return 2;
+    return null;
+}
+
 const fromZigbee_OnOffSwitchCfg = {
     cluster: 'genOnOffSwitchCfg',
     type: ['attributeReport', 'readResponse'],
@@ -179,6 +186,9 @@ const toZigbee_OnOffSwitchCfg = {
                 newValue = interlockModeValues.indexOf(value);
                 payload = {65286: {'value': newValue, 'type': DataType.enum8}};
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+                const interlockEp = getInterlockEp(entity.ID);
+                if(interlockEp) 
+                    await meta.device.getEndpoint(interlockEp).read('genOnOffSwitchCfg', [65286], manufacturerOptions.jennic);
                 break;
     
             default:

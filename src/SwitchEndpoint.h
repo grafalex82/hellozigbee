@@ -67,10 +67,12 @@ protected:
 
     ButtonHandler buttonHandler;
     bool clientOnly;
+    SwitchEndpoint * interlockBuddy;
 
 public:
     SwitchEndpoint();
     void setConfiguration(uint32 pinMask, bool disableServer = false);
+    void setInterlockBuddy(SwitchEndpoint * buddy);
     virtual void init();
 
     bool getState() const;
@@ -81,6 +83,8 @@ public:
 
     void reportAction(ButtonActionType action);
     void reportLongPress(bool pressed);
+
+    void setInterlockState(teCLD_OOSC_InterlockMode mode);
 
 protected:
     void doStateChange(bool state);

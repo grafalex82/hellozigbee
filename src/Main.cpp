@@ -269,6 +269,9 @@ extern "C" PUBLIC void vAppMain(void)
     switch2.setConfiguration(SWITCH2_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH2_ENDPOINT, &switch2);
 
+    switch1.setInterlockBuddy(&switch2);
+    switch2.setInterlockBuddy(&switch1);
+
     SwitchEndpoint switchBoth;
     switchBoth.setConfiguration(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK, true);
     EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCHB_ENDPOINT, &switchBoth);

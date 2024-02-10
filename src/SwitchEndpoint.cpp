@@ -22,8 +22,14 @@ SwitchEndpoint::SwitchEndpoint()
 
 void SwitchEndpoint::setConfiguration(uint32 pinMask, bool disableServer)
 {
+    interlockBuddy = NULL;
     clientOnly = disableServer;
     ButtonsTask::getInstance()->registerHandler(pinMask, &buttonHandler);
+}
+
+void SwitchEndpoint::setInterlockBuddy(SwitchEndpoint * buddy)
+{
+    interlockBuddy = buddy;
 }
 
 void SwitchEndpoint::registerServerCluster()
@@ -584,6 +590,14 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
                 buttonHandler.setMinLongPress(sOnOffConfigServerCluster.iMinLongPress);
                 break;
 
+            case E_CLD_OOSC_ATTR_ID_SWITCH_INTERLOCK_MODE:
+                if (interlockBuddy)
+                {
+                    interlockBuddy->setInterlockState((teCLD_OOSC_InterlockMode)sOnOffConfigServerCluster.eInterlockMode);
+                    buttonHandler.resetButtonStateMachine();
+                }
+                break;
+
             default:
                 // Tests will expect button state machine go IDLE when any of the settings are changed
                 buttonHandler.resetButtonStateMachine();
@@ -610,6 +624,11 @@ teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEven
 
     // By default we do not perform attribute value validation
     return E_ZCL_CMDS_SUCCESS;
+}
+
+void SwitchEndpoint::setInterlockState(teCLD_OOSC_InterlockMode mode)
+{
+    sOnOffConfigServerCluster.eInterlockMode = mode;
 }
 
 bool SwitchEndpoint::runsInServerMode() const
