@@ -84,7 +84,7 @@ public:
     void reportAction(ButtonActionType action);
     void reportLongPress(bool pressed);
 
-    void setInterlockState(teCLD_OOSC_InterlockMode mode);
+    void setInterlockMode(teCLD_OOSC_InterlockMode mode);
 
 protected:
     void doStateChange(bool state);

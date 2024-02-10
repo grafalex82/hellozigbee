@@ -593,7 +593,7 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
             case E_CLD_OOSC_ATTR_ID_SWITCH_INTERLOCK_MODE:
                 if (interlockBuddy)
                 {
-                    interlockBuddy->setInterlockState((teCLD_OOSC_InterlockMode)sOnOffConfigServerCluster.eInterlockMode);
+                    interlockBuddy->setInterlockMode((teCLD_OOSC_InterlockMode)sOnOffConfigServerCluster.eInterlockMode);
                     buttonHandler.resetButtonStateMachine();
                 }
                 break;
@@ -626,7 +626,7 @@ teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEven
     return E_ZCL_CMDS_SUCCESS;
 }
 
-void SwitchEndpoint::setInterlockState(teCLD_OOSC_InterlockMode mode)
+void SwitchEndpoint::setInterlockMode(teCLD_OOSC_InterlockMode mode)
 {
     sOnOffConfigServerCluster.eInterlockMode = mode;
 }
