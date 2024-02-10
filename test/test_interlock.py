@@ -35,7 +35,7 @@ def test_mutual_exclusion(switch_pair, switch2_init):
 
     # Enable mutual exclusion mode, check that the second switch also turns into the same mode
     switch1.set_attribute('interlock_mode', "mutualExclusion")
-    switch2.wait_zigbee_state_change()
+    switch2.wait_zigbee_state_change()  # The buddy endpoint may change its state
     assert switch2.wait_zigbee_attribute_change('interlock_mode') == 'mutualExclusion'
 
     # Set the switch2 initial state

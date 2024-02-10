@@ -75,6 +75,8 @@ button_channels = [(2, "left"), (3, "right")]
 def sswitch(device, zigbee, request, pytestconfig):
     switch = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
     switch.set_attribute('operation_mode', 'server')
+    switch.set_attribute('interlock_mode', 'none')
+    switch.wait_zigbee_attribute_change('interlock_mode') == 'none' # Setting `interlock_mode` attribute reads also buddy endpoint
     return switch
 
 
