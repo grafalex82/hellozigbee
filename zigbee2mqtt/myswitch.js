@@ -186,9 +186,13 @@ const toZigbee_OnOffSwitchCfg = {
                 newValue = interlockModeValues.indexOf(value);
                 payload = {65286: {'value': newValue, 'type': DataType.enum8}};
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+
+                // Schedule reading of buddy endpoint setting to update setting on the Z2M dashboard.
+                // Intentionally no `await` here to keep the order of requests for automated tests
+                // Just schedule the read which will happen some time later.
                 const interlockEp = getInterlockEp(entity.ID);
-                if(interlockEp) 
-                    await meta.device.getEndpoint(interlockEp).read('genOnOffSwitchCfg', [65286], manufacturerOptions.jennic);
+                if(interlockEp)                     
+                    /*await*/ meta.device.getEndpoint(interlockEp).read('genOnOffSwitchCfg', [65286], manufacturerOptions.jennic);
                 break;
     
             default:
