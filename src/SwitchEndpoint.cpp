@@ -267,7 +267,7 @@ void SwitchEndpoint::toggle()
         sendCommandToBoundDevices(E_CLD_ONOFF_CMD_TOGGLE);
 }
 
-void SwitchEndpoint::doStateChange(bool state)
+void SwitchEndpoint::doStateChange(bool state, bool sourcedFromInterlockBuddy)
 {
     // Disabled in Client mode
     if(!runsInServerMode())
@@ -278,6 +278,10 @@ void SwitchEndpoint::doStateChange(bool state)
 
     LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
     reportState();
+
+    // Let the buddy know about our state change
+    if(!sourcedFromInterlockBuddy && interlockBuddy)
+        interlockBuddy->setInterlockState(state);
 }
 
 void SwitchEndpoint::reportState()
@@ -594,6 +598,7 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
                 if (interlockBuddy)
                 {
                     interlockBuddy->setInterlockMode((teCLD_OOSC_InterlockMode)sOnOffConfigServerCluster.eInterlockMode);
+                    interlockBuddy->setInterlockState(getState());
                     buttonHandler.resetButtonStateMachine();
                 }
                 break;
@@ -629,6 +634,16 @@ teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEven
 void SwitchEndpoint::setInterlockMode(teCLD_OOSC_InterlockMode mode)
 {
     sOnOffConfigServerCluster.eInterlockMode = mode;
+}
+
+void SwitchEndpoint::setInterlockState(bool buddyState)
+{
+    if(sOnOffConfigServerCluster.eInterlockMode == E_CLD_OOSC_INTERLOCK_MODE_MUTEX)
+        if(getState() && buddyState)
+            doStateChange(false, true);
+
+    if(sOnOffConfigServerCluster.eInterlockMode == E_CLD_OOSC_INTERLOCK_MODE_OPPOSITE)
+        doStateChange(!buddyState, true);
 }
 
 bool SwitchEndpoint::runsInServerMode() const

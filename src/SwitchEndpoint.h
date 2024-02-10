@@ -85,9 +85,10 @@ public:
     void reportLongPress(bool pressed);
 
     void setInterlockMode(teCLD_OOSC_InterlockMode mode);
+    void setInterlockState(bool buddyState);
 
 protected:
-    void doStateChange(bool state);
+    void doStateChange(bool state, bool sourcedFromInterlockBuddy = false);
     void reportState();
     void sendCommandToBoundDevices(teCLD_OnOff_Command cmd);
     void sendLevelControlMoveCommand(bool up);
