@@ -120,6 +120,8 @@ class SmartSwitch:
                 return 'ff04'
             case 'operation_mode':
                 return 'ff05'
+            case 'interlock_mode':
+                return 'ff06'
             case _:
                 raise RuntimeError("Unknown attribute name")
 

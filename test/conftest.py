@@ -97,6 +97,24 @@ def bswitch(device, zigbee, pytestconfig):
     switch = SmartSwitch(device, zigbee, 4, 'center', pytestconfig.getini('device_name'))
     return switch
 
+# Some tests needs to operate with two switch endpoints simultaneoulsy
+@pytest.fixture(scope = 'function', params = button_channels, ids=lambda x: x[1])
+def switch_pair(device, zigbee, request, pytestconfig):
+    # Create a switch
+    switch1 = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+    switch1.set_attribute('operation_mode', 'server')
+
+    # Search for another switch, not the same as one requested
+    another_switch_name = None
+    for button in button_channels:
+        if button != request.param:
+            another_switch_name = button
+
+    # Create the requested switch
+    switch2 = SmartSwitch(device, zigbee, another_switch_name[0], another_switch_name[1], pytestconfig.getini('device_name'))
+    switch2.set_attribute('operation_mode', 'server')
+
+    return (switch1, switch2)
 
 
 # Iterate on all bindings that device currently has, and cleanup all On/Off and LevelCtrl bindings to the Coordinator
