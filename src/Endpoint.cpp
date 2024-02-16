@@ -42,6 +42,11 @@ teZCL_CommandStatus Endpoint::handleCheckAttributeRange(tsZCL_CallBackEvent *psE
     return E_ZCL_CMDS_SUCCESS;
 }
 
+void Endpoint::handleReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "Endpoint: Warning: using default reporting configure handler\n");
+}
+
 void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
 {
     switch (psEvent->eEventType)
@@ -96,6 +101,8 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
 
         case E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTES_CONFIGURE:
             vDumpAttributeReportingConfigureRequest(psEvent);
+            if(psEvent->eZCL_Status == E_ZCL_SUCCESS)
+                handleReportingConfigureRequest(psEvent);
             break;
 
         case E_ZCL_CBET_REPORT_ATTRIBUTES_CONFIGURE:

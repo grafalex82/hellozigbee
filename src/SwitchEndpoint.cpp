@@ -16,6 +16,10 @@ extern "C"
     #include "PDM.h"
 }
 
+static const uint8 PARAM_ID_BUTTON_CONFIG = 0;
+static const uint8 PARAM_ID_REPORTING_CONFIG = 1;
+
+
 SwitchEndpoint::SwitchEndpoint()
 {
 }
@@ -149,11 +153,11 @@ void SwitchEndpoint::registerEndpoint()
     DBG_vPrintf(TRUE, "SwitchEndpoint::init(): Register Switch Endpoint. status=%d\n", status);
 }
 
-void SwitchEndpoint::restoreConfiguration()
+void SwitchEndpoint::restoreButtonsConfiguration()
 {
     // Read values from PDM
     uint16 readBytes;
-    PDM_eReadDataFromRecord(getPdmIdForEndpoint(getEndpointId(), 0),
+    PDM_eReadDataFromRecord(getPdmIdForEndpoint(getEndpointId(), PARAM_ID_BUTTON_CONFIG),
                             &sOnOffConfigServerCluster,
                             sizeof(sOnOffConfigServerCluster),
                             &readBytes);
@@ -169,7 +173,7 @@ void SwitchEndpoint::restoreConfiguration()
         sOnOffConfigServerCluster.eOperationMode = E_CLD_OOSC_OPERATION_MODE_CLIENT;
 
     // Dump the restored configuration
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Restored configuration:\n", getEndpointId());
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Restored buttons configuration:\n", getEndpointId());
     DBG_vPrintf(TRUE, "    Operation mode = %d\n", sOnOffConfigServerCluster.eOperationMode);
     DBG_vPrintf(TRUE, "    Switch mode = %d\n", sOnOffConfigServerCluster.eSwitchMode);
     DBG_vPrintf(TRUE, "    Relay mode = %d\n", sOnOffConfigServerCluster.eRelayMode);
@@ -177,10 +181,10 @@ void SwitchEndpoint::restoreConfiguration()
     DBG_vPrintf(TRUE, "    Long press mode = %d\n", sOnOffConfigServerCluster.eLongPressMode);
 }
 
-void SwitchEndpoint::saveConfiguration()
+void SwitchEndpoint::saveButtonsConfiguration()
 {
-    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Save configuration\n", getEndpointId());
-    PDM_eSaveRecordData(getPdmIdForEndpoint(getEndpointId(), 0),
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Save buttons configuration\n", getEndpointId());
+    PDM_eSaveRecordData(getPdmIdForEndpoint(getEndpointId(), PARAM_ID_BUTTON_CONFIG),
                         &sOnOffConfigServerCluster,
                         sizeof(sOnOffConfigServerCluster));
 }
@@ -205,10 +209,9 @@ void SwitchEndpoint::init()
     buttonHandler.setEndpoint(this);
 
     // Restore previous configuration from PDM
-    restoreConfiguration();
-
+    restoreButtonsConfiguration();
+    restoreReportingConfigurations();
     // TODO: restore previous brightness from PDM
-    // TODO: restore previous reporting configuration from PDM
 }
 
 bool SwitchEndpoint::getState() const
@@ -611,7 +614,7 @@ void SwitchEndpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
     }
 
     // Store received values into PDM
-    saveConfiguration();
+    saveButtonsConfiguration();
 }
 
 teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEvent *psEvent)
@@ -629,6 +632,16 @@ teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEven
 
     // By default we do not perform attribute value validation
     return E_ZCL_CMDS_SUCCESS;
+}
+
+void SwitchEndpoint::handleReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
+{
+    if(psEvent->eZCL_Status != E_ZCL_SUCCESS)
+        return;
+
+    uint16 clusterID = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
+    tsZCL_AttributeReportingConfigurationRecord * record = &psEvent->uMessage.sAttributeReportingConfigurationRecord;
+    addReportConfiguration(clusterID, record);
 }
 
 void SwitchEndpoint::setInterlockMode(teCLD_OOSC_InterlockMode mode)
@@ -668,4 +681,95 @@ void SwitchEndpoint::handleDeviceLeave()
 {
     // Force resetting the LED
     doStateChange(getState());
+}
+
+void SwitchEndpoint::initReportingConfigurations()
+{
+    memset(reportConfigurations, 0, sizeof(reportConfigurations));
+    saveReportingConfigurations();
+}
+
+void SwitchEndpoint::saveReportingConfigurations()
+{
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Save reporting configuration\n", getEndpointId());
+    PDM_eSaveRecordData(getPdmIdForEndpoint(getEndpointId(), PARAM_ID_REPORTING_CONFIG),
+                        reportConfigurations,
+                        sizeof(reportConfigurations));
+}
+
+void SwitchEndpoint::restoreReportingConfigurations()
+{
+    // Read values from PDM
+    uint16 readBytes;
+    PDM_teStatus status = PDM_eReadDataFromRecord(getPdmIdForEndpoint(getEndpointId(), PARAM_ID_REPORTING_CONFIG),
+                                                  reportConfigurations,
+                                                  sizeof(reportConfigurations),
+                                                  &readBytes);
+
+    // During the first run it may happen that there is no record in PDM, and we need to initialize it
+    if(status != PDM_E_STATUS_OK)
+    {
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: No PDM record for reporting configuration. Create a new one. status=%d\n", getEndpointId(), status);
+        initReportingConfigurations();
+        return;
+    }
+
+    // Iterate over the loaded array and re-register all reporting configurations
+    for(int i = 0; i < ZCL_NUMBER_OF_REPORTS; i++)
+    {
+        if(reportConfigurations[i].clusterID != 0)
+        {
+            DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Restore reporting configuration: ClusterID=%04x, AttrID=%04x, Min=%d, Max=%d, Timeout=%d\n",
+                        getEndpointId(),
+                        reportConfigurations[i].clusterID,
+                        reportConfigurations[i].record.u16AttributeEnum,
+                        reportConfigurations[i].record.u16MinimumReportingInterval,
+                        reportConfigurations[i].record.u16MaximumReportingInterval,
+                        reportConfigurations[i].record.u16TimeoutPeriodField);
+
+            eZCL_SetReportableFlag( getEndpointId(), 
+                                    reportConfigurations[i].clusterID, 
+                                    TRUE, 
+                                    FALSE, 
+                                    reportConfigurations[i].record.u16AttributeEnum);
+            eZCL_CreateLocalReport( getEndpointId(), 
+                                    reportConfigurations[i].clusterID, 
+                                    0, 
+                                    TRUE, 
+                                    &reportConfigurations[i].record);
+        }
+    }
+}
+
+uint8 SwitchEndpoint::findReportingConfiguration(uint16 clusterID, uint16 attributeID)
+{
+    for(int i = 0; i < ZCL_NUMBER_OF_REPORTS; i++)
+    {
+        // Check if we found an empty slot
+        if(reportConfigurations[i].clusterID == 0)
+            return i;
+
+        // Search for a record that match passed parameters
+        if(reportConfigurations[i].clusterID == clusterID && reportConfigurations[i].record.u16AttributeEnum == attributeID)
+            return i;
+    }
+
+    // We have not found a record, and there is no empty slot to store a new one
+    return ZCL_NUMBER_OF_REPORTS;
+}
+
+void SwitchEndpoint::addReportConfiguration(uint16 clusterID, tsZCL_AttributeReportingConfigurationRecord * record)
+{
+    uint8 index = findReportingConfiguration(clusterID, record->u16AttributeEnum);
+    if(index == ZCL_NUMBER_OF_REPORTS)
+    {
+        DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Warning: No space for new reporting configuration\n", getEndpointId());
+        return;
+    }
+
+    // Store the new configuration
+    reportConfigurations[index].clusterID = clusterID;
+    reportConfigurations[index].record = *record;
+    DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Store reporting configuration record at index %d\n", getEndpointId(), index);
+    saveReportingConfigurations();
 }
