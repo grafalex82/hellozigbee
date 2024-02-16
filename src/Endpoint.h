@@ -27,6 +27,8 @@ protected:
     virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
     virtual void handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent);
+    virtual teZCL_CommandStatus handleCheckAttributeRange(tsZCL_CallBackEvent *psEvent);
+    virtual void handleReportingConfigureRequest(tsZCL_CallBackEvent *psEvent);
 };
 
 #endif // ENDPOINT_H

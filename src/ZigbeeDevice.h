@@ -3,6 +3,7 @@
 
 extern "C"
 {
+    #include "jendefs.h"
     #include "zps_gen.h"
     #include "zps_apl_af.h"
     #include "bdb_api.h"

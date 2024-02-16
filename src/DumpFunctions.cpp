@@ -61,11 +61,12 @@ void vDumpZclWriteAttributeRequest(tsZCL_CallBackEvent *psEvent)
 void vDumpAttributeReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
 {
     tsZCL_AttributeReportingConfigurationRecord * psRecord = &psEvent->uMessage.sAttributeReportingConfigurationRecord;
-    DBG_vPrintf(TRUE, "ZCL Configure Reporting: Cluster %04x Attrib %04x: min=%d, max=%d (Status=%02x)\n",
+    DBG_vPrintf(TRUE, "ZCL Configure Reporting: Cluster %04x Attrib %04x: min=%d, max=%d, timeout=%d (Status=%02x)\n",
         psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
         psRecord->u16AttributeEnum, 
         psRecord->u16MinimumReportingInterval,
         psRecord->u16MaximumReportingInterval,
+        psRecord->u16TimeoutPeriodField,
         psEvent->eZCL_Status);
 }
 

@@ -479,7 +479,7 @@
       <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OTA" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
-    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH1">
+    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="SWITCH1">
       <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
@@ -488,12 +488,19 @@
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
-    <Endpoints Id="3" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Name="SWITCH2">
+    <Endpoints Id="3" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="SWITCH2">
       <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Groups" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <Endpoints Id="4" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="SWITCHB">
+      <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>

@@ -24,6 +24,8 @@ const switchModeValues = ['toggle', 'momentary', 'multifunction'];
 const switchActionValues = ['onOff', 'offOn', 'toggle'];
 const relayModeValues = ['unlinked', 'front', 'single', 'double', 'tripple', 'long'];
 const longPressModeValues = ['none', 'levelCtrlUp', 'levelCtrlDown'];
+const operationModeValues = ['server', 'client'];
+const interlockModeValues = ['none', 'mutualExclusion', 'opposite'];
 
 
 const manufacturerOptions = {
@@ -36,12 +38,18 @@ const getKey = (object, value) => {
     }
 };
 
+function getInterlockEp(ep) {
+    // endpoints 2 (left) and 3 (right) are interlocked to each other
+    if (ep == 2) return 3;
+    if (ep == 3) return 2;
+    return null;
+}
+
 const fromZigbee_OnOffSwitchCfg = {
     cluster: 'genOnOffSwitchCfg',
     type: ['attributeReport', 'readResponse'],
 
     convert: (model, msg, publish, options, meta) => {
-
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg.endpoint=[${JSON.stringify(msg.endpoint)}], msg.device=[${JSON.stringify(msg.device)}]`);
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() model=[${JSON.stringify(model)}]`);
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() msg=[${JSON.stringify(msg)}]`);
@@ -49,6 +57,8 @@ const fromZigbee_OnOffSwitchCfg = {
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() options=[${JSON.stringify(options)}]`);
 
         const ep_name = getKey(model.endpoint(msg.device), msg.endpoint.ID);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() model endpoint=[${JSON.stringify(model.endpoint(msg.device))}}]`);
+        // meta.logger.debug(`+_+_+_ fromZigbeeConverter() epName=[${ep_name}}]`);
         const result = {};
 
         // switch type
@@ -66,7 +76,6 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`relay_mode_${ep_name}`] = relayModeValues[msg.data['65281']];
         }
 
-
         // Maximum pause between button clicks to be treates a single multiclick
         if(msg.data.hasOwnProperty('65282')) {
             result[`max_pause_${ep_name}`] = msg.data['65282'];
@@ -82,6 +91,16 @@ const fromZigbee_OnOffSwitchCfg = {
             result[`long_press_mode_${ep_name}`] = longPressModeValues[msg.data['65284']];
         }
 
+        // Operation mode
+        if(msg.data.hasOwnProperty('65285')) {
+            result[`operation_mode_${ep_name}`] = operationModeValues[msg.data['65285']];
+        }
+
+        // Interlock mode
+        if(msg.data.hasOwnProperty('65286')) {
+            result[`interlock_mode_${ep_name}`] = interlockModeValues[msg.data['65286']];
+        }
+
         // meta.logger.debug(`+_+_+_ fromZigbeeConverter() result=[${JSON.stringify(result)}]`);
         return result;
     },
@@ -89,7 +108,7 @@ const fromZigbee_OnOffSwitchCfg = {
 
 
 const toZigbee_OnOffSwitchCfg = {
-    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode'],
+    key: ['switch_mode', 'switch_actions', 'relay_mode', 'max_pause', 'min_long_press', 'long_press_mode', 'operation_mode', 'interlock_mode'],
 
     convertGet: async (entity, key, meta) => {
         // meta.logger.debug(`+_+_+_ toZigbeeConverter::convertGet() key=${key}, entity=[${JSON.stringify(entity)}]`);
@@ -104,7 +123,9 @@ const toZigbee_OnOffSwitchCfg = {
                 relay_mode: 65281,
                 max_pause: 65282,
                 min_long_press: 65283,
-                long_press_mode: 65284
+                long_press_mode: 65284,
+                operation_mode: 65285,
+                interlock_mode: 65286,
             };
             // meta.logger.debug(`+_+_+_ #2 getting value for key=[${lookup[key]}]`);
             await entity.read('genOnOffSwitchCfg', [lookup[key]], manufacturerOptions.jennic);
@@ -155,51 +176,116 @@ const toZigbee_OnOffSwitchCfg = {
                 await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
                 break;
 
+            case 'operation_mode':
+                newValue = operationModeValues.indexOf(value);
+                payload = {65285: {'value': newValue, 'type': DataType.enum8}};
+                await entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+                break;
+    
+            case 'interlock_mode':
+                newValue = interlockModeValues.indexOf(value);
+                payload = {65286: {'value': newValue, 'type': DataType.enum8}};
+                // Intentionally no `await` as interlocked endpoint may send state change message
+                // and tests will go out of sync.
+                /*await*/ entity.write('genOnOffSwitchCfg', payload, manufacturerOptions.jennic);
+
+                // Schedule reading of buddy endpoint setting to update setting on the Z2M dashboard.
+                // Intentionally no `await` here to keep the order of requests for automated tests
+                // Just schedule the read which will happen some time later.
+                const interlockEp = getInterlockEp(entity.ID);
+                if(interlockEp)                     
+                    /*await*/ meta.device.getEndpoint(interlockEp).read('genOnOffSwitchCfg', [65286], manufacturerOptions.jennic);
+                break;
+    
             default:
                 meta.logger.debug(`convertSet(): Unrecognized key=${key} (value=${value})`);
                 break;
         }
 
         result = {state: {[key]: value}}
-        // meta.logger.debug(`result2=[${JSON.stringify(result)}]`);
+        meta.logger.debug(`result = [${JSON.stringify(result)}]`);
         return result;
     },
 }
 
+function addSwitchSettings(sw) {
+    // const switch_mode_description = `Toggle - each press toggles the light state (fastest feedback).
+    // Momentary - activates on button press, deactivates on release.
+    // Multifunction - smart mode, supports single, double, triple, and long presses with customizable actions.`;
+    sw.withFeature(e.enum('switch_mode', ea.ALL, switchModeValues));
+
+    // const switch_actions_description = `onOff - activates on press, deactivates on release.
+	// offOn - deactivates on press, activates on release.
+	// toggle - toggles state with each press or release.`;
+    sw.withFeature(e.enum('switch_actions', ea.ALL, switchActionValues));
+
+    // const relay_mode_description = `unlinked - relay decoupled, button triggers only logical actions.
+	// front - relay toggles on initial press for immediate response.
+    // single - relay toggles on one press, generates 'single' action.
+	// double - relay toggles on two presses, generates 'double' action.
+	// triple - relay toggles on three presses, generates 'triple' action.
+	// long - relay toggles on press-and-hold, generates 'hold' action, and 'release' action upon button release`;
+    sw.withFeature(e.enum('relay_mode', ea.ALL, relayModeValues));
+
+    // const long_press_mode_description = `None - long press has no extra function, only emits 'hold' action.
+	// levelCtrlUp - press to emit 'MoveUpWithOnOff', release for 'Stop'.
+	// levelCtrlDown - press for 'MoveDownWithOnOff', release for 'Stop'.`;
+    sw.withFeature(e.enum('long_press_mode', ea.ALL, longPressModeValues));
+
+    // const max_pause_description = `Maximum time between button clicks so that consecutive clicks are consodered as a part of a multi-click action`;
+    // sw.withFeature(e.numeric('max_pause', ea.ALL));
+
+    // const min_long_press_description = `Defines the minimum duration for pressing the button to trigger a 'hold' action`;
+    // sw.withFeature(e.numeric('min_long_press', ea.ALL));
+
+    return sw;
+}
 
 function genSwitchEndpoint(epName) {
-    return [
-        e.switch().withEndpoint(epName),
-        exposes.enum('switch_mode', ea.ALL, switchModeValues).withEndpoint(epName),
-        exposes.enum('switch_actions', ea.ALL, switchActionValues).withEndpoint(epName),
-        exposes.enum('relay_mode', ea.ALL, relayModeValues).withEndpoint(epName),
-        exposes.enum('long_press_mode', ea.ALL, longPressModeValues).withEndpoint(epName),
-        exposes.numeric('max_pause', ea.ALL).withEndpoint(epName),
-        exposes.numeric('min_long_press', ea.ALL).withEndpoint(epName),
-    ]
+    // Create composite section for switch settings
+    let sw = e.composite(epName + " Button", epName, ea.ALL);
+    sw.withDescription('Settings for the ' + epName + ' button');
+
+    // The switch toggle
+    sw.withFeature(e.binary('On/Off state', ea.ALL, 'ON', 'OFF').withValueToggle('TOGGLE').withProperty('state'));
+
+    // Add the operation mode selector (applicable only for switch endpoints that allow server mode)
+    // const operation_mode_description = `Server - the endpoint maintains internal state, generate reports on its change.
+    // Client - the endpoint generates On/Off/Toggle commands to bound devices`;
+    sw.withFeature(e.enum('operation_mode', ea.ALL, operationModeValues));
+
+    // Add other switch settings
+    addSwitchSettings(sw);
+
+    // Add the interlock mode selector (applicable only for switch endpoints that allow server mode)
+    // const interlock_mode_description = `None - Switch endpoints work independently.
+    // Mutual Exclusion - two endpoints cannot be ON at the same time,
+    // Opposite - two endpoints always have state opposite to each other.`;
+    sw.withFeature(e.enum('interlock_mode', ea.ALL, interlockModeValues));
+
+    // Make sure whole created block acts as a group of parameters, rather than a single composite object
+    sw.withProperty('').withEndpoint(epName);
+
+    return sw;
 }
 
-function genSwitchEndpoints(endpoinsCount) {
-    let features = [];
+function genBothButtonsEndpoint(epName) {
+    // Create composite section for switch settings
+    let sw = e.composite("Both Buttons", epName, ea.ALL);
+    sw.withDescription('Settings for the both button pressed together');
 
-    for (let i = 1; i <= endpoinsCount; i++) {
-        const epName = `button_${i}`;
-        features.push(...genSwitchEndpoint(epName));
-    }
+    // Add other switch settings
+    addSwitchSettings(sw);
 
-    return features;
+    // Make sure whole created block acts as a group of parameters, rather than a single composite object
+    sw.withProperty('').withEndpoint(epName);
+
+    return sw;
 }
 
-
-function genSwitchActions(endpoinsCount) {
-    let actions = [];
-
-    for (let i = 1; i <= endpoinsCount; i++) {
-        const epName = `button_${i}`;
-        actions.push(... ['single', 'double', 'triple', 'hold', 'release'].map(action => action + "_" + epName));
-    }
-
-    return actions;
+function genSwitchActions(endpoints) {
+    const actions = ['single', 'double', 'triple', 'hold', 'release'];
+    return endpoints.flatMap(endpoint => actions.map(action => action + "_" + endpoint))
 }
 
 const fromZigbee_MultistateInput = {
@@ -217,18 +303,34 @@ const fromZigbee_MultistateInput = {
     },
 }
 
+// Special handler used in automation testing to catch OnOff commands from the device, and then verify values in tests
+const fromZigbee_OnOff = {
+    cluster: 'genOnOff',
+    type: ['commandOn', 'commandOff', 'commandToggle'],
+
+    convert: (model, msg, publish, options, meta) => {
+        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
+        const cmd = msg['type'];
+        const payload = msg['data'];
+        const srcEp = msg['endpoint']['ID']
+
+        const result = {debug: {command: cmd, payload: payload, endpoint: srcEp}};
+        return result;
+    },
+}
+
+// Special handler used in automation testing to catch LevelCtrl commands from the device, and then verify values in tests
 const fromZigbee_LevelCtrl = {
     cluster: 'genLevelCtrl',
     type: ['commandMoveToLevel', 'commandMoveToLevelWithOnOff', 'commandMove', 'commandMoveWithOnOff', 
            'commandStop', 'commandStopWithOnOff', 'commandStep', 'commandStepWithOnOff'],
 
     convert: (model, msg, publish, options, meta) => {
-        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
         const cmd = msg['type'];
         const payload = msg['data'];
+        const srcEp = msg['endpoint']['ID']
 
-        const result = {level_ctrl: {command: cmd, payload: payload}};
-        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(result)}]`);
+        const result = {debug: {command: cmd, endpoint: srcEp, payload: payload}};
         return result;
     },
 }
@@ -292,26 +394,31 @@ const device = {
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_LevelCtrl],
+    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         for (const ep of device.endpoints) {
             if(ep.supportsInputCluster('genOnOff')) {
                 await ep.read('genOnOff', ['onOff']);
+            }
+            if(ep.supportsOutputCluster('genOnOff')) {
                 await ep.read('genOnOffSwitchCfg', ['switchActions']);
-                await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284], manufacturerOptions.jennic);
+                await ep.read('genOnOffSwitchCfg', [65280, 65281, 65282, 65283, 65284, 65285], manufacturerOptions.jennic);
             }
         }
     },
     exposes: [
-        e.action(genSwitchActions(2)),
-        ...genSwitchEndpoints(2)
+        e.action(genSwitchActions(["left", "right", "center"])),
+        genSwitchEndpoint("left"),
+        genSwitchEndpoint("right"),
+        genBothButtonsEndpoint("center")
     ],
     endpoint: (device) => {
         return {
-            basic: 1,
-            button_1: 2,
-            button_2: 3
+            "basic": 1,
+            "left": 2,
+            "right": 3,
+            "center": 4
         };
     },
     meta: {multiEndpoint: true},

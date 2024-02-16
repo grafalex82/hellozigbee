@@ -10,7 +10,7 @@
 #define ZCL_MANUFACTURER_CODE                                0x1037
 
 /* Sets the number of endpoints that will be created by the ZCL library */
-#define ZCL_NUMBER_OF_ENDPOINTS                             3
+#define ZCL_NUMBER_OF_ENDPOINTS                             4
 
 #define ZCL_ATTRIBUTE_READ_SERVER_SUPPORTED
 #define ZCL_ATTRIBUTE_READ_CLIENT_SUPPORTED
@@ -19,9 +19,8 @@
 #define ZCL_CONFIGURE_ATTRIBUTE_REPORTING_SERVER_SUPPORTED
 
 
-#define ZCL_NUMBER_OF_REPORTS     10
-#define ZLO_MIN_REPORT_INTERVAL   1
-#define ZLO_MAX_REPORT_INTERVAL   15
+#define ZCL_NUMBER_OF_REPORTS           10
+#define ZCL_SYSTEM_MAX_REPORT_INTERVAL  15
 
 /* Enable wild card profile */
 #define ZCL_ALLOW_WILD_CARD_PROFILE

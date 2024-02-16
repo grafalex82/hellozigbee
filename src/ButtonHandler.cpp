@@ -12,6 +12,9 @@ ButtonHandler::ButtonHandler()
 {
     endpoint = NULL;
 
+    prevState = false;
+    debounceTimer = 0;
+
     currentState = INVALID;
     currentStateDuration = 0;
 
@@ -44,12 +47,12 @@ const char * ButtonHandler::getStateName(ButtonState state)
     return "";
 }
 
-void ButtonHandler::setConfiguration(SwitchMode switchMode, RelayMode relayMode, uint16 maxPause, uint16 minLongPress)
+void ButtonHandler::setConfiguration(SwitchMode sMode, RelayMode rMode, uint16 maxPause, uint16 minLongPress)
 {
     // This function does the same as 4 functions below all together, but as a single transaction.
     // This is needed to avoid cluttering log with multiple changeState messages
-    switchMode = switchMode;
-    relayMode = relayMode;
+    switchMode = sMode;
+    relayMode = rMode;
     maxPause = maxPause/ButtonPollCycle;
     longPressDuration = minLongPress/ButtonPollCycle;
 
@@ -99,6 +102,7 @@ void ButtonHandler::buttonStateMachineToggle(bool pressed)
             if(pressed)
             {
                 changeState(PRESSED1);
+
                 endpoint->reportAction(BUTTON_ACTION_SINGLE);
 
                 if(relayMode != RELAY_MODE_UNLINKED)
@@ -178,7 +182,7 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 endpoint->reportAction(BUTTON_PRESSED);
 
                 if(relayMode == RELAY_MODE_LONG)
-                    endpoint->toggle();
+                    endpoint->switchOn();
 
                 endpoint->reportLongPress(true);
             }
@@ -235,10 +239,11 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
             {
                 changeState(IDLE);
 
+                endpoint->reportAction(BUTTON_ACTION_TRIPPLE);
+
                 if(relayMode == RELAY_MODE_TRIPPLE)
                     endpoint->toggle();
 
-                endpoint->reportAction(BUTTON_ACTION_TRIPPLE);
             }
 
             break;
@@ -249,6 +254,10 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
                 changeState(IDLE);
 
                 endpoint->reportAction(BUTTON_RELEASED);
+
+                if(relayMode == RELAY_MODE_LONG)
+                    endpoint->switchOff();
+                    
                 endpoint->reportLongPress(false);
             }
 
@@ -260,11 +269,20 @@ void ButtonHandler::buttonStateMachineMultistate(bool pressed)
 
 void ButtonHandler::handleButtonState(bool pressed)
 {
-    // Let at least 20ms to stabilize button value, do not make any early decisions
+    // Let at least 60ms to stabilize button value, do not make any early decisions
     // When button state is stabilized - go through the corresponding state machine
-    currentStateDuration++;
-    if(currentStateDuration < 2)
+    if(pressed != prevState)
+    {
+        prevState = pressed;
+        debounceTimer = 0;
+    }
+
+    debounceTimer++;
+    if(debounceTimer <= 3)
         return;
+
+    // Increment current state duration - some states use this variable to calculate timings before switching to a new state
+    currentStateDuration++;
 
     // On a mode change the state is set to INVALID. This is needed to avoid immediate handling of a pressed button (if any).
     // This check performs exit from INVALID state to IDLE upon button release
