@@ -636,9 +636,6 @@ teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEven
 
 void SwitchEndpoint::handleReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
 {
-    if(psEvent->eZCL_Status != E_ZCL_SUCCESS)
-        return;
-
     uint16 clusterID = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
     tsZCL_AttributeReportingConfigurationRecord * record = &psEvent->uMessage.sAttributeReportingConfigurationRecord;
     addReportConfiguration(clusterID, record);
