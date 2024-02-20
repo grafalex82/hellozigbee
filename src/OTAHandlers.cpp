@@ -38,7 +38,7 @@ void OTAHandlers::restoreOTAAttributes()
     if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "OTAHandlers::restoreOTAAttributes(): Failed to create OTA Cluster attributes. status=%d\n", status);
 
-    // Restore previous values
+    // Restore previous values or reset to zeroes
     sPersistedData.init(resetPersistedOTAData, "OTA Data");
 
     // Correct retry timer to force retry in 10 seconds
@@ -90,7 +90,7 @@ void OTAHandlers::saveOTAContext()
 
     // Get the OTA cluster data record
     tsZCL_ClusterInstance *psClusterInstance;
-    teZCL_Status status = eZCL_SearchForClusterEntry(1, OTA_CLUSTER_ID, FALSE, &psClusterInstance);
+    teZCL_Status status = eZCL_SearchForClusterEntry(otaEp, OTA_CLUSTER_ID, FALSE, &psClusterInstance);
     if(status  != E_ZCL_SUCCESS)
     {
         DBG_vPrintf(TRUE, "Search OTA entry failed with status %02x\n", status);
