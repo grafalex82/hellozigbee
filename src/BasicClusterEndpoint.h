@@ -55,6 +55,7 @@ protected:
     virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
 
     void handleIdentifyClusterEvent(tsZCL_CallBackEvent *psEvent);
+    void handleOTAClusterEvent(tsZCL_CallBackEvent *psEvent);
     void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
     void handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent);
 };

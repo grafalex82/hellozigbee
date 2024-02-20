@@ -9,6 +9,7 @@ extern "C"
 #include "BasicClusterEndpoint.h"
 #include "EndpointManager.h"
 #include "LEDTask.h"
+#include "DumpFunctions.h"
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {
@@ -124,6 +125,10 @@ void BasicClusterEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent
             handleIdentifyClusterEvent(psEvent);
             break;
 
+        case OTA_CLUSTER_ID:
+            handleOTAClusterEvent(psEvent);
+            break;
+
         default:
             DBG_vPrintf(TRUE, "BasicClusterEndpoint EP=%d: Warning: Unexpected custom cluster event ClusterID=%04x\n", 
                         getEndpointId(), clusterId);
@@ -164,6 +169,12 @@ void BasicClusterEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEv
 
     if(identifyTime == 0)
         LEDTask::getInstance()->stopEffect();
+}
+
+void BasicClusterEndpoint::handleOTAClusterEvent(tsZCL_CallBackEvent *psEvent)
+{
+    tsOTA_CallBackMessage *psCallBackMessage = (tsOTA_CallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    vDumpOTAMessage(psCallBackMessage);
 }
 
 void BasicClusterEndpoint::handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent)
