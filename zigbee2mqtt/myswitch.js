@@ -282,6 +282,10 @@ function genBothButtonsEndpoint(epName) {
     return sw;
 }
 
+function getGenericSettings() {
+    return [e.device_temperature()];
+}
+
 function genSwitchActions(endpoints) {
     const actions = ['single', 'double', 'triple', 'hold', 'release'];
     return endpoints.flatMap(endpoint => actions.map(action => action + "_" + endpoint))
@@ -339,7 +343,7 @@ const device = {
     model: 'Hello Zigbee Switch',
     vendor: 'NXP',
     description: 'Hello Zigbee Switch',
-    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl],
+    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl, fz.device_temperature],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         for (const ep of device.endpoints) {
@@ -356,7 +360,8 @@ const device = {
         e.action(genSwitchActions(["left", "right", "center"])),
         genSwitchEndpoint("left"),
         genSwitchEndpoint("right"),
-        genBothButtonsEndpoint("center")
+        genBothButtonsEndpoint("center"),
+        ...getGenericSettings()
     ],
     endpoint: (device) => {
         return {

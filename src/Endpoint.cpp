@@ -31,6 +31,12 @@ void Endpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
     DBG_vPrintf(TRUE, "Endpoint: Warning: using default cluster update handler for event type (%d)\n", psEvent->eEventType);
 }
 
+teZCL_CommandStatus Endpoint::handleReadAttribute(tsZCL_CallBackEvent *psEvent)
+{
+    // By default we do not perform specific attribute read handling
+    return E_ZCL_CMDS_SUCCESS;
+}
+
 void Endpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
 {
     DBG_vPrintf(TRUE, "Endpoint: Warning: using default write attribute handler\n");
@@ -52,6 +58,7 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
     switch (psEvent->eEventType)
     {
         case E_ZCL_CBET_READ_REQUEST:
+            psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus = handleReadAttribute(psEvent);
             vDumpZclReadRequest(psEvent);
             break;
 

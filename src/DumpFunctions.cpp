@@ -31,24 +31,11 @@ PRIVATE void vPrintAddr(ZPS_tuAddress addr, uint8 mode)
 
 void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
 {
-    // Read command header
-    tsZCL_HeaderParams headerParams;
-    uint16 inputOffset = u16ZCL_ReadCommandHeader(psEvent->pZPSevent->uEvent.sApsDataIndEvent.hAPduInst,
-                                              &headerParams);
-
-    // read input attribute Id
-    uint16 attributeId;
-    inputOffset += u16ZCL_APduInstanceReadNBO(psEvent->pZPSevent->uEvent.sApsDataIndEvent.hAPduInst,
-                                              inputOffset,
-                                              E_ZCL_ATTRIBUTE_ID,
-                                              &attributeId);
-
-
-    DBG_vPrintf(TRUE, "ZCL Read Attribute: EP=%d Cluster=%04x Command=%02x Attr=%04x\n",
+    DBG_vPrintf(TRUE, "ZCL Read Attribute: EP=%d Cluster=%04x Attr=%04x (status=%d)\n",
                 psEvent->u8EndPoint,
                 psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId,
-                headerParams.u8CommandIdentifier,
-                attributeId);
+                psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum,
+                psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus);
 }
 
 void vDumpZclWriteAttributeRequest(tsZCL_CallBackEvent *psEvent)

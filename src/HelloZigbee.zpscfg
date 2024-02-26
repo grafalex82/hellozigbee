@@ -98,6 +98,7 @@
     <Clusters Name="Default" Id="0xFFFF"/>
     <Clusters Name="OOSC" Id="0x0007"/>
     <Clusters Name="MultistateInput" Id="0x0012"/>
+    <Clusters Name="DeviceTemperature" Id="0x0002"/>
   </Profiles>
   <Coordinator Name="Coordinator" DiscoveryNeighbourTableSize="16" ActiveNeighbourTableSize="10" RouteDiscoveryTableSize="16" RoutingTableSize="16" BroadcastTransactionTableSize="9" RouteRecordTableSize="4" AddressMapTableSize="10" SecurityMaterialSets="2" MaxNumSimultaneousApsdeReq="5" MaxNumSimultaneousApsdeAckReq="3" MACMutexName="mutexMAC" ZPSMutexName="mutexZPS" FragmentationMaxNumSimulRx="0" FragmentationMaxNumSimulTx="0" DefaultEventMessageName="APP_vZpsEventHandler" MACDcfmIndMessage="zps_msgDcfmInd" MACTimeEventMessage="zps_msgTimeEvents" apsNonMemberRadius="2" apsDesignatedCoordinator="true" apsUseInsecureJoin="true" apsMaxWindowSize="8" apsInterframeDelay="10" APSDuplicateTableSize="8" apsSecurityTimeoutPeriod="1000" apsUseExtPANId="0x0000000000000000" SecurityEnabled="false" MACMlmeDcfmIndMessage="zps_msgMlmeDcfmInd" MACMcpsDcfmIndMessage="zps_msgMcpsDcfmInd" APSPersistenceTime="100" NumAPSMESimulCommands="4" StackProfile="2" InterPAN="false" GreenPowerSupport="false" NwkFcSaveCountBitShift="4" ApsFcSaveCountBitShift="4" MacTableSize="36" DefaultCallbackName="APP_vGenCallback" PermitJoiningTime="255" ChildTableSize="5">
     <Endpoints Id="0" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="ZDP" Name="ZDO">
@@ -476,6 +477,7 @@
       <InputClusters Cluster="Basic" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Default" RxAPDU="HelloZigbee->apduZCL" Discoverable="false"/>
       <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="DeviceTemperature" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OTA" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
