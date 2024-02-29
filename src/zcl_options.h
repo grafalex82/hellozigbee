@@ -2,6 +2,7 @@
 #define ZCL_OPTIONS_H
 
 #include <jendefs.h>
+#include "Configuration.h"
 
 // General device options
 //////////////////////////////
@@ -9,8 +10,11 @@
 // Use NXP manufacturer code as we do not have our own
 #define ZCL_MANUFACTURER_CODE                                0x1037
 
-/* Sets the number of endpoints that will be created by the ZCL library */
-#define ZCL_NUMBER_OF_ENDPOINTS                             4
+// Sets the number of endpoints that will be created by the ZCL library
+// Despite the fact HelloZigbee.zpscfg already lists all the endpoints, and ZPSConfig.py could potentially
+// generate this value, it is still required to be defined in zcl_options.h explicitly.
+// TODO: Improve ZPSConfig.py to generate this value
+#define ZCL_NUMBER_OF_ENDPOINTS                             (NUMBER_OF_ENDPOINTS)
 
 #define ZCL_ATTRIBUTE_READ_SERVER_SUPPORTED
 #define ZCL_ATTRIBUTE_READ_CLIENT_SUPPORTED

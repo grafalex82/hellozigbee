@@ -173,6 +173,7 @@ PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
             DBG_vPrintf(TRUE, "Matched BTN1_PRESS\n");
         }
 
+#ifdef SWITCH2_BTN_MASK
         if(debugInput.matchCommand("BTN2_PRESS"))
         {
             ButtonsTask::getInstance()->setButtonsOverride(SWITCH2_BTN_MASK);
@@ -184,6 +185,7 @@ PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
             ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
             DBG_vPrintf(TRUE, "Matched BTN3_PRESS\n");
         }
+#endif
 
         if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE") || debugInput.matchCommand("BTN3_RELEASE"))
         {
@@ -208,9 +210,9 @@ extern "C" PUBLIC void vAppMain(void)
     DebugInput debugInput;
 
     // Print welcome message
-    DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");
-    DBG_vPrintf(TRUE, "Initializing Hello Zigbee Platform\n");
-    DBG_vPrintf(TRUE, "---------------------------------------------------\n\n");
+    DBG_vPrintf(TRUE, "\n-------------------------------------------------------------\n");
+    DBG_vPrintf(TRUE, "Initializing Hello Zigbee Platform for target board '%s'\n", TARGET_BOARD_NAME);
+    DBG_vPrintf(TRUE, "-------------------------------------------------------------\n\n");
 
     // Initialize PDM
     DBG_vPrintf(TRUE, "vAppMain(): init PDM...  ");
@@ -241,8 +243,12 @@ extern "C" PUBLIC void vAppMain(void)
     zclTimer.init();
     zclTimer.startTimer(1000);
     LEDTask::getInstance()->start();
+
+    // Initialize the heartbeat LED (if there is one)
+    #ifdef HEARTBEAT_LED_PIN
     BlinkTask blinkTask;
     blinkTask.init(HEARTBEAT_LED_PIN);
+    #endif
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
@@ -251,23 +257,23 @@ extern "C" PUBLIC void vAppMain(void)
     // Register endpoints and assign buttons for them
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     BasicClusterEndpoint basicEndpoint;
-    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_BASIC_ENDPOINT, &basicEndpoint);
+    EndpointManager::getInstance()->registerEndpoint(BASIC_ENDPOINT, &basicEndpoint);
 
     SwitchEndpoint switch1;
     switch1.setConfiguration(SWITCH1_BTN_MASK);
-    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH1_ENDPOINT, &switch1);
+    EndpointManager::getInstance()->registerEndpoint(SWITCH1_ENDPOINT, &switch1);
 
     #ifdef SWITCH2_BTN_MASK
     SwitchEndpoint switch2;
     switch2.setConfiguration(SWITCH2_BTN_MASK);
-    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH2_ENDPOINT, &switch2);
+    EndpointManager::getInstance()->registerEndpoint(SWITCH2_ENDPOINT, &switch2);
 
     switch1.setInterlockBuddy(&switch2);
     switch2.setInterlockBuddy(&switch1);
 
     SwitchEndpoint switchBoth;
     switchBoth.setConfiguration(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK, true);
-    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCHB_ENDPOINT, &switchBoth);
+    EndpointManager::getInstance()->registerEndpoint(SWITCHB_ENDPOINT, &switchBoth);
     #endif
 
     // Init the ZigbeeDevice, AF, BDB, and other network stuff

@@ -304,7 +304,7 @@
       <EndDeviceBindServer OutputAPdu="Coordinator->apduZDP" Timeout="5" BindingTimeout="10" BindNumRetries="3"/>
     </ZDOServers>
   </Coordinator>
-  <ChildNodes xsi:type="zpscfg:Router" Name="HelloZigbee" DiscoveryNeighbourTableSize="16" ActiveNeighbourTableSize="26" RouteDiscoveryTableSize="1" RoutingTableSize="60" BroadcastTransactionTableSize="9" RouteRecordTableSize="2" AddressMapTableSize="10" SecurityMaterialSets="2" MaxNumSimultaneousApsdeReq="8" MaxNumSimultaneousApsdeAckReq="8" MACMutexName="mutexMAC" ZPSMutexName="mutexZPS" FragmentationMaxNumSimulRx="0" FragmentationMaxNumSimulTx="0" DefaultEventMessageName="APP_msgZpsEvents" MACDcfmIndMessage="zps_msgDcfmInd" MACTimeEventMessage="zps_msgTimeEvents" apsNonMemberRadius="2" apsDesignatedCoordinator="false" apsUseInsecureJoin="true" apsMaxWindowSize="8" apsInterframeDelay="10" APSDuplicateTableSize="8" apsSecurityTimeoutPeriod="1000" apsUseExtPANId="0x0000000000000000" SecurityEnabled="true" MACMlmeDcfmIndMessage="zps_msgMlmeDcfmInd" MACMcpsDcfmIndMessage="zps_msgMcpsDcfmInd" APSPersistenceTime="100" NumAPSMESimulCommands="4" StackProfile="2" InterPAN="false" GreenPowerSupport="false" NwkFcSaveCountBitShift="10" ApsFcSaveCountBitShift="10" MacTableSize="36" DefaultCallbackName="APP_vGenCallback" PermitJoiningTime="255" ChildTableSize="6" ScanDuration="3" NetworkSelection="User Selected">
+  <ChildNodes xsi:type="zpscfg:Router" Name="EBYTE_E75" DiscoveryNeighbourTableSize="16" ActiveNeighbourTableSize="26" RouteDiscoveryTableSize="1" RoutingTableSize="60" BroadcastTransactionTableSize="9" RouteRecordTableSize="2" AddressMapTableSize="10" SecurityMaterialSets="2" MaxNumSimultaneousApsdeReq="8" MaxNumSimultaneousApsdeAckReq="8" MACMutexName="mutexMAC" ZPSMutexName="mutexZPS" FragmentationMaxNumSimulRx="0" FragmentationMaxNumSimulTx="0" DefaultEventMessageName="APP_msgZpsEvents" MACDcfmIndMessage="zps_msgDcfmInd" MACTimeEventMessage="zps_msgTimeEvents" apsNonMemberRadius="2" apsDesignatedCoordinator="false" apsUseInsecureJoin="true" apsMaxWindowSize="8" apsInterframeDelay="10" APSDuplicateTableSize="8" apsSecurityTimeoutPeriod="1000" apsUseExtPANId="0x0000000000000000" SecurityEnabled="true" MACMlmeDcfmIndMessage="zps_msgMlmeDcfmInd" MACMcpsDcfmIndMessage="zps_msgMcpsDcfmInd" APSPersistenceTime="100" NumAPSMESimulCommands="4" StackProfile="2" InterPAN="false" GreenPowerSupport="false" NwkFcSaveCountBitShift="10" ApsFcSaveCountBitShift="10" MacTableSize="36" DefaultCallbackName="APP_vGenCallback" PermitJoiningTime="255" ChildTableSize="6" ScanDuration="3" NetworkSelection="User Selected">
     <Endpoints Id="0" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="ZDP" Name="ZDO">
       <InputClusters Cluster="NWK_addr_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
       <InputClusters Cluster="IEEE_addr_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
@@ -503,6 +503,226 @@
       <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <PDUConfiguration NumNPDUs="25" PDUMMutexName="mutexPDUM">
+      <APDUs Id="HelloZigbee->apduZDP" Name="apduZDP" Size="100" Instances="16"/>
+      <APDUs Id="HelloZigbee->apduZCL" Name="apduZCL" Size="100" Instances="15"/>
+    </PDUConfiguration>
+    <ChannelMask Channel11="true" Channel12="true" Channel13="true" Channel14="true" Channel15="true" Channel16="true" Channel17="true" Channel18="true" Channel19="true" Channel20="true" Channel21="true" Channel22="true" Channel23="true" Channel24="true" Channel25="true" Channel26="true"/>
+    <NodeDescriptor ManufacturerCode="4151" LogicalType="ZR" ComplexDescriptorAvailable="false" UserDescriptorAvailable="false" APSFlags="0" FrequencyBand="2.4GHz" AlternatePANCoordinator="false" DeviceType="true" PowerSource="true" RxOnWhenIdle="true" Security="false" AllocateAddress="true" MaximumBufferSize="127" MaximumIncomingTransferSize="100" MaximumOutgoingTransferSize="100" ExtendedActiveEndpointListAvailable="false" ExtendedSimpleDescriptorListAvailable="false" PrimaryTrustCenter="false" BackupTrustCenter="false" PrimaryBindingTableCache="false" BackupBindingTableCache="false" PrimaryDiscoveryCache="false" BackupDiscoveryCache="false" NetworkManager="false"/>
+    <NodePowerDescriptor ConstantPower="true" RechargeableBattery="false" DisposableBattery="false" DefaultPowerSource="Constant Power" DefaultPowerMode="Synchronised with RxOnWhenIdle"/>
+    <BindingTable Size="16"/>
+    <GroupTable Size="16"/>
+    <KeyDescriptorTable Size="1"/>
+    <MacInterfaceList>
+      <MacInterface RouterAllowed="true" ChannelListSize="1" index="0" RadioType="RT2400MHz" Enabled="true"/>
+    </MacInterfaceList>
+    <ZDOServers>
+      <DefaultServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <ZdoClient OutputAPdu="HelloZigbee->apduZDP"/>
+      <DeviceAnnceServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <ActiveEpServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <NwkAddrServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <IeeeAddrServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <SystemServerDiscoveryServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <NodeDescServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <PowerDescServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <MatchDescServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <SimpleDescServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <MgmtLqiServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <MgmtLeaveServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <MgmtNWKUpdateServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <BindUnbindServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <BindRequestServer OutputAPdu="HelloZigbee->apduZDP" SimultaneousRequests="0x000A" TimeInterval="0x0001"/>
+      <PermitJoiningServer OutputAPdu="HelloZigbee->apduZDP"/>
+      <MgmtRtgServer OutputAPdu="HelloZigbee->apduZDP"/>
+    </ZDOServers>
+  </ChildNodes>
+  <ChildNodes xsi:type="zpscfg:Router" Name="QBKG11LM" DiscoveryNeighbourTableSize="16" ActiveNeighbourTableSize="26" RouteDiscoveryTableSize="1" RoutingTableSize="60" BroadcastTransactionTableSize="9" RouteRecordTableSize="2" AddressMapTableSize="10" SecurityMaterialSets="2" MaxNumSimultaneousApsdeReq="8" MaxNumSimultaneousApsdeAckReq="8" MACMutexName="mutexMAC" ZPSMutexName="mutexZPS" FragmentationMaxNumSimulRx="0" FragmentationMaxNumSimulTx="0" DefaultEventMessageName="APP_msgZpsEvents" MACDcfmIndMessage="zps_msgDcfmInd" MACTimeEventMessage="zps_msgTimeEvents" apsNonMemberRadius="2" apsDesignatedCoordinator="false" apsUseInsecureJoin="true" apsMaxWindowSize="8" apsInterframeDelay="10" APSDuplicateTableSize="8" apsSecurityTimeoutPeriod="1000" apsUseExtPANId="0x0000000000000000" SecurityEnabled="true" MACMlmeDcfmIndMessage="zps_msgMlmeDcfmInd" MACMcpsDcfmIndMessage="zps_msgMcpsDcfmInd" APSPersistenceTime="100" NumAPSMESimulCommands="4" StackProfile="2" InterPAN="false" GreenPowerSupport="false" NwkFcSaveCountBitShift="10" ApsFcSaveCountBitShift="10" MacTableSize="36" DefaultCallbackName="APP_vGenCallback" PermitJoiningTime="255" ChildTableSize="6" ScanDuration="3" NetworkSelection="User Selected">
+    <Endpoints Id="0" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="ZDP" Name="ZDO">
+      <InputClusters Cluster="NWK_addr_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="IEEE_addr_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Node_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Power_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Simple_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Active_EP_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Match_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Complex_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="User_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Discovery_Cache_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Device_annce" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="User_Desc_set" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="System_Server_Discovery_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Discovery_store_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Node_Desc_store_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Power_Desc_store_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Active_EP_store_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Simple_Desc_store_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Remove_node_cache_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Find_node_chache_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Extended_Simple_Desc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Extended_Active_EP_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="End_Device_Bind_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Bind_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Unbind_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Bind_Register_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Replace_Device_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Store_Bkup_Bind_Entry_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Remove_Bkup_Bind_Entry_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Backup_Bind_Table_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Recover_Bind_Table_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Backup_Source_Bind_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Recover_Source_Bind_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_NWK_Disc_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Lqi_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Rtg_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Bind_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Leave_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Direct_Join_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Permit_Joining_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Cache_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_NWK_Update_req" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="NWK_addr_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="IEEE_addr_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Node_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Power_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Simple_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Active_EP_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Match_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Complex_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="User_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Discovery_Cache_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="User_Desc_conf" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="System_Server_Discovery_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Discovery_store_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Node_Desc_store_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Power_Desc_store_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Active_EP_store_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Simple_Desc_store_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Remove_node_cache_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Find_node_chache_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Extended_Simple_Desc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Extended_Active_EP_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="End_Device_Bind_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Bind_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Unbind_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Bind_Register_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Replace_Device_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Store_Bkup_Bind_Entry_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Remove_Bkup_Bind_Entry_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Backup_Bind_Table_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Recover_Bind_Table_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Backup_Source_Bind_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Recover_Source_Bind_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_NWK_Disc_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Lqi_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Rtg_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Bind_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Leave_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Direct_Join_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Permit_Joining_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_Cache_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <InputClusters Cluster="Mgmt_NWK_Update_rsp" RxAPDU="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="NWK_addr_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="IEEE_addr_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Node_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Power_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Simple_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Active_EP_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Match_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Complex_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="User_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Discovery_Cache_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Device_annce" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="User_Desc_set" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="System_Server_Discovery_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Discovery_store_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Node_Desc_store_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Power_Desc_store_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Active_EP_store_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Simple_Desc_store_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Remove_node_cache_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Find_node_chache_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Extended_Simple_Desc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Extended_Active_EP_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="End_Device_Bind_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Bind_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Unbind_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Bind_Register_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Replace_Device_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Store_Bkup_Bind_Entry_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Remove_Bkup_Bind_Entry_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Backup_Bind_Table_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Recover_Bind_Table_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Backup_Source_Bind_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Recover_Source_Bind_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_NWK_Disc_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Lqi_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Rtg_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Bind_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Leave_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Direct_Join_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Permit_Joining_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Cache_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_NWK_Update_req" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="NWK_addr_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="IEEE_addr_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Node_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Power_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Simple_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Active_EP_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Match_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Complex_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="User_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Discovery_Cache_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="User_Desc_conf" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="System_Server_Discovery_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Discovery_store_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Node_Desc_store_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Power_Desc_store_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Active_EP_store_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Simple_Desc_store_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Remove_node_cache_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Find_node_chache_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Extended_Simple_Desc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Extended_Active_EP_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="End_Device_Bind_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Bind_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Unbind_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Bind_Register_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Replace_Device_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Store_Bkup_Bind_Entry_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Remove_Bkup_Bind_Entry_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Backup_Bind_Table_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Recover_Bind_Table_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Backup_Source_Bind_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Recover_Source_Bind_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_NWK_Disc_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Lqi_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Rtg_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Bind_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Leave_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Direct_Join_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Permit_Joining_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_Cache_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+      <OutputClusters Cluster="Mgmt_NWK_Update_rsp" TxAPDUs="HelloZigbee->apduZDP" Discoverable="false"/>
+    </Endpoints>
+    <Endpoints Id="1" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="BASIC">
+      <InputClusters Cluster="Basic" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="Default" RxAPDU="HelloZigbee->apduZCL" Discoverable="false"/>
+      <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="DeviceTemperature" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="Basic" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+      <OutputClusters Cluster="OTA" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
+    </Endpoints>
+    <Endpoints Id="2" Enabled="true" ApplicationDeviceId="0" ApplicationDeviceVersion="0" Profile="HA" Message="APP_ZCL_vEventHandler" Name="SWITCH1">
+      <InputClusters Cluster="OnOff" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="OOSC" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="MultistateInput" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="Identify" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="Groups" RxAPDU="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OnOff" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="LevelControl" TxAPDUs="HelloZigbee->apduZCL" Discoverable="true"/>
     </Endpoints>
