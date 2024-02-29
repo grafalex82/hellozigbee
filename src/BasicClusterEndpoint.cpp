@@ -186,7 +186,7 @@ void BasicClusterEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEv
 void BasicClusterEndpoint::handleOTAClusterEvent(tsZCL_CallBackEvent *psEvent)
 {
     tsOTA_CallBackMessage *psCallBackMessage = (tsOTA_CallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
-    vDumpOTAMessage(psCallBackMessage);
+    otaHandlers.handleOTAMessage(psCallBackMessage);
 }
 
 void BasicClusterEndpoint::handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent)

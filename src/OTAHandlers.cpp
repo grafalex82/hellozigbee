@@ -90,8 +90,6 @@ void OTAHandlers::saveOTAContext(tsOTA_PersistedData * pData)
 
     // Store the data
     sPersistedData = *pData;
-
-    DBG_vPrintf(TRUE, "Done\n");
 }
 
 void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
