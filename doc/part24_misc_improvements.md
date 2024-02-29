@@ -1,4 +1,4 @@
-# Hello Zigbee World, Part 24 - Misc Improvements
+# Hello Zigbee World, Part 24 - Configure Reporting, Client-only clusters, Both Buttons support
 
 Welcome back to our [Hello Zigbee series](part0_plan.md), where we delve into creating Zigbee device firmware from the ground up. Recently, I've made several enhancements to the Zigbee Smart Switch firmware. These updates, while minor, are significant enough to warrant mention, though not quite extensive enough for their own article.
 
@@ -700,7 +700,7 @@ As soon as we were pretty close to porting this code to the real Xiaomi hardware
 # Links
 
 - Documents
-    - [JN-UG-3113 ZigBee 3.0 Stack User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3113.pdf)
+  - [JN-UG-3113 ZigBee 3.0 Stack User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3113.pdf)
   - [JN-UG-3114 ZigBee 3.0 Devices User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3114.pdf)
   - [JN-UG-3076 ZigBee Home Automation User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3076.pdf)
   - [JN-UG-3101 ZigBee PRO Stack User Guide](https://www.nxp.com/docs/en/user-guide/JN-UG-3101.pdf)

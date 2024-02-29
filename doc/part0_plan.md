@@ -89,8 +89,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Make a custom zigbee2mqtt external converter to handle the custom cluster ([Article](part18_zigbee2mqtt_converter.md))
 - Dimming light support using Level Control Client cluster ([Article](part19_level_control.md))
 - Double buttons support ([Article](part24_misc_improvements.md))
-- Implement OTA firmware update from the device side (Code ready, article pending)
-- Add support for OTA firmware update for DIY devices in zigbee2mqtt (Code ready, article pending)
+- Implement OTA firmware update from the device side ([Article](part25_ota_updates.md))
 
 **Stage 3** — nice to have stuff
 - Using C++ in the project ([Article](part9_cpp_building_blocks.md))
@@ -102,7 +101,8 @@ After some experimenting, and having some progress on the project, I can now def
 - Explore Identify cluster ([Article](part22_identify_cluster.md))
 - Explore Groups ([Article](part23_groups.md))
 - Explore Scenes cluster
-- Explore Touchlink, Find-And-Bind, and ZLL Commisioning
+- Explore Touchlink, Install Codes, Find-And-Bind, and ZLL Commisioning
+- Set up CI
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
 - Reverse engineer the schematics (Done, article pending)
@@ -110,7 +110,7 @@ After some experimenting, and having some progress on the project, I can now def
 - Port switch function to the device
 - Drive LEDs on the board
 - Drive switch relays
-- Handle temperature sensor
+- Handle temperature sensor via Device Temperature Configuration Cluster (Code ready, article pending)
 - Handle current and power sensor
 - Evaluate possibility to switch from stock to the custom firmware via OTA update
 - Test the device in house
