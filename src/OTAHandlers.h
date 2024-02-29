@@ -30,7 +30,7 @@ public:
 private:
     void restoreOTAAttributes();
     void initFlash();
-    void saveOTAContext();
+    void saveOTAContext(tsOTA_PersistedData * pData);
 };
 
 #endif // OTAHANDLERS_H

@@ -84,29 +84,12 @@ void OTAHandlers::initFlash()
         DBG_vPrintf(TRUE, "OTAHandlers::initFlash(): Failed to allocate endpoint OTA space (can be ignored for non-OTA builds). status=%d\n", status);
 }
 
-void OTAHandlers::saveOTAContext()
+void OTAHandlers::saveOTAContext(tsOTA_PersistedData * pData)
 {
     DBG_vPrintf(TRUE, "Saving OTA Context... ");
 
-    // Get the OTA cluster data record
-    tsZCL_ClusterInstance *psClusterInstance;
-    teZCL_Status status = eZCL_SearchForClusterEntry(otaEp, OTA_CLUSTER_ID, FALSE, &psClusterInstance);
-    if(status  != E_ZCL_SUCCESS)
-    {
-        DBG_vPrintf(TRUE, "Search OTA entry failed with status %02x\n", status);
-        return;
-    }
-
-    // Check the data pointer
-    tsOTA_Common * pOTACustomData = (tsOTA_Common *)psClusterInstance->pvEndPointCustomStructPtr;
-    if(pOTACustomData == NULL)
-    {
-        DBG_vPrintf(TRUE, "No OTA data pointer\n");
-        return;
-    }
-
     // Store the data
-    sPersistedData = pOTACustomData->sOTACallBackMessage.sPersistedData;
+    sPersistedData = *pData;
 
     DBG_vPrintf(TRUE, "Done\n");
 }
@@ -118,7 +101,7 @@ void OTAHandlers::handleOTAMessage(tsOTA_CallBackMessage * pMsg)
     switch(pMsg->eEventId)
     {
     case E_CLD_OTA_INTERNAL_COMMAND_SAVE_CONTEXT:
-        saveOTAContext();
+        saveOTAContext(&pMsg->sPersistedData);
         break;
     default:
         break;
