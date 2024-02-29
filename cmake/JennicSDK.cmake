@@ -26,7 +26,7 @@ endif()
 
 
 # Set build parameters common for the app and Zigbee library
-ADD_DEFINITIONS(
+add_definitions(
 	-DJENNIC_CHIP_NAME=_${JENNIC_CHIP}
 	-DJENNIC_CHIP_FAMILY_NAME=_${JENNIC_CHIP_FAMILY}
 	-DJENNIC_CHIP_FAMILY_${JENNIC_CHIP_FAMILY}
@@ -61,7 +61,7 @@ else()
 endif()
 
 # Dump toolchain variables
-function(DUMP_COMPILER_SETTINGS)
+function(dump_compiler_settings)
     message(STATUS "")
     message(STATUS "======================")
     message(STATUS "Toolchain paths:")
@@ -145,7 +145,7 @@ function(set_target_filename TARGET)
     endif()
 endfunction()
 
-function(ADD_HEX_BIN_TARGETS TARGET)
+function(add_hex_bin_targets TARGET)
     set_target_filename(${TARGET})
 
     add_custom_target(OUTPUT "${TARGET}.hex"
@@ -160,7 +160,7 @@ function(ADD_HEX_BIN_TARGETS TARGET)
     )
 endfunction()
 
-function(ADD_OTA_BIN_TARGETS TARGET)
+function(add_ota_bin_target TARGET)
     set_target_filename(${TARGET})
 
     add_custom_target(${TARGET}.ota
@@ -171,19 +171,19 @@ function(ADD_OTA_BIN_TARGETS TARGET)
     )
 endfunction()
 
-function(ADD_DUMP_TARGET TARGET)
+function(add_dump_target TARGET)
     set_target_filename(${TARGET})
 
     add_custom_target(${TARGET}.dump DEPENDS ${TARGET} COMMAND ${CMAKE_OBJDUMP} -x -D -S -s ${FILENAME} | ${CMAKE_CPPFILT} > ${FILENAME}.dump)
 endfunction()
 
-function(PRINT_SIZE_OF_TARGETS TARGET)
+function(print_size_of_targets TARGET)
     set_target_filename(${TARGET})
     
     add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_SIZE} ${FILENAME})
 endfunction()
 
-function(FLASH_FIRMWARE_TARGET TARGET)
+function(add_flash_firmware_target TARGET)
     set_target_filename(${TARGET})
 
     add_custom_target(${TARGET}.flash DEPENDS ${TARGET}.bin COMMAND "C:\\NXP\\ProductionFlashProgrammer\\JN51xxProgrammer.exe" -V 0 -s COM5 -f ${FILENAME}.bin)

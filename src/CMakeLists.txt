@@ -1,7 +1,7 @@
 ################################
 # Common settings
 
-ADD_DEFINITIONS(
+add_definitions(
         -DOTA_INTERNAL_STORAGE
 #        -DTRACE_ZCL=TRUE
 #        -DTRACE_OTA_DEBUG=TRUE
@@ -21,7 +21,7 @@ generate_zps_and_pdum_targets(${PROJECT_SOURCE_DIR}/src/HelloZigbee.zpscfg)
 ################################
 # Zigbee Library
 
-SET(ZIGBEE_SRC
+set(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/app_zps_link_keys.c
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/appZdpExtraction.c
         ${SDK_PREFIX}/Components/ZigbeeCommon/Source/appZpsBeaconHandler.c
@@ -96,8 +96,8 @@ SET(ZIGBEE_SRC
         # Generated (used by bdb_ns.c)
         pdum_gen.h
 )
-ADD_LIBRARY(ZigBee STATIC ${ZIGBEE_SRC})
-TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
+add_library(ZigBee STATIC ${ZIGBEE_SRC})
+target_include_directories(ZigBee PRIVATE
         ${SDK_PREFIX}/Components/BDB/Include
         ${SDK_PREFIX}/Components/BDB/Source/Common
         ${SDK_PREFIX}/Components/BDB/Source/NwkSteering
@@ -116,7 +116,7 @@ TARGET_INCLUDE_DIRECTORIES(ZigBee PRIVATE
 ################################
 # Hello Zigbee
 
-INCLUDE_DIRECTORIES(
+include_directories(
     ${PROJECT_SOURCE_DIR}
 
     ${SDK_PREFIX}/Components/Aes/Include
@@ -154,15 +154,15 @@ INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/src
 )
 
-LINK_DIRECTORIES(
+link_directories(
 	${SDK_PREFIX}/Components/Library
 	${SDK_PREFIX}/Chip/${JENNIC_CHIP}/Build
 	${SDK_PREFIX}/Platform/DK4/Library
 )
 
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T${HelloZigbee_SOURCE_DIR}/src/HelloZigbee.ld")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T${HelloZigbee_SOURCE_DIR}/src/HelloZigbee.ld")
 
-SET(SOURCES
+set(SOURCES
 	irq_JN516x.S
         Queue.h
         Timer.h
@@ -197,8 +197,8 @@ SET(SOURCES
         pdum_apdu.S
 )
 
-ADD_EXECUTABLE(HelloZigbee ${SOURCES})
-TARGET_LINK_LIBRARIES(HelloZigbee
+add_executable(HelloZigbee ${SOURCES})
+target_link_libraries(HelloZigbee
         -Wl,--start-group
 
 	ZigBee	
@@ -226,8 +226,8 @@ TARGET_LINK_LIBRARIES(HelloZigbee
         -Wl,--end-group
 )
 
-PRINT_SIZE_OF_TARGETS(HelloZigbee)
-ADD_HEX_BIN_TARGETS(HelloZigbee)
-ADD_DUMP_TARGET(HelloZigbee)
-FLASH_FIRMWARE_TARGET(HelloZigbee)
-ADD_OTA_BIN_TARGETS(HelloZigbee)
+print_size_of_targets(HelloZigbee)
+add_hex_bin_targets(HelloZigbee)
+add_dump_target(HelloZigbee)
+add_flash_firmware_target(HelloZigbee)
+add_ota_bin_target(HelloZigbee)
