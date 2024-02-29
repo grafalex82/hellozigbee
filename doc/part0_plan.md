@@ -40,7 +40,7 @@ So here I come to an **ultimate goal** - create an extendable platform for creat
 ## The Plan
 The QBKG12LM switch is a quite complex device. It has a lot of on board circuits that I do not fully understand at the moment. So there is a quite high risk to do something wrong, and break the device. Moreover, this is a line powered device with a high voltage line, so there is also a risk of injury, or damaging a connected computer.
 
-I was also looking at a development board based on the same NXP JN5169 microcontroller. But the [https://www.nxp.com/products/wireless/zigbee/zigbee-evaluation-kit-with-nfc-commissioning:JN5169HA](official development board from NXP) costs \$650, which is too expensive for experiments. Fortunately there is a E75-2G4M10S module from EBYTE that costs just a few dollars. I bought several modules for around \$3 each. So it is quite cheap for experiments, and I would not get upset if I burn a few. The only problem is it is just a module, and requires some soldering to make a circuit. But this is not a big deal.
+I was also looking at a development board based on the same NXP JN5169 microcontroller. But the [official development board from NXP](https://www.nxp.com/products/wireless/zigbee/zigbee-evaluation-kit-with-nfc-commissioning:JN5169HA) costs \$650, which is too expensive for experiments. Fortunately there is a E75-2G4M10S module from EBYTE that costs just a few dollars. I bought several modules for around \$3 each. So it is quite cheap for experiments, and I would not get upset if I burn a few. The only problem is it is just a module, and requires some soldering to make a circuit. But this is not a big deal.
 
 ![](images/E75-2G4M10S.jpg)
 <p><figcaption align = "center"><i>EBYTE E75-2G4M10S module</i></figcaption></p>
