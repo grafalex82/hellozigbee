@@ -12,6 +12,22 @@ project(HelloZigbee)
 enable_language(CXX)
 enable_language(ASM)
 
+# Select the board
+set(SUPPORTED_BOARDS 
+    "EBYTE_E75" # Custom 2-gang switch board based on EBYTE E75-2G4M20S1E module
+    "QBKG11LM"  # Aqara Wall Switch (1-gang)
+    "QBKG12LM"  # Aqara Wall Switch (2-gang)
+    )
+if(NOT DEFINED BOARD)
+    set(BOARD "EBYTE_E75")
+endif()
+set(BOARD "${BOARD}" CACHE STRING "Select the board to build for (${SUPPORTED_BOARDS})")
+
+list(FIND SUPPORTED_BOARDS "${BOARD}" BOARD_INDEX)
+if(BOARD_INDEX EQUAL -1)
+    message(FATAL_ERROR "Unsupported BOARD specified. Supported options are: ${SUPPORTED_BOARDS}")
+endif()
+
 #dump_compiler_settings()
 
 add_subdirectory(src)

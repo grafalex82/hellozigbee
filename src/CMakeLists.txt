@@ -2,6 +2,8 @@
 # Common settings
 
 add_definitions(
+        -DTARGET_BOARD_${BOARD}
+
         -DOTA_INTERNAL_STORAGE
 #        -DTRACE_ZCL=TRUE
 #        -DTRACE_OTA_DEBUG=TRUE

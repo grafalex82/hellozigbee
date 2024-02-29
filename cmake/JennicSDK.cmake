@@ -110,7 +110,7 @@ function(generate_zps_and_pdum_targets ZPSCFG_FILE)
             zps_gen.c
             zps_gen.h
         COMMAND ${ZPS_CONFIG}
-                -n ${PROJECT_NAME}
+                -n ${BOARD}
                 -f ${ZPSCFG_FILE}
                 -o ${CMAKE_CURRENT_BINARY_DIR}
                 -t ${JENNIC_CHIP}
@@ -126,7 +126,7 @@ function(generate_zps_and_pdum_targets ZPSCFG_FILE)
             pdum_gen.h
             pdum_apdu.S
         COMMAND ${PDUM_CONFIG}
-                -z ${PROJECT_NAME}
+                -z ${BOARD}
                 -f ${ZPSCFG_FILE}
                 -o ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS ${ZPSCFG_FILE}
