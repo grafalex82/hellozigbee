@@ -50,7 +50,6 @@ extern "C"
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
 ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
 
-
 extern "C" void __cxa_pure_virtual(void) __attribute__((__noreturn__));
 extern "C" void __cxa_deleted_virtual(void) __attribute__((__noreturn__));
 
@@ -180,7 +179,13 @@ PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
             DBG_vPrintf(TRUE, "Matched BTN2_PRESS\n");
         }
 
-        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE"))
+        if(debugInput.matchCommand("BTN3_PRESS"))   // Use button #3 to indicate both buttons
+        {
+            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
+            DBG_vPrintf(TRUE, "Matched BTN3_PRESS\n");
+        }
+
+        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE") || debugInput.matchCommand("BTN3_RELEASE"))
         {
             ButtonsTask::getInstance()->setButtonsOverride(0);
             DBG_vPrintf(TRUE, "Matched BTNx_RELEASE\n");
@@ -243,27 +248,30 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
     ZPS_vExtendedStatusSetCallback(vfExtendedStatusCallBack);
 
-    // Configure Endpoints objects
+    // Register endpoints and assign buttons for them
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     BasicClusterEndpoint basicEndpoint;
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_BASIC_ENDPOINT, &basicEndpoint);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_BASIC_ENDPOINT, &basicEndpoint);
 
     SwitchEndpoint switch1;
-    switch1.setPins(SWITCH1_BTN_MASK);
-    EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH1_ENDPOINT, &switch1);
+    switch1.setConfiguration(SWITCH1_BTN_MASK);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH1_ENDPOINT, &switch1);
 
     #ifdef SWITCH2_BTN_MASK
-        SwitchEndpoint switch2;
-        switch2.setPins(SWITCH2_BTN_MASK);
-        EndpointManager::getInstance()->registerEndpoint(HELLOENDDEVICE_SWITCH2_ENDPOINT, &switch2);
-    #endif //SWITCH2_BTN_MASK
+    SwitchEndpoint switch2;
+    switch2.setConfiguration(SWITCH2_BTN_MASK);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCH2_ENDPOINT, &switch2);
 
+    switch1.setInterlockBuddy(&switch2);
+    switch2.setInterlockBuddy(&switch1);
+
+    SwitchEndpoint switchBoth;
+    switchBoth.setConfiguration(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK, true);
+    EndpointManager::getInstance()->registerEndpoint(HELLOZIGBEE_SWITCHB_ENDPOINT, &switchBoth);
+    #endif
 
     // Init the ZigbeeDevice, AF, BDB, and other network stuff
     ZigbeeDevice::getInstance();
-
-    // Groups debug (TODO: Cleanup this)
-    vDisplayGroupsTable();
 
     // Print Initialization finished message
     DBG_vPrintf(TRUE, "\n---------------------------------------------------\n");

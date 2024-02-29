@@ -22,6 +22,8 @@ class ButtonHandler: public IButtonHandler
 {
     SwitchEndpoint * endpoint;
 
+    bool prevState;
+    uint32 debounceTimer;
     uint32 currentStateDuration;
 
     SwitchMode switchMode;

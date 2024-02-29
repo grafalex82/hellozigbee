@@ -9,13 +9,22 @@ class ZigbeeNetwork():
         self.message_received = None
         self.topic_to_wait = None
 
+        self.retained_topics = {}
+
         self.client = mqtt.Client()
         self.client.on_message = self.on_message_received
         self.client.connect(server, int(port))
 
 
     def on_message_received(self, client, userdata, msg):
-        print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
+        # Cache retained topics in the own cache
+        if msg.topic in self.retained_topics:
+            print(f"Updated retained topic {msg.topic}")
+            self.retained_topics[msg.topic] = msg.payload
+        else:
+            print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
+
+        # If the topic is the one we are waiting for - prepare for returning the payload to the client
         if not self.topic_to_wait or msg.topic.startswith(self.topic_to_wait):
             self.message_received = msg.payload
 
@@ -55,6 +64,16 @@ class ZigbeeNetwork():
         self.topic_to_wait = None
         return json.loads(payload)
             
+    
+    def get_retained_topic(self, topic):
+        full_topic = self.base_topic + '/' + topic
+        if full_topic in self.retained_topics:
+            return json.loads(self.retained_topics[full_topic].decode())
+        
+        self.retained_topics[full_topic] = ""
+        self.subscribe(topic)
+        return self.wait_msg(topic)
+
             
     def disconnect(self):
         self.client.disconnect()

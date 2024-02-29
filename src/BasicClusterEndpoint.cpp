@@ -9,6 +9,7 @@ extern "C"
 #include "BasicClusterEndpoint.h"
 #include "EndpointManager.h"
 #include "LEDTask.h"
+#include "DumpFunctions.h"
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {
@@ -17,7 +18,6 @@ BasicClusterEndpoint::BasicClusterEndpoint()
 
 void BasicClusterEndpoint::registerBasicCluster()
 {
-    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerBasicCluster(): Registering basic cluster\n");
     // Create an instance of a basic cluster as a server
     teZCL_Status status = eCLD_BasicCreateBasic(&clusterInstances.sBasicServer,
                                                 TRUE,
@@ -30,7 +30,6 @@ void BasicClusterEndpoint::registerBasicCluster()
 
 void BasicClusterEndpoint::registerIdentifyCluster()
 {
-    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerIdentifyCluster(): Registering identify cluster\n");
     // Create an instance of a basic cluster as a server
     teZCL_Status status = eCLD_IdentifyCreateIdentify(&clusterInstances.sIdentifyServer,
                                                 TRUE,
@@ -45,7 +44,6 @@ void BasicClusterEndpoint::registerIdentifyCluster()
 
 void BasicClusterEndpoint::registerOtaCluster()
 {
-    DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerOtaCluster(): Registering ota cluster\n");
     // Create an instance of an OTA cluster as a client */
     teZCL_Status status = eOTA_Create(&clusterInstances.sOTAClient,
                                       FALSE,  /* client */
@@ -57,6 +55,20 @@ void BasicClusterEndpoint::registerOtaCluster()
 
     if(status != E_ZCL_SUCCESS)
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerOtaCluster(): Failed to create OTA Cluster instance. Status=%d\n", status);
+}
+
+void BasicClusterEndpoint::registerDeviceTemperatureCluster()
+{
+    // Create an instance of a device temperature configuration cluster as a server
+    teZCL_Status status = eCLD_DeviceTemperatureConfigurationCreateDeviceTemperatureConfiguration(
+        &clusterInstances.sDeviceTemperatureServer,
+        TRUE,
+        &sCLD_DeviceTemperatureConfiguration,
+        &sDeviceTemperatureServerCluster,
+        &au8DeviceTempConfigClusterAttributeControlBits[0]);
+
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerDeviceTemperatureCluster(): Failed to create Device Temperature Configuration Cluster instance. Status=%d\n", status);
 }
 
 void BasicClusterEndpoint::registerEndpoint()
@@ -81,6 +93,7 @@ void BasicClusterEndpoint::init()
     registerBasicCluster();
     registerIdentifyCluster();
     registerOtaCluster();
+    registerDeviceTemperatureCluster();
     registerEndpoint();
 
     // Fill Basic cluster attributes
@@ -122,6 +135,10 @@ void BasicClusterEndpoint::handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent
     {
         case GENERAL_CLUSTER_ID_IDENTIFY:
             handleIdentifyClusterEvent(psEvent);
+            break;
+
+        case OTA_CLUSTER_ID:
+            handleOTAClusterEvent(psEvent);
             break;
 
         default:
@@ -166,9 +183,51 @@ void BasicClusterEndpoint::handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEv
         LEDTask::getInstance()->stopEffect();
 }
 
+void BasicClusterEndpoint::handleOTAClusterEvent(tsZCL_CallBackEvent *psEvent)
+{
+    tsOTA_CallBackMessage *psCallBackMessage = (tsOTA_CallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
+    otaHandlers.handleOTAMessage(psCallBackMessage);
+}
+
 void BasicClusterEndpoint::handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent)
 {
     // Parse and process OTA message
     tsOTA_CallBackMessage *psCallBackMessage = (tsOTA_CallBackMessage *)psEvent->uMessage.sClusterCustomMessage.pvCustomData;
     otaHandlers.handleOTAMessage(psCallBackMessage);
+}
+
+teZCL_CommandStatus BasicClusterEndpoint::handleReadAttribute(tsZCL_CallBackEvent *psEvent)
+{
+    uint16 clusterId = psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId;
+
+    switch(clusterId)
+    {
+        case GENERAL_CLUSTER_ID_DEVICE_TEMPERATURE_CONFIGURATION:
+            readDeviceTemperature();
+            break;
+    }
+
+    return E_ZCL_CMDS_SUCCESS;
+}
+
+void BasicClusterEndpoint::readDeviceTemperature()
+{
+    // Enable the ADC and configure it to measure the temperature
+    vAHI_ApConfigure(E_AHI_AP_REGULATOR_ENABLE, E_AHI_AP_INT_DISABLE, E_AHI_AP_SAMPLE_2, E_AHI_AP_CLOCKDIV_500KHZ, E_AHI_AP_INTREF);
+    vAHI_AdcEnable(E_AHI_ADC_SINGLE_SHOT, E_AHI_AP_INPUT_RANGE_1, E_AHI_ADC_SRC_TEMP);
+
+    // Perform single shot measurement
+    vAHI_AdcStartSample();
+    while((bAHI_AdcPoll()))
+        ;
+
+    // Convert the raw value to temperature in Celsius
+    uint16 rawValue = u16AHI_AdcRead();
+    float mV = (float)rawValue * 1.2  / 1024 * 1000;
+    sDeviceTemperatureServerCluster.i16CurrentTemperature = (int)((mV - 720.) / (-1.66) + 25);
+
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint: Temperature: %d (raw value: %d)\n", sDeviceTemperatureServerCluster.i16CurrentTemperature, rawValue);
+
+    // Disable the ADC
+    vAHI_AdcDisable();
 }

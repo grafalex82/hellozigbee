@@ -31,9 +31,26 @@ void Endpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
     DBG_vPrintf(TRUE, "Endpoint: Warning: using default cluster update handler for event type (%d)\n", psEvent->eEventType);
 }
 
+teZCL_CommandStatus Endpoint::handleReadAttribute(tsZCL_CallBackEvent *psEvent)
+{
+    // By default we do not perform specific attribute read handling
+    return E_ZCL_CMDS_SUCCESS;
+}
+
 void Endpoint::handleWriteAttributeCompleted(tsZCL_CallBackEvent *psEvent)
 {
     DBG_vPrintf(TRUE, "Endpoint: Warning: using default write attribute handler\n");
+}
+
+teZCL_CommandStatus Endpoint::handleCheckAttributeRange(tsZCL_CallBackEvent *psEvent)
+{
+    // By default we do not perform attribute value validation
+    return E_ZCL_CMDS_SUCCESS;
+}
+
+void Endpoint::handleReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
+{
+    DBG_vPrintf(TRUE, "Endpoint: Warning: using default reporting configure handler\n");
 }
 
 void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
@@ -41,6 +58,7 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
     switch (psEvent->eEventType)
     {
         case E_ZCL_CBET_READ_REQUEST:
+            psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus = handleReadAttribute(psEvent);
             vDumpZclReadRequest(psEvent);
             break;
 
@@ -54,7 +72,11 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             break;
 
         case E_ZCL_CBET_CHECK_ATTRIBUTE_RANGE:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Check attribute %04x range. No action\n", psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
+            psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus = handleCheckAttributeRange(psEvent);
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Check attribute %04x on cluster %04x range status %d\n", 
+                        psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum,
+                        psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
+                        psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus);
             break;
 
         case E_ZCL_CBET_UNHANDLED_EVENT:
@@ -70,8 +92,9 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
             break;
 
         case E_ZCL_CBET_READ_INDIVIDUAL_ATTRIBUTE_RESPONSE:
-            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Read Attrib Rsp %d %02x\n", psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
-                *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
+            DBG_vPrintf(TRUE, "ZCL Endpoint Callback: Read Attrib Rsp %d %02x\n", 
+                        psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus,
+                        *((uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData));
             break;
 
         case E_ZCL_CBET_CLUSTER_CUSTOM:
@@ -85,6 +108,8 @@ void Endpoint::handleZclEvent(tsZCL_CallBackEvent *psEvent)
 
         case E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTES_CONFIGURE:
             vDumpAttributeReportingConfigureRequest(psEvent);
+            if(psEvent->eZCL_Status == E_ZCL_SUCCESS)
+                handleReportingConfigureRequest(psEvent);
             break;
 
         case E_ZCL_CBET_REPORT_ATTRIBUTES_CONFIGURE:

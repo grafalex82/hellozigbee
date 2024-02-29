@@ -93,6 +93,9 @@ The device implements a typical smart switch functionality. By default it operat
 But the default behavior can be customized using the custom On/Off Configuration Cluster. 
 
 The settings are:
+- `Operating Mode`:
+	- `Server` - the endpoint maintains internal state, drives its LED/Relay, and generates reports on state change.
+    - `Client` - the endpoint generates On/Off/Toggle commands to bound devices. Local LED/Relay is not used.
 - `Switch Mode`:
 	- `Toggle` - each button press toggles the LED. The action happens immediately when button pressed. This mode provides the fastest feedback.
 	- `Momentary` - turns On LED when the button is pressed, and turns Off when released.
@@ -111,7 +114,11 @@ The settings are:
 - `Long Press Mode` is a special setting for the Long Press action (when the button is pressed and hold for at least 0.5s). This setting allows adding dimming light control to the button. Note, that this function requires binding the button to the dimming light device:
 	- `None` - no additional functionality (except for emiting `long press` action to the network) is triggered
 	- `levelCtrlUp` - when the button is pressed, the LevelCtrl cluster `MoveUpWithOnOff` command is emitted. When the button is released, the LevelCtrl cluster `Stop` command is emitted to stop previously started movement
-	- `levelCtrlDowb` - Similar to previous, but the `MoveDownWithOnOff` command will be used.
+	- `levelCtrlDown` - Similar to previous, but the `MoveDownWithOnOff` command will be used.
+- `Interlock Mode` is a mode when both switch buttons work together, and do not allow setting both endpoints to ON state simultaneously:
+	- `None` - interlock mode is deactivated
+	- `Mutual Exclusion` - Prevents two endpoints to be in ON state simultaneously. When second endpoint gets ON, previously active endpoint gets OFF. This mode allows setting both endpoints to OFF state.
+	- `Opposite` - the two endpoints are also in opposite state. If one of them goes ON, another goes OFF, and vice versa.
 - `Max Pause` - a maximum time between button clicks so that consecutive clicks are consodered as a part of a multi-click action.
 - `Min Long Press` - a minimum time of the button press before emitting a `long press` action
 
