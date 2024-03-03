@@ -19,9 +19,9 @@ set(SUPPORTED_BOARDS
     "QBKG12LM"  # Aqara Wall Switch (2-gang)
     )
 if(NOT DEFINED BOARD)
-    set(BOARD "EBYTE_E75")
+    set(BOARD "EBYTE_E75" CACHE STRING "Select the board to build for (${SUPPORTED_BOARDS})")
 endif()
-set(BOARD "${BOARD}" CACHE STRING "Select the board to build for (${SUPPORTED_BOARDS})")
+
 
 list(FIND SUPPORTED_BOARDS "${BOARD}" BOARD_INDEX)
 if(BOARD_INDEX EQUAL -1)
