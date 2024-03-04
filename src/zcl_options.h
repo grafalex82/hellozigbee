@@ -107,9 +107,6 @@
 
     #define HEARTBEAT_LED_PIN           (4)
 
-    #define NUM_BUTTONS                 (2)
-    #define HAS_VIRTUAL_CHANNELS        
-
     #define SWITCH1_BTN_BIT             (1)
     #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_BIT)
     #define SWITCH2_BTN_BIT             (2)
@@ -134,8 +131,6 @@
 
     #define HEARTBEAT_LED_PIN           (19)
 
-    #define NUM_BUTTONS                 (1)
-
     #define SWITCH1_BTN_BIT             (10)
     #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_BIT)
 
@@ -151,9 +146,6 @@
     #define CLD_BAS_MODEL_ID_SIZE       21
 
     // TODO: Fill proper pin numbers
-
-    #define NUM_BUTTONS                 (2)
-    #define HAS_VIRTUAL_CHANNELS
 
     #define HEARTBEAT_LED_PIN           (19)
 
