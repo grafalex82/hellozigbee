@@ -20,7 +20,10 @@ enum LEDTaskSpecialEffect
 class LEDTask : public PeriodicTask
 {
     LEDPair ch1;
+
+#ifdef LED2_RED_PIN
     LEDPair ch2;
+#endif
 
 private:
     LEDTask();

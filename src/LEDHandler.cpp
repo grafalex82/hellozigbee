@@ -1,5 +1,6 @@
 #include "LEDHandler.h"
 
+#ifdef SUPPORTS_PWM_LED
 const LEDProgramEntry BLINK_EFFECT[] = 
 {
     {LED_CMD_MOVE_TO_LEVEL, 0, 64},     // Start with black
@@ -74,15 +75,99 @@ const LEDProgramEntry NETWORK_CONNECT2_EFFECT[] =
     {LED_CMD_STOP, 0, 0},
 };
 
+#else //SUPPORTS_PWM_LED
+
+const LEDProgramEntry BLINK_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black
+    {LED_CMD_PAUSE, 10, 0},              // Stay there for a 500 ms
+
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Blink fast to maximum for 0.5s, and then back to 0
+    {LED_CMD_PAUSE, 10, 0},             
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},
+
+    {LED_CMD_PAUSE, 10, 0},              // Stay for another 500 ms
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry BREATHE_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Turn on for 0.5s
+    {LED_CMD_PAUSE, 10, 0},              
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Turn off for 0.5s
+    {LED_CMD_PAUSE, 10, 0},              
+
+    {LED_CMD_REPEAT, 4, 15},             // Jump 4 steps back, Repeat 15 times
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry OK_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black
+    {LED_CMD_PAUSE, 10, 0},             // Stay there for a 500 ms
+
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Blink twice with 250 ms pause
+    {LED_CMD_PAUSE, 5, 0},              
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},
+    {LED_CMD_PAUSE, 5, 0},              
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},
+    {LED_CMD_PAUSE, 5, 0},              
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},
+
+    {LED_CMD_PAUSE, 10, 0},              // Stay for another 500 ms
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry CHANNEL_CHANGE_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black
+    {LED_CMD_PAUSE, 5, 0},              // Stay there for a 250 ms
+
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Turn on for 2s
+    {LED_CMD_PAUSE, 40, 0},
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Turn off for 3s
+    {LED_CMD_PAUSE, 60, 0},
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry NETWORK_CONNECT1_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Blink fast with 0.2s period, starting ON state
+    {LED_CMD_PAUSE, 2, 0},
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},
+    {LED_CMD_PAUSE, 2, 0},
+
+    {LED_CMD_REPEAT, 4, 50},            // Jump 4 steps back, Repeat 50 times (hopefully connect will happen earlier)
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+const LEDProgramEntry NETWORK_CONNECT2_EFFECT[] = 
+{
+    {LED_CMD_MOVE_TO_LEVEL, 0, 255},  // Blink fast with 0.2s period, starting OFF state
+    {LED_CMD_PAUSE, 2, 0},
+    {LED_CMD_MOVE_TO_LEVEL, 255, 255},
+    {LED_CMD_PAUSE, 2, 0},
+
+    {LED_CMD_REPEAT, 4, 50},            // Jump 2 steps back, Repeat 25 times (hopefully connect will happen earlier)
+
+    {LED_CMD_STOP, 0, 0},
+};
+
+#endif //SUPPORTS_PWM_LED
 
 LEDHandler::LEDHandler()
 {
 
 }
 
-void LEDHandler::init(uint8 timer)
+void LEDHandler::init(uint8 pinOrTimer)
 {
-    pin.init(timer);
+    pin.init(pinOrTimer);
     idleLevel = 0;
     curLevel = 0;
     targetLevel = 0;
@@ -93,6 +178,7 @@ void LEDHandler::init(uint8 timer)
 
 void LEDHandler::setPWMLevel(uint8 level)
 {
+#ifdef SUPPORTS_PWM_LED
     // Brightness to PWM level translation table for better perception of brightness change.
     // m = 253
     // p = 255
@@ -120,6 +206,9 @@ void LEDHandler::setPWMLevel(uint8 level)
     };
 
     pin.setLevel(level2pwm[level]);
+#else // SUPPORTS_PWM_LED
+    pin.setState(level == 0);   // 0 - ON, Non-0 - OFF
+#endif // SUPPORTS_PWM_LED
 }
 
 void LEDHandler::handleStateIncrementing()
@@ -188,7 +277,13 @@ void LEDHandler::handleStateMachine()
 void LEDHandler::moveToLevel(uint8 target, uint8 step)
 {
     targetLevel = target;
+
+#ifdef SUPPORTS_PWM_LED
     increment = step;
+#else
+    increment = 255;    // Non-PWM LEDs are always switched instantly
+#endif
+
     handlerState = curLevel < targetLevel ? STATE_INCREMENTING : STATE_DECREMENTING;
 }
 

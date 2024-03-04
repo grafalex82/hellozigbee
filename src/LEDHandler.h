@@ -6,7 +6,10 @@ extern "C"
     #include "jendefs.h"
 }
 
+#include "zcl_options.h"        // for SUPPORTS_PWM_LEDS
+
 #include "PWMPin.h"
+#include "GPIOPin.h"
 
 enum LEDProgramCommand
 {
@@ -35,7 +38,12 @@ extern const LEDProgramEntry NETWORK_CONNECT2_EFFECT[];
 
 class LEDHandler
 {
+#ifdef SUPPORTS_PWM_LED
     PWMPin pin;             // The Pin object where the LED is connected
+#else
+    GPIOOutput pin;         // The Pin object where the LED is connected
+#endif
+
     uint8 curLevel;         // Currently active brightness level (changes gradually on setting new brightness)
     uint8 targetLevel;      // Target brightness level while gradually increasing/decreasing brightness
     uint8 idleLevel;        // Selected brightness level when no effect active
@@ -57,7 +65,7 @@ class LEDHandler
 
 public:
     LEDHandler();
-    void init(uint8 timer);
+    void init(uint8 pinOrTimer);    // Require pin number for non-PWM mode, or timer ID for PWM
     void update();
 
     void setFixedLevel(uint8 level, uint8 step = 10);
