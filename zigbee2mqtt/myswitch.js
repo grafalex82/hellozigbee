@@ -338,11 +338,8 @@ const fromZigbee_LevelCtrl = {
     },
 }
 
-const device = {
-    zigbeeModel: ['Hello Zigbee Switch'],
-    model: 'Hello Zigbee Switch',
-    vendor: 'NXP',
-    description: 'Hello Zigbee Switch',
+const common_definition = {
+    vendor: 'DIY',
     fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl, fz.device_temperature],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
@@ -356,23 +353,70 @@ const device = {
             }
         }
     },
-    exposes: [
-        e.action(genSwitchActions(["left", "right", "center"])),
-        genSwitchEndpoint("left"),
-        genSwitchEndpoint("right"),
-        genBothButtonsEndpoint("center"),
-        ...getGenericSettings()
-    ],
-    endpoint: (device) => {
-        return {
-            "basic": 1,
-            "left": 2,
-            "right": 3,
-            "center": 4
-        };
-    },
     meta: {multiEndpoint: true},
     ota: ota.zigbeeOTA
 };
 
-module.exports = device;
+const definitions = [
+    {
+        ...common_definition,
+        zigbeeModel: ['hello.zigbee.E75-2G4M10S'],
+        model: 'E75-2G4M10S',
+        description: 'Hello Zigbee Switch based on E75-2G4M10S module',
+        exposes: [
+            e.action(genSwitchActions(["left", "right", "both"])),
+            genSwitchEndpoint("left"),
+            genSwitchEndpoint("right"),
+            genBothButtonsEndpoint("both"),
+            ...getGenericSettings()
+        ],
+        endpoint: (device) => {
+            return {
+                "common": 1,
+                "left": 2,
+                "right": 3,
+                "both": 4
+            };
+        },
+    },
+    {
+        ...common_definition,
+        zigbeeModel: ['hello.zigbee.QBKG11LM'],
+        model: 'QBKG11LM',
+        description: 'Hello Zigbee Switch firmware for Aqara QBKG11LM',
+        exposes: [
+            e.action(genSwitchActions(["button"])),
+            genSwitchEndpoint("button"),
+            ...getGenericSettings()
+        ],
+        endpoint: (device) => {
+            return {
+                "common": 1,
+                "button": 2
+            };
+        },
+    },
+    {
+        ...common_definition,
+        zigbeeModel: ['hello.zigbee.QBKG12LM'],
+        model: 'QBKG12LM',
+        description: 'Hello Zigbee Switch firmware for Aqara QBKG12LM',
+        exposes: [
+            e.action(genSwitchActions(["left", "right", "both"])),
+            genSwitchEndpoint("left"),
+            genSwitchEndpoint("right"),
+            genBothButtonsEndpoint("both"),
+            ...getGenericSettings()
+        ],
+        endpoint: (device) => {
+            return {
+                "common": 1,
+                "left": 2,
+                "right": 3,
+                "both": 4
+            };
+        },
+    },
+];
+
+module.exports = definitions;
