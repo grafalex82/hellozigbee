@@ -10,7 +10,6 @@ extern "C"
 #include "EndpointManager.h"
 #include "LEDTask.h"
 #include "DumpFunctions.h"
-#include "Configuration.h"
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {

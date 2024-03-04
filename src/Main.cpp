@@ -12,7 +12,6 @@ extern "C"
     #include "zps_gen.h"
 }
 
-#include "Configuration.h"
 #include "Queue.h"
 #include "ButtonsTask.h"
 #include "SwitchEndpoint.h"
@@ -59,7 +58,6 @@ void __cxa_pure_virtual(void)
   while (1)
     ;
 }
-
 
 extern "C" PUBLIC void vISR_SystemController(void)
 {
@@ -211,7 +209,7 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Print welcome message
     DBG_vPrintf(TRUE, "\n-------------------------------------------------------------\n");
-    DBG_vPrintf(TRUE, "Initializing Hello Zigbee Platform for target board '%s'\n", TARGET_BOARD_NAME);
+    DBG_vPrintf(TRUE, "Initializing Hello Zigbee Platform for target board '%s'\n", CLD_BAS_MODEL_ID_STR);
     DBG_vPrintf(TRUE, "-------------------------------------------------------------\n\n");
 
     // Initialize PDM

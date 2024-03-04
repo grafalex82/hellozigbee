@@ -6,7 +6,6 @@ extern "C"
 }
 
 #include "LEDTask.h"
-#include "Configuration.h"
 
 // Note: Object constructors are not executed by CRT if creating a global var of this object :(
 // So has to be created explicitely in vAppMain() otherwise VTABLE will not be initialized properly
