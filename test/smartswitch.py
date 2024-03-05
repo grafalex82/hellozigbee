@@ -95,7 +95,7 @@ class SmartSwitch:
 
 
     def get_state(self):
-        msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0006 Command=00 Attr=0000"
+        msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0006 Attr=0000"
         return self.do_get_request('state_'+self.ep_name, msg)
 
 
@@ -127,7 +127,7 @@ class SmartSwitch:
 
 
     def set_attribute(self, attr, value):
-        msg = f"ZCL Write Attribute: Cluster 0007 Attrib {self.get_attr_id_by_name(attr)}"
+        msg = f"ZCL Write Attribute: EP={self.ep} Cluster=0007 Attr={self.get_attr_id_by_name(attr)}"
         assert self.do_set_request(attr + '_' + self.ep_name, value, msg) == value
         self.wait_button_state('IDLE')
 
@@ -145,7 +145,7 @@ class SmartSwitch:
 
 
     def get_attribute(self, attr):
-        msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0007 Command=00 Attr={self.get_attr_id_by_name(attr)}"
+        msg = f"ZCL Read Attribute: EP={self.ep} Cluster=0007 Attr={self.get_attr_id_by_name(attr)}"
         return self.do_get_request(attr + '_' + self.ep_name, msg)
     
 

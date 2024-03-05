@@ -243,10 +243,10 @@ extern "C" PUBLIC void vAppMain(void)
     LEDTask::getInstance()->start();
 
     // Initialize the heartbeat LED (if there is one)
-    #ifdef HEARTBEAT_LED_PIN
+#ifdef HEARTBEAT_LED_PIN
     BlinkTask blinkTask;
     blinkTask.init(HEARTBEAT_LED_PIN);
-    #endif
+#endif
 
     // Set up a status callback
     DBG_vPrintf(TRUE, "vAppMain(): init extended status callback...\n");
@@ -261,7 +261,7 @@ extern "C" PUBLIC void vAppMain(void)
     switch1.setConfiguration(SWITCH1_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(SWITCH1_ENDPOINT, &switch1);
 
-    #ifdef SWITCH2_BTN_MASK
+#ifdef SWITCH2_BTN_MASK
     SwitchEndpoint switch2;
     switch2.setConfiguration(SWITCH2_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(SWITCH2_ENDPOINT, &switch2);
@@ -272,7 +272,7 @@ extern "C" PUBLIC void vAppMain(void)
     SwitchEndpoint switchBoth;
     switchBoth.setConfiguration(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK, true);
     EndpointManager::getInstance()->registerEndpoint(SWITCHB_ENDPOINT, &switchBoth);
-    #endif
+#endif
 
     // Init the ZigbeeDevice, AF, BDB, and other network stuff
     ZigbeeDevice::getInstance();

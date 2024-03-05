@@ -31,18 +31,32 @@ PRIVATE void vPrintAddr(ZPS_tuAddress addr, uint8 mode)
 
 void vDumpZclReadRequest(tsZCL_CallBackEvent *psEvent)
 {
+    // The passed event object does not provide information on what attribute is being read
+
+    // Read command header
+    tsZCL_HeaderParams headerParams;
+    uint16 inputOffset = u16ZCL_ReadCommandHeader(psEvent->pZPSevent->uEvent.sApsDataIndEvent.hAPduInst,
+                                                  &headerParams);
+    // read input attribute Id
+    uint16 attributeId;
+    inputOffset += u16ZCL_APduInstanceReadNBO(psEvent->pZPSevent->uEvent.sApsDataIndEvent.hAPduInst,
+                                              inputOffset,
+                                              E_ZCL_ATTRIBUTE_ID,
+                                              &attributeId);
+
     DBG_vPrintf(TRUE, "ZCL Read Attribute: EP=%d Cluster=%04x Attr=%04x (status=%d)\n",
                 psEvent->u8EndPoint,
                 psEvent->pZPSevent->uEvent.sApsDataIndEvent.u16ClusterId,
-                psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum,
+                attributeId,
                 psEvent->uMessage.sIndividualAttributeResponse.eAttributeStatus);
 }
 
 void vDumpZclWriteAttributeRequest(tsZCL_CallBackEvent *psEvent)
 {
-    DBG_vPrintf(TRUE, "ZCL Write Attribute: Cluster %04x Attrib %04x\n",
-            psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
-            psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
+    DBG_vPrintf(TRUE, "ZCL Write Attribute: EP=%d Cluster=%04x Attr=%04x\n",
+                psEvent->u8EndPoint,
+                psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum,
+                psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum);
 }
 
 void vDumpAttributeReportingConfigureRequest(tsZCL_CallBackEvent *psEvent)
