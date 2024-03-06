@@ -6,10 +6,10 @@ LEDPair::LEDPair()
 
 }
 
-void LEDPair::init(uint8 redTimer, uint8 blueTimer)
+void LEDPair::init(uint32 redPinMaskOrTimer, uint32 bluePinMaskOrTimer)
 {
-    red.init(redTimer);
-    blue.init(blueTimer);
+    red.init(redPinMaskOrTimer);
+    blue.init(bluePinMaskOrTimer);
 }
 
 LEDHandler & LEDPair::active()

@@ -171,7 +171,7 @@ PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
             DBG_vPrintf(TRUE, "Matched BTN1_PRESS\n");
         }
 
-#ifdef SWITCH2_BTN_MASK
+#ifdef SWITCH2_BTN_PIN
         if(debugInput.matchCommand("BTN2_PRESS"))
         {
             ButtonsTask::getInstance()->setButtonsOverride(SWITCH2_BTN_MASK);
@@ -243,9 +243,9 @@ extern "C" PUBLIC void vAppMain(void)
     LEDTask::getInstance()->start();
 
     // Initialize the heartbeat LED (if there is one)
-#ifdef HEARTBEAT_LED_PIN
+#ifdef HEARTBEAT_LED_MASK
     BlinkTask blinkTask;
-    blinkTask.init(HEARTBEAT_LED_PIN);
+    blinkTask.init(HEARTBEAT_LED_MASK);
 #endif
 
     // Set up a status callback
@@ -261,7 +261,7 @@ extern "C" PUBLIC void vAppMain(void)
     switch1.setConfiguration(SWITCH1_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(SWITCH1_ENDPOINT, &switch1);
 
-#ifdef SWITCH2_BTN_MASK
+#ifdef SWITCH2_BTN_PIN
     SwitchEndpoint switch2;
     switch2.setConfiguration(SWITCH2_BTN_MASK);
     EndpointManager::getInstance()->registerEndpoint(SWITCH2_ENDPOINT, &switch2);

@@ -16,9 +16,9 @@ BlinkTask::BlinkTask()
 {
 }
 
-void BlinkTask::init(uint8 pin)
+void BlinkTask::init(uint32 mask)
 {
-    ledPin.init(pin);
+    ledPin.init(mask);
 
     PeriodicTask::init(SLOW_BLINK_PERIOD);
     startTimer(1000);

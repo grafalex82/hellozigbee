@@ -18,9 +18,9 @@ public:
         pinMask = 0;
     }
 
-    void init(uint8 pin, bool output)
+    void init(uint32 mask, bool output)
     {
-        pinMask = 1UL << pin;
+        pinMask = mask;
 
         if(output)
             vAHI_DioSetDirection(0, pinMask);
@@ -37,9 +37,9 @@ public:
 class GPIOOutput : public GPIOPin
 {
 public:
-    void init(uint8 pin)
+    void init(uint32 mask)
     {
-        GPIOPin::init(pin, true);
+        GPIOPin::init(mask, true);
     }
 
     void on()
@@ -70,9 +70,9 @@ public:
 class GPIOInput : public GPIOPin
 {
 public:
-    void init(uint8 pin, bool pullUp)
+    void init(uint32 mask, bool pullUp)
     {
-        GPIOPin::init(pin, false);
+        GPIOPin::init(mask, false);
         vAHI_DioSetPullup(pullUp ? pinMask : 0, pullUp ? 0 : pinMask);
     }
 

@@ -15,7 +15,7 @@ class BlinkTask : public PeriodicTask
 
 public:
     BlinkTask();
-    void init(uint8 pin);
+    void init(uint32 mask);
 
     void setBlinkMode(bool fast);
 

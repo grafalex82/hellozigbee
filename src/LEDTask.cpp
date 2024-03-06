@@ -14,9 +14,9 @@ LEDTask::LEDTask()
 {
     PeriodicTask::init(50);
 
-    ch1.init(LED1_RED_PIN, LED1_BLUE_PIN);
+    ch1.init(LED1_RED_MASK_OR_TIMER, LED1_BLUE_MASK_OR_TIMER);
 #ifdef LED2_RED_PIN
-    ch2.init(LED2_RED_PIN, LED2_BLUE_PIN);
+    ch2.init(LED2_RED_MASK_OR_TIMER, LED2_BLUE_MASK_OR_TIMER);
 #endif
 }
 

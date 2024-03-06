@@ -13,7 +13,7 @@ class LEDPair
 
 public:
     LEDPair();
-    void init(uint8 redTimer, uint8 blueTimer);
+    void init(uint32 redPinMaskOrTimer, uint32 bluePinMaskOrTimer);
 
     void update();
 

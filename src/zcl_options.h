@@ -106,17 +106,18 @@
     #define CLD_BAS_MODEL_ID_SIZE       24
 
     #define HEARTBEAT_LED_PIN           (4)
+    #define HEARTBEAT_LED_MASK          (1UL << HEARTBEAT_LED_PIN)
 
-    #define SWITCH1_BTN_BIT             (1)
-    #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_BIT)
-    #define SWITCH2_BTN_BIT             (2)
-    #define SWITCH2_BTN_MASK            (1UL << SWITCH2_BTN_BIT)
+    #define SWITCH1_BTN_PIN             (1)
+    #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_PIN)
+    #define SWITCH2_BTN_PIN             (2)
+    #define SWITCH2_BTN_MASK            (1UL << SWITCH2_BTN_PIN)
 
     #define SUPPORTS_PWM_LED
-    #define LED1_RED_PIN                (E_AHI_TIMER_3)
-    #define LED1_BLUE_PIN               (E_AHI_TIMER_4)
-    #define LED2_RED_PIN                (E_AHI_TIMER_1)
-    #define LED2_BLUE_PIN               (E_AHI_TIMER_2)
+    #define LED1_RED_MASK_OR_TIMER      (E_AHI_TIMER_3)
+    #define LED1_BLUE_MASK_OR_TIMER     (E_AHI_TIMER_4)
+    #define LED2_RED_MASK_OR_TIMER      (E_AHI_TIMER_1)
+    #define LED2_BLUE_MASK_OR_TIMER     (E_AHI_TIMER_2)
 
     #define BASIC_ENDPOINT              (EBYTE_E75_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (EBYTE_E75_SWITCH1_ENDPOINT)
@@ -128,14 +129,19 @@
     #define CLD_BAS_MODEL_ID_STR        "hello.zigbee.QBKG11LM"
     #define CLD_BAS_MODEL_ID_SIZE       21
 
-    #define HEARTBEAT_LED_PIN           (19)
+    //#define HEARTBEAT_LED_PIN           (X)  // No spare pins for the heartbeat LED
+    //#define HEARTBEAT_LED_MASK          (1UL << HEARTBEAT_LED_PIN)
 
-    #define SWITCH1_BTN_BIT             (10)
-    #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_BIT)
+    #define SWITCH1_BTN_PIN             (10)
+    #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_PIN)
 
     //#define SUPPORTS_PWM_LED          // LEDs on the QBKG11LM are connected to non-PWM pins
-    #define LED1_RED_PIN                (11)
-    #define LED1_BLUE_PIN               (4)
+    #define LED1_RED_PIN_1              (19)    // The QBKG11LM has 2 pairs of LEDs, but they are used synchronously
+    #define LED1_RED_PIN_2              (11)
+    #define LED1_RED_MASK_OR_TIMER      (1UL << LED1_RED_PIN_1) | (1UL << LED1_RED_PIN_2)
+    #define LED1_BLUE_PIN_1             (5)
+    #define LED1_BLUE_PIN_2             (4)
+    #define LED1_BLUE_MASK_OR_TIMER     (1UL << LED1_BLUE_PIN_1) | (1UL << LED1_BLUE_PIN_2)
 
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
@@ -145,18 +151,23 @@
     #define CLD_BAS_MODEL_ID_STR        "hello.zigbee.QBKG12LM"
     #define CLD_BAS_MODEL_ID_SIZE       21
 
-    //#define HEARTBEAT_LED_PIN           (19)
+    //#define HEARTBEAT_LED_PIN           (X)  // No spare pins for the heartbeat LED
+    //#define HEARTBEAT_LED_MASK          (1UL << HEARTBEAT_LED_PIN)
 
-    #define SWITCH1_BTN_BIT             (18)
-    #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_BIT)
-    #define SWITCH2_BTN_BIT             (10)
-    #define SWITCH2_BTN_MASK            (1UL << SWITCH2_BTN_BIT)
+    #define SWITCH1_BTN_PIN             (18)
+    #define SWITCH1_BTN_MASK            (1UL << SWITCH1_BTN_PIN)
+    #define SWITCH2_BTN_PIN             (10)
+    #define SWITCH2_BTN_MASK            (1UL << SWITCH2_BTN_PIN)
 
     //#define SUPPORTS_PWM_LED          // LEDs on the QBKG12LM are connected to non-PWM pins
     #define LED1_RED_PIN                (19)
+    #define LED1_RED_MASK_OR_TIMER      (1UL << LED1_RED_PIN)
     #define LED1_BLUE_PIN               (5)
+    #define LED1_BLUE_MASK_OR_TIMER     (1UL << LED1_BLUE_PIN)
     #define LED2_RED_PIN                (11)
+    #define LED2_RED_MASK_OR_TIMER      (1UL << LED2_RED_PIN)
     #define LED2_BLUE_PIN               (4)
+    #define LED2_BLUE_MASK_OR_TIMER     (1UL << LED2_BLUE_PIN)
 
     #define BASIC_ENDPOINT              (QBKG12LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG12LM_SWITCH1_ENDPOINT)

@@ -165,9 +165,9 @@ LEDHandler::LEDHandler()
 
 }
 
-void LEDHandler::init(uint8 pinOrTimer)
+void LEDHandler::init(uint32 pinMaskOrTimer)
 {
-    pin.init(pinOrTimer);
+    pin.init(pinMaskOrTimer);
     idleLevel = 0;
     curLevel = 0;
     targetLevel = 0;
