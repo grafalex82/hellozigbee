@@ -256,7 +256,7 @@ function genSwitchEndpoint(epName, enableInterlock) {
     // Add other switch settings
     addSwitchSettings(sw);
 
-    if(enableInterlock)
+    if(enableInterlock) {
         // Add the interlock mode selector (applicable only for double-gang switch endpoints)
         // const interlock_mode_description = `None - Switch endpoints work independently.
         // Mutual Exclusion - two endpoints cannot be ON at the same time,
