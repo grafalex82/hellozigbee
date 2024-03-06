@@ -2,6 +2,10 @@ import pytest
 
 from smartswitch import *
 
+# Interlock feature is not available on one-button devices. Skip all tests in this file
+pytestmark = pytest.mark.skip_on_one_button_devices
+
+
 def test_independent(switch_pair):
     switch1 = switch_pair[0]
     switch2 = switch_pair[1]

@@ -240,7 +240,7 @@ function addSwitchSettings(sw) {
     return sw;
 }
 
-function genSwitchEndpoint(epName) {
+function genSwitchEndpoint(epName, enableInterlock) {
     // Create composite section for switch settings
     let sw = e.composite(epName + " Button", epName, ea.ALL);
     sw.withDescription('Settings for the ' + epName + ' button');
@@ -256,11 +256,13 @@ function genSwitchEndpoint(epName) {
     // Add other switch settings
     addSwitchSettings(sw);
 
-    // Add the interlock mode selector (applicable only for switch endpoints that allow server mode)
-    // const interlock_mode_description = `None - Switch endpoints work independently.
-    // Mutual Exclusion - two endpoints cannot be ON at the same time,
-    // Opposite - two endpoints always have state opposite to each other.`;
-    sw.withFeature(e.enum('interlock_mode', ea.ALL, interlockModeValues));
+    if(enableInterlock)
+        // Add the interlock mode selector (applicable only for double-gang switch endpoints)
+        // const interlock_mode_description = `None - Switch endpoints work independently.
+        // Mutual Exclusion - two endpoints cannot be ON at the same time,
+        // Opposite - two endpoints always have state opposite to each other.`;
+        sw.withFeature(e.enum('interlock_mode', ea.ALL, interlockModeValues));
+    }
 
     // Make sure whole created block acts as a group of parameters, rather than a single composite object
     sw.withProperty('').withEndpoint(epName);
@@ -365,8 +367,8 @@ const definitions = [
         description: 'Hello Zigbee Switch based on E75-2G4M10S module',
         exposes: [
             e.action(genSwitchActions(["left", "right", "both"])),
-            genSwitchEndpoint("left"),
-            genSwitchEndpoint("right"),
+            genSwitchEndpoint("left", true),
+            genSwitchEndpoint("right", true),
             genBothButtonsEndpoint("both"),
             ...getGenericSettings()
         ],
@@ -386,7 +388,7 @@ const definitions = [
         description: 'Hello Zigbee Switch firmware for Aqara QBKG11LM',
         exposes: [
             e.action(genSwitchActions(["button"])),
-            genSwitchEndpoint("button"),
+            genSwitchEndpoint("button", false),
             ...getGenericSettings()
         ],
         endpoint: (device) => {
@@ -403,8 +405,8 @@ const definitions = [
         description: 'Hello Zigbee Switch firmware for Aqara QBKG12LM',
         exposes: [
             e.action(genSwitchActions(["left", "right", "both"])),
-            genSwitchEndpoint("left"),
-            genSwitchEndpoint("right"),
+            genSwitchEndpoint("left", true),
+            genSwitchEndpoint("right", true),
             genBothButtonsEndpoint("both"),
             ...getGenericSettings()
         ],

@@ -76,21 +76,34 @@ def group(zigbee, bridge):
 # List of smart switch channels (endpoint number and z2m name)
 def server_channels(target_board):
     if target_board == "E75-2G4M10S" or target_board == "QBKG12LM":
-        return [(2, "left"), (3, "right")]
+        return [
+            {"id": 2, "name": "left", "allowInterlock": True}, 
+            {"id": 3, "name": "right", "allowInterlock": True}
+        ]
     if target_board == "QBKG11LM":
-        return [(2, "button")]
+        return [{"id": 2, "name": "button", "allowInterlock": False}]
 
 
 def client_channels(target_board):
     if target_board == "E75-2G4M10S" or target_board == "QBKG12LM":
-        return [(2, "left"), (3, "right"), (4, "both")]
+        return [
+            {"id": 2, "name": "left"}, 
+            {"id": 3, "name": "right"}, 
+            {"id": 4, "name": "both"}
+        ]
     if target_board == "QBKG11LM":
-        return [(2, "button")]
+        return [{"id": 2, "name": "button"}]
+
+
+def is_one_button_device(target_board):
+    return target_board == "QBKG11LM"
 
 
 def both_channel(target_board):
+    assert not is_one_button_device(target_board
+                                    )
     if target_board == "E75-2G4M10S" or target_board == "QBKG12LM":
-        return (4, "both")
+        return {"id": 4, "name": "both"}
     return None
 
 
@@ -98,25 +111,36 @@ def both_channel(target_board):
 def pytest_generate_tests(metafunc):
     if "server_channel" in metafunc.fixturenames:
         target_board = metafunc.config.getini("target_board")
-        metafunc.parametrize("server_channel", server_channels(target_board), ids=lambda x: x[1])
+        metafunc.parametrize("server_channel", server_channels(target_board), ids=lambda x: x["name"])
     if "client_channel" in metafunc.fixturenames:
         target_board = metafunc.config.getini("target_board")
-        metafunc.parametrize("client_channel", client_channels(target_board), ids=lambda x: x[1])
+        metafunc.parametrize("client_channel", client_channels(target_board), ids=lambda x: x["name"])
+
+
+# Skip tests that are not applicable to the current board
+def pytest_collection_modifyitems(config, items):
+    target_board = config.getini("target_board")
+    for item in items:
+        if "skip_on_one_button_devices" in item.keywords and is_one_button_device(target_board):
+            item.add_marker(pytest.mark.skip(reason="Not supported on one-button devices"))
 
 
 # sswitch stands a Switch object in a server mode, interlock mode is off
 @pytest.fixture(scope = 'function')
 def sswitch(device, zigbee, server_channel, device_name):
-    switch = SmartSwitch(device, zigbee, server_channel[0], server_channel[1], device_name)
+    switch = SmartSwitch(device, zigbee, server_channel["id"], server_channel["name"], device_name)
     switch.set_attribute('operation_mode', 'server')
-    switch.set_attribute('interlock_mode', 'none')
-    switch.wait_zigbee_attribute_change('interlock_mode') == 'none' # Setting `interlock_mode` attribute reads also buddy endpoint
+
+    if server_channel["allowInterlock"]:
+        switch.set_attribute('interlock_mode', 'none')
+        switch.wait_zigbee_attribute_change('interlock_mode') == 'none' # Setting `interlock_mode` attribute reads also buddy endpoint
+
     return switch
 
 # cswitch stands a Switch object in a client mode
 @pytest.fixture(scope = 'function')
 def cswitch(device, zigbee, client_channel, device_name):
-    switch = SmartSwitch(device, zigbee, client_channel[0], client_channel[1], device_name)
+    switch = SmartSwitch(device, zigbee, client_channel["id"], client_channel["name"], device_name)
     switch.set_attribute('operation_mode', 'client')
     return switch
 
@@ -126,7 +150,7 @@ def bswitch(device, zigbee, device_name):
     ch = both_channel(device_name)
     assert ch != None
 
-    switch = SmartSwitch(device, zigbee, ch[0], ch[1], device_name)
+    switch = SmartSwitch(device, zigbee, ch["id"], ch["name"], device_name)
     return switch
 
 
@@ -134,7 +158,7 @@ def bswitch(device, zigbee, device_name):
 @pytest.fixture(scope = 'function')
 def switch_pair(device, zigbee, server_channel, device_name, target_board):
     # Create a switch
-    switch1 = SmartSwitch(device, zigbee, server_channel[0], server_channel[1], device_name)
+    switch1 = SmartSwitch(device, zigbee, server_channel["id"], server_channel["name"], device_name)
     switch1.set_attribute('operation_mode', 'server')
 
     # Search for another switch, not the same as one requested
@@ -144,7 +168,7 @@ def switch_pair(device, zigbee, server_channel, device_name, target_board):
             another_switch = button
 
     # Create the requested switch
-    switch2 = SmartSwitch(device, zigbee, another_switch[0], another_switch[1], device_name)
+    switch2 = SmartSwitch(device, zigbee, another_switch["id"], another_switch["name"], device_name)
     switch2.set_attribute('operation_mode', 'server')
 
     return (switch1, switch2)

@@ -27,6 +27,7 @@ def test_attribute_operation_mode(sswitch, operation_mode):
     assert sswitch.get_attribute('operation_mode') == operation_mode
 
 
+@pytest.mark.skip_on_one_button_devices
 def test_attribute_client_only_operation_mode(bswitch):
     # Check that client only endpoint does not allow setting server mode
     bswitch.set_incorrect_attribute('operation_mode', 'server')
