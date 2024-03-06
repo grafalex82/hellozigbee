@@ -13,6 +13,7 @@ def pytest_addoption(parser):
     parser.addini('mqtt_port',          'MQTT server port')
     parser.addini('device_name',        'Name of the device in zigbee2mqtt')
     parser.addini('base_topic',         'Base MQTT topic of the zigbee2mqtt instance')
+    parser.addini('target_board',       'Name of the target board (options: E75-2G4M10S, QBKG11LM, QBKG12LM)')
 
 
 @pytest.fixture(scope="session")
@@ -46,6 +47,13 @@ def bridge(zigbee, pytestconfig):
     yield bridge
 
 
+# Ensure we are running tests for the proper board
+@pytest.fixture(scope="session", autouse=True)
+def target_board(pytestconfig, device_name, bridge):
+    assert bridge.get_device_model(device_name) == pytestconfig.getini('target_board')
+    yield pytestconfig.getini('target_board')
+
+
 # A fixture that creates a test_group, and cleans it up after all tests completed
 @pytest.fixture(scope="session")
 def group(zigbee, bridge):
@@ -66,53 +74,77 @@ def group(zigbee, bridge):
 
 
 # List of smart switch channels (endpoint number and z2m name)
-button_channels = [(2, "left"), (3, "right")]
+def server_channels(target_board):
+    if target_board == "E75-2G4M10S" or target_board == "QBKG12LM":
+        return [(2, "left"), (3, "right")]
+    if target_board == "QBKG11LM":
+        return [(2, "button")]
 
-# Make each test that uses sswitch fixture to run twice for both buttons. 
-# sswitch stands a Switch object in a server mode
-# Using the ids parameter the button name will be displayed as a test parameter
-@pytest.fixture(scope = 'function', params = button_channels, ids=lambda x: x[1])
-def sswitch(device, zigbee, request, pytestconfig):
-    switch = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+
+def client_channels(target_board):
+    if target_board == "E75-2G4M10S" or target_board == "QBKG12LM":
+        return [(2, "left"), (3, "right"), (4, "both")]
+    if target_board == "QBKG11LM":
+        return [(2, "button")]
+
+
+def both_channel(target_board):
+    if target_board == "E75-2G4M10S" or target_board == "QBKG12LM":
+        return (4, "both")
+    return None
+
+
+# Make each test or fixture parameterized with server or client channel list
+def pytest_generate_tests(metafunc):
+    if "server_channel" in metafunc.fixturenames:
+        target_board = metafunc.config.getini("target_board")
+        metafunc.parametrize("server_channel", server_channels(target_board), ids=lambda x: x[1])
+    if "client_channel" in metafunc.fixturenames:
+        target_board = metafunc.config.getini("target_board")
+        metafunc.parametrize("client_channel", client_channels(target_board), ids=lambda x: x[1])
+
+
+# sswitch stands a Switch object in a server mode, interlock mode is off
+@pytest.fixture(scope = 'function')
+def sswitch(device, zigbee, server_channel, device_name):
+    switch = SmartSwitch(device, zigbee, server_channel[0], server_channel[1], device_name)
     switch.set_attribute('operation_mode', 'server')
     switch.set_attribute('interlock_mode', 'none')
     switch.wait_zigbee_attribute_change('interlock_mode') == 'none' # Setting `interlock_mode` attribute reads also buddy endpoint
     return switch
 
-
-# List of logical client switch channels (endpoint number and z2m name)
-client_channels = [(2, "left"), (3, "right"), (4, "both")]
-
-# Make each test that uses cswitch fixture to run for all logical channels (buttons + virtual channels)
 # cswitch stands a Switch object in a client mode
-# Using the ids parameter the button name will be displayed as a test parameter
-@pytest.fixture(scope = 'function', params = client_channels, ids=lambda x: x[1])
-def cswitch(device, zigbee, request, pytestconfig):
-    switch = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+@pytest.fixture(scope = 'function')
+def cswitch(device, zigbee, client_channel, device_name):
+    switch = SmartSwitch(device, zigbee, client_channel[0], client_channel[1], device_name)
     switch.set_attribute('operation_mode', 'client')
     return switch
 
 # A fixture that creates SmartSwitch object for both buttons endpoint
 @pytest.fixture(scope = 'function')
-def bswitch(device, zigbee, pytestconfig):
-    switch = SmartSwitch(device, zigbee, 4, 'both', pytestconfig.getini('device_name'))
+def bswitch(device, zigbee, device_name):
+    ch = both_channel(device_name)
+    assert ch != None
+
+    switch = SmartSwitch(device, zigbee, ch[0], ch[1], device_name)
     return switch
 
+
 # Some tests needs to operate with two switch endpoints simultaneoulsy
-@pytest.fixture(scope = 'function', params = button_channels, ids=lambda x: x[1])
-def switch_pair(device, zigbee, request, pytestconfig):
+@pytest.fixture(scope = 'function')
+def switch_pair(device, zigbee, server_channel, device_name, target_board):
     # Create a switch
-    switch1 = SmartSwitch(device, zigbee, request.param[0], request.param[1], pytestconfig.getini('device_name'))
+    switch1 = SmartSwitch(device, zigbee, server_channel[0], server_channel[1], device_name)
     switch1.set_attribute('operation_mode', 'server')
 
     # Search for another switch, not the same as one requested
-    another_switch_name = None
-    for button in button_channels:
-        if button != request.param:
-            another_switch_name = button
+    another_switch = None
+    for button in server_channels(target_board):
+        if button != server_channel:
+            another_switch = button
 
     # Create the requested switch
-    switch2 = SmartSwitch(device, zigbee, another_switch_name[0], another_switch_name[1], pytestconfig.getini('device_name'))
+    switch2 = SmartSwitch(device, zigbee, another_switch[0], another_switch[1], device_name)
     switch2.set_attribute('operation_mode', 'server')
 
     return (switch1, switch2)

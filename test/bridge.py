@@ -79,6 +79,18 @@ class Bridge:
         return bindings
     
 
+    def get_device_model(self, device_name):
+        # Iterate on the list of all devices, look for the requested device
+        info = self.zigbee.get_retained_topic(self.topic + '/devices')
+        for device in info:
+            if device['friendly_name'] != device_name:
+                continue
+
+            # All devices for this project must identify itself as hello.zigbee.<board_name>
+            return device['model_id'].replace("hello.zigbee.", "")
+
+
+
     def get_groups(self):
         return self.zigbee.get_retained_topic(self.topic + '/groups')
 
