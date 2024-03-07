@@ -7,6 +7,11 @@ extern "C"
     #include "string.h"
 }
 
+// Pre-configured Link Key (Use one that match Xiaomi Aqara devices - ZigbeeAlliance09)
+uint8 s_au8LnkKeyArray[16] __attribute__ ((section (".ro_se_lnkKey")))
+= { 0x5A, 0x69, 0x67, 0x42, 0x65, 0x65, 0x41, 0x6C, 0x6C, 0x69, 0x61, 0x6E, 0x63, 0x65, 0x30, 0x39};
+
+
 void resetPersistedOTAData(tsOTA_PersistedData * persistedData)
 {
     memset(persistedData, 0, sizeof(tsOTA_PersistedData));
