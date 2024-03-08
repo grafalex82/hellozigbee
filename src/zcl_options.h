@@ -92,8 +92,8 @@
 #define CLD_BAS_HARDWARE_VERSION                            (1)
 #define CLD_BAS_MANUF_NAME_STR                              "DIY"
 #define CLD_BAS_MANUF_NAME_SIZE                             3
-#define CLD_BAS_DATE_STR                                    "20210331"
-#define CLD_BAS_DATE_SIZE                                   8
+#define CLD_BAS_DATE_STR                                    BUILD_DATE
+#define CLD_BAS_DATE_SIZE                                   BUILD_DATE_LEN
 #define CLD_BAS_POWER_SOURCE                                E_CLD_BAS_PS_BATTERY
 #define CLD_BAS_SW_BUILD_STR                                "v0.1"
 #define CLD_BAS_SW_BUILD_SIZE                               4

@@ -4,6 +4,9 @@
 add_definitions(
         -DTARGET_BOARD_${BOARD}
 
+        -DBUILD_DATE="${BUILD_DATE}"
+        -DBUILD_DATE_LEN=${BUILD_DATE_LEN}
+
         -DOTA_INTERNAL_STORAGE
 #        -DTRACE_ZCL=TRUE
 #        -DTRACE_OTA_DEBUG=TRUE
