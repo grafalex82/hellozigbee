@@ -42,6 +42,10 @@ set_build_param(FIRMWARE_STRING "DR1175r1v1UNENCRYPTED00000JN5169")
 string(TIMESTAMP TODAY "%Y-%m-%d")
 set_build_param(BUILD_DATE "${TODAY}")
 string(LENGTH BUILD_DATE BUILD_DATE_LEN)
+set_build_param(VERSION_NUMBER "1.0")
+set(VERSION_STR "${VERSION_NUMBER}.${BUILD_NUMBER}")
+string(LENGTH "${VERSION_STR}" VERSION_STR_LEN)
+
 
 #dump_compiler_settings()
 

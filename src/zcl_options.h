@@ -95,8 +95,8 @@
 #define CLD_BAS_DATE_STR                                    BUILD_DATE
 #define CLD_BAS_DATE_SIZE                                   BUILD_DATE_LEN
 #define CLD_BAS_POWER_SOURCE                                E_CLD_BAS_PS_BATTERY
-#define CLD_BAS_SW_BUILD_STR                                "v0.1"
-#define CLD_BAS_SW_BUILD_SIZE                               4
+#define CLD_BAS_SW_BUILD_STR                                VERSION_STR
+#define CLD_BAS_SW_BUILD_SIZE                               VERSION_STR_LEN
 #define CLD_BAS_DEVICE_CLASS                                (0)
 
 #define ALT_PIN_TIMER                                       (0x80)
