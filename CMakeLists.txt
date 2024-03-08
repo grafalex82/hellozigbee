@@ -28,6 +28,18 @@ if(BOARD_INDEX EQUAL -1)
     message(FATAL_ERROR "Unsupported BOARD specified. Supported options are: ${SUPPORTED_BOARDS}")
 endif()
 
+
+# Function that checks if a variable is provided, otherwise it will be set to a default value
+function(set_build_param VAR_NAME DEFAULT_VALUE)
+    if(NOT DEFINED ${VAR_NAME})
+        set(${VAR_NAME} ${DEFAULT_VALUE} CACHE STRING "Default value for ${VAR_NAME}")
+    endif()
+endfunction()
+# Set various build parameters
+set_build_param(BUILD_NUMBER "1")
+set_build_param(MANUFACTURER_ID "0x115F")
+set_build_param(FIRMWARE_FILE_TYPE 257)
+set_build_param(FIRMWARE_STRING "DR1175r1v1UNENCRYPTED00000JN5169")
 #dump_compiler_settings()
 
 add_subdirectory(src)

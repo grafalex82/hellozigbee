@@ -156,7 +156,7 @@ function(add_hex_bin_targets TARGET)
     add_custom_target("${TARGET}.bin"
         DEPENDS ${TARGET}
         COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -j .ro_mac_address -j .ro_ota_header -j .ro_se_lnkKey -j .pad -S -O binary ${FILENAME} ${FILENAME}.tmp.bin
-        COMMAND ${JET} -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n 1 -t 1 -u 0x1037 -j "HelloZigbee2021                 " -o ${FILENAME}.bin
+        COMMAND ${JET} -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n ${BUILD_NUMBER} -t ${FIRMWARE_FILE_TYPE} -u ${MANUFACTURER_ID} -j ${FIRMWARE_STRING} -o ${FILENAME}.bin
     )
 endfunction()
 
@@ -165,9 +165,7 @@ function(add_ota_bin_target TARGET)
 
     add_custom_target(${TARGET}.ota
         DEPENDS ${TARGET}.bin
-        # HACK/TODO: setting file version to 2 (-n 2), so that OTA image is always newer than current version
-        COMMAND ${JET} -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n 2 -t 1 -u 0x1037 -j "HelloZigbee2021                 " -o ${FILENAME}.bin
-        COMMAND ${JET} -m otamerge --ota -v JN516x -n 2 -t 1 -u 0x1037 -p 1 -c ${FILENAME}.bin -o ${FILENAME}.ota
+        COMMAND ${JET} -m otamerge --ota -v JN516x -n ${BUILD_NUMBER} -t ${FIRMWARE_FILE_TYPE} -u ${MANUFACTURER_ID} -p 1 -c ${FILENAME}.bin -o ${FILENAME}.ota
     )
 endfunction()
 
