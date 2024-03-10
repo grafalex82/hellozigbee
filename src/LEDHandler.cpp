@@ -80,13 +80,13 @@ const LEDProgramEntry NETWORK_CONNECT2_EFFECT[] =
 const LEDProgramEntry BLINK_EFFECT[] = 
 {
     {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Start with black
-    {LED_CMD_PAUSE, 10, 0},              // Stay there for a 500 ms
+    {LED_CMD_PAUSE, 10, 0},             // Stay there for a 500 ms
 
     {LED_CMD_MOVE_TO_LEVEL, 255, 255},  // Blink fast to maximum for 0.5s, and then back to 0
     {LED_CMD_PAUSE, 10, 0},             
     {LED_CMD_MOVE_TO_LEVEL, 0, 255},
 
-    {LED_CMD_PAUSE, 10, 0},              // Stay for another 500 ms
+    {LED_CMD_PAUSE, 10, 0},             // Stay for another 500 ms
 
     {LED_CMD_STOP, 0, 0},
 };
@@ -98,7 +98,7 @@ const LEDProgramEntry BREATHE_EFFECT[] =
     {LED_CMD_MOVE_TO_LEVEL, 0, 255},    // Turn off for 0.5s
     {LED_CMD_PAUSE, 10, 0},              
 
-    {LED_CMD_REPEAT, 4, 15},             // Jump 4 steps back, Repeat 15 times
+    {LED_CMD_REPEAT, 4, 15},            // Jump 4 steps back, Repeat 15 times
 
     {LED_CMD_STOP, 0, 0},
 };
@@ -207,7 +207,7 @@ void LEDHandler::setPWMLevel(uint8 level)
 
     pin.setLevel(level2pwm[level]);
 #else // SUPPORTS_PWM_LED
-    pin.setState(level == 0);   // 0 - ON, Non-0 - OFF
+    pin.setState(level == 0);   // 0 - OFF, Non-0 - ON
 #endif // SUPPORTS_PWM_LED
 }
 

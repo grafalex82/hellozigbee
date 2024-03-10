@@ -76,13 +76,17 @@ void LEDTask::triggerEffect(uint8 ep, uint8 effect)
 void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
 {
     const LEDProgramEntry * program1 = NULL;
+#ifdef LED2_RED_PIN
     const LEDProgramEntry * program2 = NULL;
+#endif
 
     // Network joining effect
     if(effect == LED_TASK_NETWORK_CONNECT_EFFECT)
     {
         program1 = NETWORK_CONNECT1_EFFECT;
+#ifdef LED2_RED_PIN
         program2 = NETWORK_CONNECT2_EFFECT;
+#endif
     }
 
     // Other effects TBD
