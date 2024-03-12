@@ -143,6 +143,11 @@
     #define LED1_BLUE_PIN_2             (4)
     #define LED1_BLUE_MASK_OR_TIMER     (1UL << LED1_BLUE_PIN_1) | (1UL << LED1_BLUE_PIN_2)
 
+    #define RELAY1_ON_PIN               (12)
+    #define RELAY1_ON_MASK              (1UL << RELAY1_ON_PIN)
+    #define RELAY1_OFF_PIN              (13)
+    #define RELAY1_OFF_MASK             (1UL << RELAY1_OFF_PIN)
+
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
     #define ZCL_NUMBER_OF_ENDPOINTS     (2)
@@ -168,6 +173,15 @@
     #define LED2_RED_MASK_OR_TIMER      (1UL << LED2_RED_PIN)
     #define LED2_BLUE_PIN               (4)
     #define LED2_BLUE_MASK_OR_TIMER     (1UL << LED2_BLUE_PIN)
+
+    #define RELAY1_ON_PIN               (17)
+    #define RELAY1_ON_MASK              (1UL << RELAY1_ON_PIN)
+    #define RELAY1_OFF_PIN              (16)
+    #define RELAY1_OFF_MASK             (1UL << RELAY1_OFF_PIN)
+    #define RELAY2_ON_PIN               (12)
+    #define RELAY2_ON_MASK              (1UL << RELAY2_ON_PIN)
+    #define RELAY2_OFF_PIN              (13)
+    #define RELAY2_OFF_MASK             (1UL << RELAY2_OFF_PIN)
 
     #define BASIC_ENDPOINT              (QBKG12LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG12LM_SWITCH1_ENDPOINT)

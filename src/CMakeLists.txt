@@ -184,6 +184,8 @@ set(SOURCES
         LEDTask.cpp
         LEDHandler.cpp
         LEDPair.cpp
+        RelayHandler.cpp
+        RelayTask.cpp
         ButtonHandler.cpp
         PollTask.cpp
         DumpFunctions.cpp

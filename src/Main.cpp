@@ -21,6 +21,7 @@ extern "C"
 #include "ZCLTimer.h"
 #include "LEDTask.h"
 #include "BlinkTask.h"
+#include "RelayTask.h"
 #include "DumpFunctions.h"
 
 
@@ -33,23 +34,24 @@ extern "C"
 }
 
 
-// 6 timers are:
+// 7 timers are:
 // - 1 in ButtonTask
 // - 1 in LEDTask
+// - 1 in RelayTask
 // - 1 in Heartbeat BlinkTask
 // - 1 in PollTask
 // - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
-ZTIMER_tsTimer timers[6 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[7 + BDB_ZTIMER_STORAGE];
 
 extern "C" void __cxa_pure_virtual(void) __attribute__((__noreturn__));
 extern "C" void __cxa_deleted_virtual(void) __attribute__((__noreturn__));
 
 void __cxa_pure_virtual(void)
 {
-  DBG_vPrintf(TRUE, "!!!!!!! Pure virtual function call.\n");
-  while (1)
-    ;
+    DBG_vPrintf(TRUE, "!!!!!!! Pure virtual function call.\n");
+    while (1)
+        ;
 }
 
 extern "C" PUBLIC void vISR_SystemController(void)
@@ -225,15 +227,13 @@ extern "C" PUBLIC void vAppMain(void)
     ZTIMER_eInit(timers, sizeof(timers) / sizeof(ZTIMER_tsTimer));
 
     // Init tasks
-    DBG_vPrintf(TRUE, "vAppMain(): init tasks...\n");
-    ButtonsTask::getInstance();
-
-    // Initialize periodic tasks
     DBG_vPrintf(TRUE, "vAppMain(): init periodic tasks...\n");
     ZCLTimer zclTimer;
     zclTimer.init();
     zclTimer.startTimer(1000);
+    ButtonsTask::getInstance();
     LEDTask::getInstance()->start();
+    RelayTask::getInstance();
 
     // Initialize the heartbeat LED (if there is one)
 #ifdef HEARTBEAT_LED_MASK
