@@ -26,7 +26,12 @@ public:
     {
         ZTIMER_eStop(timerHandle);
     }
+
+    bool isActive()
+    {
+        ZTIMER_teState state = ZTIMER_eGetState(timerHandle);
+        return state == E_ZTIMER_STATE_RUNNING;
+    }
 };
 
 #endif //TIMER_H
-

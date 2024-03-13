@@ -51,3 +51,7 @@ void RelayTask::timerCallback()
         stopTimer();
 }
 
+bool RelayTask::canSleep()
+{
+    return !isTimerActive();
+}

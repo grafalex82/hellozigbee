@@ -36,7 +36,11 @@ public:
     void triggerEffect(uint8 ep, uint8 effect);
     void triggerSpecialEffect(LEDTaskSpecialEffect effect);
 
+    bool canSleep();
+
 protected:
+    void activate();
+    void deactivate();
     virtual void timerCallback();    
 };
 

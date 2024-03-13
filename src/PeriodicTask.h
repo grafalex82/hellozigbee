@@ -36,6 +36,11 @@ public:
         timer.stop();
     }
 
+    bool isTimerActive()
+    {
+        return timer.isActive();
+    }
+
 protected:
     static void timerFunc(void * param)
     {

@@ -20,6 +20,7 @@ LEDTask::LEDTask()
 #endif
 
     stopEffect();
+    deactivate();
 }
 
 LEDTask * LEDTask::getInstance()
@@ -47,7 +48,7 @@ void LEDTask::setFixedLevel(uint8 ep, uint8 level)
         ch2.setFixedLevel(level);
 #endif
 
-    startTimer(50);
+    activate();
 }
 
 void LEDTask::triggerEffect(uint8 ep, uint8 effect)
@@ -70,7 +71,7 @@ void LEDTask::triggerEffect(uint8 ep, uint8 effect)
         ch2.startEffect(program);
 #endif
 
-    startTimer(50);
+    activate();
 }
 
 void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
@@ -98,7 +99,7 @@ void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
     ch2.startEffect(program2);
 #endif
 
-    startTimer(50);
+    activate();
 }
 
 void LEDTask::timerCallback()
@@ -110,5 +111,20 @@ void LEDTask::timerCallback()
 #endif
 
     if(!active)
-        stopTimer();
+        deactivate();
+}
+
+void LEDTask::activate()
+{
+    startTimer(50);
+}
+
+void LEDTask::deactivate()
+{
+    stopTimer();
+}
+
+bool LEDTask::canSleep()
+{
+    return !isTimerActive();
 }

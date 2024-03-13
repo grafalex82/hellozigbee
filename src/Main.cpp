@@ -88,7 +88,9 @@ PUBLIC void wakeCallBack(void)
 PRIVATE void APP_vTaskSwitch()
 {
     if(ButtonsTask::getInstance()->canSleep() &&
-       ZigbeeDevice::getInstance()->canSleep())
+       ZigbeeDevice::getInstance()->canSleep() &&
+       LEDTask::getInstance()->canSleep() &&
+       RelayTask::getInstance()->canSleep())
     {
         static pwrm_tsWakeTimerEvent wakeStruct;
         PWRM_teStatus status = PWRM_eScheduleActivity(&wakeStruct, 15 * 32000, wakeCallBack);

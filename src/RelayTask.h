@@ -16,6 +16,7 @@ public:
     static RelayTask * getInstance();
 
     void setState(uint8 ep, bool on);
+    bool canSleep();
 
 protected:
     virtual void timerCallback();    
