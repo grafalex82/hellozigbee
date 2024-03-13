@@ -146,8 +146,8 @@ def cswitch(device, zigbee, client_channel, device_name):
 
 # A fixture that creates SmartSwitch object for both buttons endpoint
 @pytest.fixture(scope = 'function')
-def bswitch(device, zigbee, device_name):
-    ch = both_channel(device_name)
+def bswitch(device, zigbee, device_name, target_board):
+    ch = both_channel(target_board)
     assert ch != None
 
     switch = SmartSwitch(device, zigbee, ch["id"], ch["name"], device_name)
