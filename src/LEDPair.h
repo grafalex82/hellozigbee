@@ -15,7 +15,7 @@ public:
     LEDPair();
     void init(uint32 redPinMaskOrTimer, uint32 bluePinMaskOrTimer);
 
-    void update();
+    bool update();
 
     void setFixedLevel(uint8 level, uint8 step = 10);
     void startEffect(const LEDProgramEntry * effect);

@@ -30,7 +30,6 @@ private:
 
 public:
     static LEDTask * getInstance();
-    void start();
 
     void stopEffect();
     void setFixedLevel(uint8 ep, uint8 level);

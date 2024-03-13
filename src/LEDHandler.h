@@ -66,7 +66,7 @@ class LEDHandler
 public:
     LEDHandler();
     void init(uint32 pinMaskOrTimer);    // Require pin mask for non-PWM mode, or timer ID for PWM
-    void update();
+    bool update();
 
     void setFixedLevel(uint8 level, uint8 step = 10);
     void startEffect(const LEDProgramEntry * effect);

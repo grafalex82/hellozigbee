@@ -232,7 +232,7 @@ extern "C" PUBLIC void vAppMain(void)
     zclTimer.init();
     zclTimer.startTimer(1000);
     ButtonsTask::getInstance();
-    LEDTask::getInstance()->start();
+    LEDTask::getInstance();
     RelayTask::getInstance();
 
     // Initialize the heartbeat LED (if there is one)

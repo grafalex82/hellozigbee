@@ -28,10 +28,11 @@ LEDHandler & LEDPair::inactive()
         return blue;
 }
 
-void LEDPair::update()
+bool LEDPair::update()
 {
-    red.update();
-    blue.update();
+    bool active = red.update();
+    active |= blue.update();
+    return active;
 }
 
 void LEDPair::setFixedLevel(uint8 level, uint8 step)

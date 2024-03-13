@@ -18,18 +18,14 @@ LEDTask::LEDTask()
 #ifdef LED2_RED_MASK_OR_TIMER
     ch2.init(LED2_RED_MASK_OR_TIMER, LED2_BLUE_MASK_OR_TIMER);
 #endif
+
+    stopEffect();
 }
 
 LEDTask * LEDTask::getInstance()
 {
     static LEDTask instance;
     return &instance;
-}
-
-void LEDTask::start()
-{
-    stopEffect();
-    startTimer(50);
 }
 
 void LEDTask::stopEffect()
@@ -50,6 +46,8 @@ void LEDTask::setFixedLevel(uint8 ep, uint8 level)
     if(ep == SWITCH2_ENDPOINT)
         ch2.setFixedLevel(level);
 #endif
+
+    startTimer(50);
 }
 
 void LEDTask::triggerEffect(uint8 ep, uint8 effect)
@@ -71,6 +69,8 @@ void LEDTask::triggerEffect(uint8 ep, uint8 effect)
     if(ep == BASIC_ENDPOINT || ep == SWITCH2_ENDPOINT)
         ch2.startEffect(program);
 #endif
+
+    startTimer(50);
 }
 
 void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
@@ -97,13 +97,18 @@ void LEDTask::triggerSpecialEffect(LEDTaskSpecialEffect effect)
 #ifdef LED2_RED_MASK_OR_TIMER
     ch2.startEffect(program2);
 #endif
+
+    startTimer(50);
 }
 
 void LEDTask::timerCallback()
 {
-    ch1.update();
+    bool active = ch1.update();
 
-    ch2.update();
 #ifdef LED2_RED_MASK_OR_TIMER
+    active |= ch2.update();
 #endif
+
+    if(!active)
+        stopTimer();
 }

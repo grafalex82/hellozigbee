@@ -331,12 +331,14 @@ void LEDHandler::handleProgramCommand()
     }
 }
 
-void LEDHandler::update()
+bool LEDHandler::update()
 {
     handleStateMachine();
 
     if(handlerState == STATE_IDLE && programPtr != NULL)
         handleProgramCommand();
+
+    return handlerState != STATE_IDLE || programPtr != NULL;
 }
 
 void LEDHandler::setFixedLevel(uint8 level, uint8 step)
