@@ -24,7 +24,7 @@ void RelayHandler::setState(bool state)
     remainingTicks = PULSE_DURATION;
 }
 
-void RelayHandler::update()
+bool RelayHandler::update()
 {
     if(remainingTicks > 0)
     {
@@ -35,5 +35,7 @@ void RelayHandler::update()
             offPin.off();
         }
     }
+
+    return remainingTicks > 0;    
 }
 

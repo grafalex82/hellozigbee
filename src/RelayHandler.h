@@ -19,9 +19,7 @@ public:
     void init(uint32 onPinMask, uint32 offPinMask);
     void setState(bool state);
 
-    void update();
-
-    bool pulseInProgress() const {return remainingTicks > 0;}
+    bool update();
 };
 
 #endif // RELAY_HANDLER_H

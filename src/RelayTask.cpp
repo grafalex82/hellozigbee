@@ -41,12 +41,10 @@ void RelayTask::timerCallback()
     bool pulseInProgress = false;
 
 #ifdef RELAY1_ON_MASK
-    ch1.update();
-    pulseInProgress |= ch1.pulseInProgress();
+    pulseInProgress |= ch1.update();
 #endif
 #ifdef RELAY2_ON_MASK
-    ch2.update();
-    pulseInProgress |= ch2.pulseInProgress();
+    pulseInProgress |= ch2.update();
 #endif
 
     if(!pulseInProgress)
