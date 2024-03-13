@@ -21,7 +21,7 @@ class LEDTask : public PeriodicTask
 {
     LEDPair ch1;
 
-#ifdef LED2_RED_PIN
+#ifdef LED2_RED_MASK_OR_TIMER
     LEDPair ch2;
 #endif
 
