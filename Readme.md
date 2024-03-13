@@ -1,26 +1,45 @@
-# Hello NXP JN5169 ZigBee World
+# Hello NXP JN5169 ZigBee World Project
 
-This is an example of how to work with ZigBee stack using JN5169 microcontroller. 
+## Goals
 
-The example implements a smart switch with the following features:
-- Zigbee router device
-- 2 button channels, each of them offers
-	- Handling button according to selected mode
-	- LED that shows the current state of the switch. 
-	  - The LED may be decoupled from the button, so that button controls other device on the network, and the LED is controlled by an external device
-	- On/Off zigbee cluster to report state change, as well as handling toggle commands
-	- On/Off Configuraiton cluster to configure device behavior
-	- Multistate input cluster to report single/double/triple/long press actions
-	- Groups support in 2 ways:
-	  - Device button may control a group of light devices
-	  - Device LEDs can be a part of a group, and controlled externally
-- Binding support
-- Device identification
+This project has two main objectives:
+- delve into how Zigbee technology operates and share this knowledge [through a tutorial](doc/part0_plan.md), making it accessible for more people to engage with this technology
+- develop alternative firmware for the Xiaomi Aqara QBKG12LM Zigbee smart switch.
+
+The NXP JN5169 microcontroller was chosen for its use in Xiaomi devices manufactured between 2017 and 2021. NXP offers detailed documentation, SDK source codes, and numerous examples, facilitating the development of custom Zigbee solutions. However, the wealth of information provided by NXP can be overwhelming for newcomers to Zigbee technology. To address this, a step-by-step tutorial was created to simplify the learning process.
+
+The following devices are the target for this project:
+  - QBKG11LM and QBKG12LM switches with neutral line
+  - QBKG03LM and QBKG04LM switches without the neutral line (support pending)
+  - LLKZMK11LM double relay module (support pending)
+  - Possibly other Aqara devices
+  - Any switches and Zigbee solutions based on NXP JN5169 microcontroller
+
+## Features
+
+The original Xiaomi Aqara QBKG12LM smart switch provides a very limited functionality. It cannot bind to other devices, does not handle multiple clicks, cannot work as a group client, and lacks many features that other modern smart switches provide. Also, stability of the original firmware is not always good.
+
+The alternative firmware features are:
+- Zigbee router or end device
+- 1 or 2 button channels, each of them offers
+  - Button supports single, double, triple, and long presses (press and hold)
+  - Relay may be assigned to a certain button press type, or decoupled from the button
+  - Number of settings to fine tune the mode and behavior of the switch.
+  - Instant feedback on the button press
+  - Button interlock modes (not relevant for 1-button devices)
+  - Server mode: the device maintain its internal relays, and allow it to be controlled with the button, or externally from the network
+  - Client mode (device binding): the device buttons can be bound to other devices, and control their state
+  - Integration with On/Off type devices, as well as dimmable lights and curtains/shades
+- The following Zigbee clusters are supported:
+  - On/Off zigbee cluster to report state change, as well as handling toggle commands
+  - Extended On/Off Configuraiton Cluster to configure device behavior
+  - Multistate input cluster to report single/double/triple/long press actions
+  - Groups support in 2 ways:
+    - Device button may control a group of light devices
+    - Device LEDs can be a part of a group, and controlled externally
+  - Identify cluster that allows the device to identify itself among other similar devices
 - OTA firmware update
-
-There are 2 goals of the project:
-- build an alternate firmware for Xiaomi Aqara QBKG12LM Zigbee smart switch
-- learn how Zigbee works, and [describe this in a form of tutorial](doc/part0_plan.md), so that more people can join the technology
+- Zigbee2mqtt integration via external converter
 
 
 # Test board
