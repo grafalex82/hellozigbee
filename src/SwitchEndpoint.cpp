@@ -281,7 +281,7 @@ void SwitchEndpoint::doStateChange(bool state, bool sourcedFromInterlockBuddy)
     sOnOffServerCluster.bOnOff = state ? TRUE : FALSE;
 
     LEDTask::getInstance()->setFixedLevel(getEndpointId(), state ? 255 : 0);
-    RelayTask::getInstance()->setState(getEndpointId(), state != 0);
+    RelayTask::getInstance()->setState(getEndpointId(), state);
     reportState();
 
     // Let the buddy know about our state change
