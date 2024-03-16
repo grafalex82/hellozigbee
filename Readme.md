@@ -4,7 +4,7 @@
 
 This project has two main objectives:
 - delve into how Zigbee technology operates and share this knowledge [through a tutorial](doc/part0_plan.md), making it accessible for more people to engage with this technology
-- develop alternative firmware for the Xiaomi Aqara QBKG12LM Zigbee smart switch.
+- develop alternative firmware for the Xiaomi Aqara QBKG12LM Zigbee smart switch, and a few other Xiaomi devices.
 
 The NXP JN5169 microcontroller was chosen for its use in Xiaomi devices manufactured between 2017 and 2021. NXP offers detailed documentation, SDK source codes, and numerous examples, facilitating the development of custom Zigbee solutions. However, the wealth of information provided by NXP can be overwhelming for newcomers to Zigbee technology. To address this, a step-by-step tutorial was created to simplify the learning process.
 
@@ -27,26 +27,58 @@ The alternative firmware features are:
   - Number of settings to fine tune the mode and behavior of the switch.
   - Instant feedback on the button press
   - Button interlock modes (not relevant for 1-button devices)
+  - Both buttons pressed simultaneously can be assigned with additional actions.
   - Server mode: the device maintain its internal relays, and allow it to be controlled with the button, or externally from the network
   - Client mode (device binding): the device buttons can be bound to other devices, and control their state
-  - Integration with On/Off type devices, as well as dimmable lights and curtains/shades
+  - Controlling On/Off type devices, as well as dimmable lights and curtains/shades
 - The following Zigbee clusters are supported:
   - On/Off zigbee cluster to report state change, as well as handling toggle commands
   - Extended On/Off Configuraiton Cluster to configure device behavior
   - Multistate input cluster to report single/double/triple/long press actions
   - Groups support in 2 ways:
     - Device button may control a group of light devices
-    - Device LEDs can be a part of a group, and controlled externally
+    - Device LEDs/Relay can be a part of a group, and controlled externally
   - Identify cluster that allows the device to identify itself among other similar devices
 - OTA firmware update
 - Zigbee2mqtt integration via external converter
 
 
-# Test board
+# Target hardware
 
-Basically the code is almost independent of the hardware (assuming it is based on JN5169). As a development board a cheap EBYTE E75-2G4M10S module is used.
+The code in this project is designed to be modular, allowing it to run on various hardware platforms, assuming they are based on the JN5169 microcontroller. Here are some of the boards that the code is compatible with.
+
+## QBKG11LM and QBKG12LM switches
+
+The main focus of this project are the QBKG11LM and QBKG12LM switches (1-gang and 2-gang switches with a neutral line). Both models share the same PCB layout, differing only in the number of buttons and relays installed.
+
+The board schematics have been reverse engineered and are detailed [here](doc/part26_QBKG12LM_support.md). These devices are self-contained, featuring their own power supply, MCU, antenna circuits, buttons, LEDs, and relays. There's no need to modify any components of the mass-produced device for this project.
+
+The MCU board has several pads designed for connecting a flashing tool.
+
+![](doc/images/devboard2.jpg)
+
+The NXP JN5169 microcontroller can be programmed using a standard USB-UART adapter attached to these pads. To enter bootloader mode, the MISO line must be grounded during reset. An adapter like the shown below can be used for this purpose. The capacitor connected to the DTR pin can be skipped if you're only flashing the microcontroller and don't intend to conduct automated tests.
+
+![](doc/images/Schematics8.png)
+
+![](doc/images/devboard3.jpg)
+
+**Warning!!!** Do not connect USB-UART converter if the switch is connected to the mains power.
+
+Alternatively, the MCU board can be separated from the power board. In this case it can be used as a development board with no risk of high voltage injury.
+
+![](doc/images/devboard4.jpg)
+
+
+## Development board based on EBYTE E75-2G4M10S module
+
+To avoid risking damage to an expensive Xiaomi device, you can use a more affordable development board equipped with the EBYTE E75-2G4M10S module.
 
 ![Schematics](doc/images/Schematics3.png)
+
+This board features several LEDs and buttons, and supports programming and debugging through UART. It's suitable for learning Zigbee technology and developing most functionalities of a real device.
+
+![](doc/images/devboard5.jpg)
 
 # How to build
 
