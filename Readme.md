@@ -95,8 +95,14 @@ Build instructions:
 - `cd build`
 - `cmake -G "MinGW Makefiles" -DTOOLCHAIN_PREFIX=C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379 -DSDK_PREFIX=C:/NXP/bstudio_nxp/sdk/JN-SW-4170 ..`
 (Correct paths to the toolchain and sdk if needed)
-  - If your tools are installed at default locations, you can also use Cmake presets
-- `mingw32-make HelloZigbee.bin`
+  - If your tools are installed at default locations, you can also use Cmake presets: `cmake -G "MinGW Makefiles" --preset=default ..`
+- Useful targets:
+  - `mingw32-make HelloZigbee.bin` to build a binary that can be flashed to the device
+  - `mingw32-make HelloZigbee.flash` to build and immediately flash the binary
+  - `mingw32-make HelloZigbee.ota` to build a binary that can be used for OTA updates
+- Other userful CMake switches:
+  - `-DBOARD=QBKG12LM` to select target device (by default EBYTE E75-2G4M10S is selected)
+  - `-DBUILD_NUMBER=123` to set the build number (build number uploaded via OTA must be higher than the current firmware build number)
 
 Note: the instructions above are for Windows only. However, a few user reported they were able to run the build process on Linux and Mac platforms. Feel free to contribute.
 
@@ -114,18 +120,74 @@ or
 
 # Zigbee2mqtt integration
 
+## External Converter
+
 When joined the network, the zigbee2mqtt will list the device as unsupported. No features will be exposed. 
 
 To integrate the device follow these steps:
 - Put `zigbee2mqtt/myswitch.js` to zigbee2mqtt configuration folder (next to `configuration.yaml`)
 - In `configuration.yaml` add the following entity
 
-```
+```yaml
 external_converters:
   - myswitch.js
 ```
 
 After z2m restart the device features will be supported by zigbee2mqtt.
+
+## OTA Update
+
+The firmware supports [OTA update feature](doc/part25_ota_updates.md). 
+
+The OTA feature requires the firmware to be prepared in a special way, use the `HelloZigbee.ota` build target to prepare a firmware suitable for OTA update. Also, the firmware must be configured with the build number which is higher than current firmware build number, otherwise firmware update process will reject the new firmware (use `-DBUILD_NUMBER=xxx` cmake switch to set the build number).
+
+The built firmware shall be uploaded to the zigbee2mqtt data folder, next to the configuration.yaml. In order to let zigbee2mqtt know about available firmware, an [OTA index override file](https://www.zigbee2mqtt.io/guide/usage/ota_updates.html#local-ota-index-and-firmware-files) shall be created:
+
+```json
+[
+    {
+        "url": "HelloZigbee.ota",
+		"force": true
+    }
+]
+```
+
+Also add the path to this index file to the configuration.yaml:
+
+```yaml
+ota:
+    zigbee_ota_override_index_location: index.json
+```
+
+The device will be listed on the Zigbee2mqtt OTA page. Click on the `Check firmware update` will check the firmware availability, and offer to update the firmware. The `Update firmware` button will start the update process.
+
+## Switching between stock QBKG12LM firmware and HelloZigbee custom one
+
+Hello Zigbee firmware identifies itself in the same way as official Xiaomi Aqara firmwares do. Since first series of Xiaomi Aqara devices (including QBKG11LM and QBKG12LM) do not use firmware encryption and special protection, custom Hello Zigbee firmware can be uploaded to the mass produced device over the air.
+
+To update from stock firmware to Hello Zigbee one the following index override file shall be used (use `lumi.ctrl_ln2.aq1` for QBKG11LM):
+
+```json
+[
+    {
+        "modelId": "lumi.ctrl_ln2.aq1",
+        "url": "HelloZigbee.ota",
+        "force": true
+    }
+]
+```
+
+The build number of the new firmware shall be higher than one used in the stock firmware (the [latest official version](https://github.com/Koenkk/zigbee-OTA/blob/master/images/Lumi/20230202185209_OTA_lumi.ctrl_ln2.aq1_0.0.0_0095_20220725_0B0798.ota) build number is 95). 
+
+In order to switch back from Hello Zigbee firmware to the stock one, a similar procedure can be used.
+
+[
+    {
+        "modelId": "hello.zigbee.QBKG12LM",
+        "url": "https://github.com/Koenkk/zigbee-OTA/blob/master/images/Lumi/20230202185209_OTA_lumi.ctrl_ln2.aq1_0.0.0_0095_20220725_0B0798.ota",
+        "force": true
+    }
+]
 
 # How to use
 
@@ -193,11 +255,15 @@ The project functionality comes with a comprehensive set of automated tests, cov
 
 To run tests:
 - Install python and pytest
-- Register the switch in the zigbee2mqtt, name it `my_test_switch`
-- Edit `tests\pytest.ini` file, specify parameters applicable for your setup (COM port, zigbee2mqtt address, etc)
+- Register the switch in the zigbee2mqtt
+- Edit `tests\pytest.ini` file, specify parameters applicable for your setup (COM port, zigbee2mqtt address, device name, target board name, etc)
 - `cd tests`
 - `pytest`
 
+The `-o` pytest option can be used to override default pytest.ini settings:
+- `-o device_name=XXXXXX` to specify zigbee2mqtt device name
+- `-o target_board=QBKG12LM` to set the proper device type
+- `-o port=COM10` to set the COM port
 
 # Documentation
 
