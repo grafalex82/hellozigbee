@@ -59,7 +59,7 @@ The MCU board has several pads designed for connecting a flashing tool.
 
 The NXP JN5169 microcontroller can be programmed using a standard USB-UART adapter attached to these pads. To enter bootloader mode, the MISO line must be grounded during reset. An adapter like the shown below can be used for this purpose. The capacitor connected to the DTR pin can be skipped if you're only flashing the microcontroller and don't intend to conduct automated tests.
 
-![](doc/images/Schematics8.png)
+![](doc/images/schematics8.png)
 
 ![](doc/images/devboard3.jpg)
 
