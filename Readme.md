@@ -125,12 +125,12 @@ or
 When joined the network, the zigbee2mqtt will list the device as unsupported. No features will be exposed. 
 
 To integrate the device follow these steps:
-- Put `zigbee2mqtt/myswitch.js` to zigbee2mqtt configuration folder (next to `configuration.yaml`)
+- Put `zigbee2mqtt/hellozigbee.js` to zigbee2mqtt configuration folder (next to `configuration.yaml`)
 - In `configuration.yaml` add the following entity
 
 ```yaml
 external_converters:
-  - myswitch.js
+  - hellozigbee.js
 ```
 
 After z2m restart the device features will be supported by zigbee2mqtt.
