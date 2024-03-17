@@ -46,6 +46,7 @@ set_build_param(VERSION_NUMBER "1.0")
 set(VERSION_STR "${VERSION_NUMBER}.${BUILD_NUMBER}")
 string(LENGTH "${VERSION_STR}" VERSION_STR_LEN)
 
+set_build_param(FLASH_PORT "COM5")
 
 #dump_compiler_settings()
 
