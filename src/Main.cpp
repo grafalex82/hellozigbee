@@ -110,7 +110,6 @@ extern "C" PUBLIC void vAppMain(void)
     // Initialize UART
     vAHI_UartSetRTSCTS(E_AHI_UART_0, FALSE);
     DBG_vUartInit(DBG_E_UART_0, DBG_E_UART_BAUD_RATE_115200);
-    DebugInput debugInput;
 
     // Print welcome message
     DBG_vPrintf(TRUE, "\n-------------------------------------------------------------\n");
@@ -197,7 +196,7 @@ extern "C" PUBLIC void vAppMain(void)
 
         ZTIMER_vTask();
 
-        APP_vHandleDebugInput(debugInput);
+        DebugInput::getInstance().handleInput();
 
         APP_vTaskSwitch();
 

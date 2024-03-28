@@ -8,16 +8,18 @@ class DebugInput
     char * ptr;
     bool hasData;
 
-public:
+private:
     DebugInput();
 
-    void handleDebugInput();
+    void readUart();
     bool hasCompletedLine() const;
 
     bool matchCommand(const char * command) const;
     void reset();
-};
 
-void APP_vHandleDebugInput(DebugInput & debugInput);
+public:
+    static DebugInput & getInstance();
+    void handleInput();
+};
 
 #endif // DEBUG_INPUT_H

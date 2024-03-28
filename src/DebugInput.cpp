@@ -5,11 +5,18 @@ extern "C"
 {
     #include "AppHardwareApi.h"
     #include "zcl_options.h"
+    #include "dbg.h"
 }
 
 DebugInput::DebugInput()
 {
     reset();
+}
+
+DebugInput & DebugInput::getInstance()
+{
+    static DebugInput instance;
+    return instance;
 }
 
 void DebugInput::reset()
@@ -18,7 +25,7 @@ void DebugInput::reset()
     hasData = false;
 }
 
-void DebugInput::handleDebugInput()
+void DebugInput::readUart()
 {
     // Avoid buffer overrun
     if(ptr >= buf + BUF_SIZE)
@@ -56,37 +63,38 @@ bool DebugInput::matchCommand(const char * command) const
     return false;
 }
 
-void APP_vHandleDebugInput(DebugInput & debugInput)
+void DebugInput::handleInput()
 {
-    debugInput.handleDebugInput();
-    if(debugInput.hasCompletedLine())
+    readUart();
+
+    if(!hasCompletedLine())
+        return;
+
+    if(matchCommand("BTN1_PRESS"))
     {
-        if(debugInput.matchCommand("BTN1_PRESS"))
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK);
-            DBG_vPrintf(TRUE, "Matched BTN1_PRESS\n");
-        }
+        ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK);
+        DBG_vPrintf(TRUE, "Matched BTN1_PRESS\n");
+    }
 
 #ifdef SWITCH2_BTN_PIN
-        if(debugInput.matchCommand("BTN2_PRESS"))
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(SWITCH2_BTN_MASK);
-            DBG_vPrintf(TRUE, "Matched BTN2_PRESS\n");
-        }
+    if(matchCommand("BTN2_PRESS"))
+    {
+        ButtonsTask::getInstance()->setButtonsOverride(SWITCH2_BTN_MASK);
+        DBG_vPrintf(TRUE, "Matched BTN2_PRESS\n");
+    }
 
-        if(debugInput.matchCommand("BTN3_PRESS"))   // Use button #3 to indicate both buttons
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
-            DBG_vPrintf(TRUE, "Matched BTN3_PRESS\n");
-        }
+    if(matchCommand("BTN3_PRESS"))   // Use button #3 to indicate both buttons
+    {
+        ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
+        DBG_vPrintf(TRUE, "Matched BTN3_PRESS\n");
+    }
 #endif
 
-        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE") || debugInput.matchCommand("BTN3_RELEASE"))
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(0);
-            DBG_vPrintf(TRUE, "Matched BTNx_RELEASE\n");
-        }
-
-        debugInput.reset();
+    if(matchCommand("BTN1_RELEASE") || matchCommand("BTN2_RELEASE") || matchCommand("BTN3_RELEASE"))
+    {
+        ButtonsTask::getInstance()->setButtonsOverride(0);
+        DBG_vPrintf(TRUE, "Matched BTNx_RELEASE\n");
     }
+
+    reset();
 }
