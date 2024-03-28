@@ -86,7 +86,7 @@ PUBLIC void wakeCallBack(void)
     DBG_vPrintf(TRUE, "=-=-=- wakeCallBack()\n");
 }
 
-PRIVATE void APP_vTaskSwitch()
+PRIVATE void scheduleSleep()
 {
     if(ButtonsTask::getInstance()->canSleep() &&
        ZigbeeDevice::getInstance()->canSleep() &&
@@ -190,18 +190,19 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "\nvAppMain(): Starting the main loop\n");
     while(1)
     {
+        // Run Zigbee stack stuff
         zps_taskZPS();
-
         bdb_taskBDB();
 
+        // Process all periodic tasks
         ZTIMER_vTask();
 
+        // Process all incoming debug input
         DebugInput::getInstance().handleInput();
 
-        APP_vTaskSwitch();
-
+        // Schedule sleep, if no activities are running. Reset the watchdog timer.
+        scheduleSleep();
         vAHI_WatchdogRestart();
-
         PWRM_vManagePower();
     }
 }
