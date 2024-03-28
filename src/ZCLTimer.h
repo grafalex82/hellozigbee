@@ -8,9 +8,10 @@ class ZCLTimer: public PeriodicTask
     uint32 tick1s;
     uint32 tick100ms;
 
-public:
     ZCLTimer();
-    void init();
+public:
+    static ZCLTimer * getInstance();
+    void start();
 
 protected:
     virtual void timerCallback();

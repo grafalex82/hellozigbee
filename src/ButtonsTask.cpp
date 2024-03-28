@@ -17,13 +17,17 @@ ButtonsTask::ButtonsTask()
     numHandlers = 0;
 
     PeriodicTask::init(ButtonPollCycle);
-    startTimer(1000);
 }
 
 ButtonsTask * ButtonsTask::getInstance()
 {
     static ButtonsTask instance;
     return &instance;
+}
+
+void ButtonsTask::start()
+{
+    startTimer(ButtonPollCycle);
 }
 
 void ButtonsTask::setButtonsOverride(uint32 override)

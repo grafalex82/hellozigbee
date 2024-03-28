@@ -8,13 +8,20 @@ extern "C"
 
 ZCLTimer::ZCLTimer()
 {
-}
-
-void ZCLTimer::init()
-{
     PeriodicTask::init(10);
     tick1s = 0;
     tick100ms = 0;
+}
+
+ZCLTimer * ZCLTimer::getInstance()
+{
+    static ZCLTimer instance;
+    return &instance;
+}
+
+void ZCLTimer::start()
+{
+    startTimer(1000);   // Do not bother with timer events for the first second
 }
 
 void ZCLTimer::timerCallback()

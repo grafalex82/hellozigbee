@@ -137,10 +137,8 @@ extern "C" PUBLIC void vAppMain(void)
 
     // Init tasks
     DBG_vPrintf(TRUE, "vAppMain(): init periodic tasks...\n");
-    ZCLTimer zclTimer;
-    zclTimer.init();
-    zclTimer.startTimer(1000);
-    ButtonsTask::getInstance();
+    ZCLTimer::getInstance()->start();
+    ButtonsTask::getInstance()->start();
     LEDTask::getInstance();
     RelayTask::getInstance();
 

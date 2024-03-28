@@ -28,10 +28,11 @@ class ButtonsTask : public PeriodicTask
     uint32 buttonsMask;
     uint32 buttonsOverride;
 
-public:
     ButtonsTask();
 
+public:
     static ButtonsTask * getInstance();
+    void start();
 
     void setButtonsOverride(uint32 override);
     
