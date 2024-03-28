@@ -193,7 +193,6 @@ set(SOURCES
         Endpoint.cpp
         SwitchEndpoint.cpp
         EndpointManager.cpp
-        ZigbeeUtils.cpp
         ZigbeeDevice.cpp
         BasicClusterEndpoint.cpp
 	OOSC.c
