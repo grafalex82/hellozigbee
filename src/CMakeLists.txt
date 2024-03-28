@@ -181,6 +181,7 @@ set(SOURCES
         PWMPin.h
         BlinkTask.cpp
         ButtonsTask.cpp
+        DebugInput.cpp
         LEDTask.cpp
         LEDHandler.cpp
         LEDPair.cpp

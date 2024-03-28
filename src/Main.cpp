@@ -23,6 +23,7 @@ extern "C"
 #include "BlinkTask.h"
 #include "RelayTask.h"
 #include "DumpFunctions.h"
+#include "DebugInput.h"
 
 
 // Hidden funcctions (exported from the library, but not mentioned in header files)
@@ -96,99 +97,6 @@ PRIVATE void APP_vTaskSwitch()
         PWRM_teStatus status = PWRM_eScheduleActivity(&wakeStruct, 15 * 32000, wakeCallBack);
         if(status != PWRM_E_TIMER_RUNNING)
             DBG_vPrintf(TRUE, "=-=-=- Scheduling enter sleep mode... status=%d\n", status);
-    }
-}
-
-class DebugInput
-{
-    static const int BUF_SIZE = 32;
-    char buf[BUF_SIZE];
-    char * ptr;
-    bool hasData;
-
-public:
-    DebugInput()
-    {
-        reset();
-    }
-
-    void handleDebugInput()
-    {
-        // Avoid buffer overrun
-        if(ptr >= buf + BUF_SIZE)
-            return;
-
-        // Receive the next symbol, if any
-        while(u16AHI_UartReadRxFifoLevel(E_AHI_UART_0) > 0)
-        {
-            char ch;
-            u16AHI_UartBlockReadData(E_AHI_UART_0, (uint8*)&ch, 1);
-
-            if(ch == '\r' || ch == '\n')
-            {
-                *ptr = 0;
-                hasData = true;
-            }
-            else
-                *ptr = ch;
-
-            ptr++;
-        }
-    }
-
-    bool hasCompletedLine() const
-    {
-        return hasData;
-    }
-
-    bool matchCommand(const char * command) const
-    {
-        int len = strlen(command);
-        if(strncmp(command, buf, len) == 0 && buf[len] == 0)
-            return true;
-
-        return false;
-    }
-
-    void reset()
-    {
-        ptr = buf;
-        hasData = false;
-    }
-};
-
-PRIVATE void APP_vHandleDebugInput(DebugInput & debugInput)
-{
-    debugInput.handleDebugInput();
-    if(debugInput.hasCompletedLine())
-    {
-        if(debugInput.matchCommand("BTN1_PRESS"))
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK);
-            DBG_vPrintf(TRUE, "Matched BTN1_PRESS\n");
-        }
-
-#ifdef SWITCH2_BTN_PIN
-        if(debugInput.matchCommand("BTN2_PRESS"))
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(SWITCH2_BTN_MASK);
-            DBG_vPrintf(TRUE, "Matched BTN2_PRESS\n");
-        }
-
-        if(debugInput.matchCommand("BTN3_PRESS"))   // Use button #3 to indicate both buttons
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(SWITCH1_BTN_MASK | SWITCH2_BTN_MASK);
-            DBG_vPrintf(TRUE, "Matched BTN3_PRESS\n");
-        }
-#endif
-
-        if(debugInput.matchCommand("BTN1_RELEASE") || debugInput.matchCommand("BTN2_RELEASE") || debugInput.matchCommand("BTN3_RELEASE"))
-        {
-            ButtonsTask::getInstance()->setButtonsOverride(0);
-            DBG_vPrintf(TRUE, "Matched BTNx_RELEASE\n");
-        }
-
-        debugInput.reset();
     }
 }
 
