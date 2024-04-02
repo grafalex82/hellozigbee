@@ -1,6 +1,7 @@
 # Hello Zigbee World, Part 0 — Motivation, Goals, Plan
 
 ## My story
+
 Many years ago I was reading Bill Gates' "The Road Ahead" book. The book described a concept of a smart house, where lighting, temperature, and even ambient music was controlled with a computer algorithm. The smart home could adjust to the tenants' schedule, or even mood, providing maximum comfort and convenience. The only problem is that this system was very expensive in those years.
 
 The situation changed around 2018, when I found a youtube video presenting Xiaomi Aqara smart home kit. I was an experienced engineer by that time, and possibly could create some Arduino based solutions for smart homes, but this required a lot of work. At the same time Xiaomi devices provided a ready to use solution out of the box. Unlike Arduino based devices that looked like a clew of wires, Aqara ones had a pretty nice design, and devices were factory produced. Moreover the starting kit did cost less than $100.
@@ -8,15 +9,16 @@ The situation changed around 2018, when I found a youtube video presenting Xiaom
 ![](images/aqara_QBKG12LM.jpg)
 <p><figcaption align = "center"><i>Xiaomi Aqara QBKG12LM smart switch</i></figcaption></p>
 
-I bought a couple of Xiaomi Aqara switches and several sensors, and I began to enjoy life in a slightly smarter apartment. Later I switched to [zigbee2mqtt](https://www.zigbee2mqtt.io/) plus a CC2538 stick, which allowed me to integrate devices from other manufacturers to my system. Overall, I was inspired with confidence in the future of the technology. When moving to a bigger apartment, I ordered a dozen more Xiaomi Aqara switches and looked forward to how cool it would work on a scale. I was naive...
+I bought a couple of Xiaomi Aqara switches and several sensors, and I began to enjoy life in a slightly smarter apartment. Later I switched to [zigbee2mqtt](https://www.zigbee2mqtt.io/) plus a CC2538 stick, which allowed me to integrate devices from other manufacturers to my system. Overall, I was inspired with confidence in the future of the technology. When moving to a bigger apartment, I ordered a dozen more Xiaomi Aqara switches and looked forward to how cool it would work on a scale. I was so naive...
 
-The bummer came in the first week after the move. Red error lines started appearing in zigbee2mqtt logs. Switches strangely and randomly fell off the network, stopped responding to Z2M commands, as well as sending their status to the system. Switches themselves basically continued working as switches, but no longer were controlled by the system. Some switches could turn off spontaneously, and sometimes turn on when you try to turn them off. But the most annoying thing was that some of the temperature and occupancy sensors near the switch also disappeared from the network. Power juggling didn't help. Once a day, they had to make an evening round and re-join the switches that had fallen off — only this could bring them back to life. After some experiments I was pretty sure that the problem was in switches, but other device types may have issues as well.
+The bummer came in the first week after the move. Red error lines started appearing in zigbee2mqtt logs. Switches strangely and randomly fell off the network, stopped responding to Z2M commands, as well as sending their status to the system. Switches themselves basically continued working as switches, but no longer were controlled by the system. Some switches could turn off spontaneously, and sometimes turn on when you try to turn them off. But the most annoying thing was that some of the temperature and occupancy sensors near the switch also disappeared from the network. Power juggling didn't help. Once a day, I had to make an evening round and re-join the switches that had fallen off — only this could bring them back to life. After some experiments I was pretty sure that the problem was in switches, but other device types may have issues as well.
 
 It appears that this problem is known, and I could just buy switches from another manufacturer which do not have this issue. Moreover Xiaomi presented new versions of their switches, that probably have this problem fixed as well. It would cost me a few more hundred dollars and forget about the problem.
 
 But I decided to go with a longer, but much more interesting way. I wanted to get a better understanding of what is going on, and possibly fix the problem myself. I uncovered the sniffer, and started diving into the ZigBee. Xiaomi devices are based on the NXP JN5169 microcontroller, so I started looking at those datasheets as well. The result of the dive was the reverse engineering of the device, and some confidence that I could write an alternative firmware which would fix mentioned issues.
 
 ## The Goals
+
 As I just said the **goal** is to develop an alternative firmware for Xiaomi Aqara QBKG12LM switches. This is the first model of Aqara smart switches, has two buttons and a neutral line. Besides its connectivity issues, I lacked a few modern features. So I state the following list of features of an ideal QBKG12LM switch firmware.
 
 - Stable operations in the large Zigbee network
@@ -38,6 +40,7 @@ So here I come to an **ultimate goal** - create an extendable platform for creat
 - Ideally this would include not just NXP JN5169 microcontroller, but possibly other MCUs as well
 
 ## The Plan
+
 The QBKG12LM switch is a quite complex device. It has a lot of on board circuits that I do not fully understand at the moment. So there is a quite high risk to do something wrong, and break the device. Moreover, this is a line powered device with a high voltage line, so there is also a risk of injury, or damaging a connected computer.
 
 I was also looking at a development board based on the same NXP JN5169 microcontroller. But the [official development board from NXP](https://www.nxp.com/products/wireless/zigbee/zigbee-evaluation-kit-with-nfc-commissioning:JN5169HA) costs \$650, which is too expensive for experiments. Fortunately there is a E75-2G4M10S module from EBYTE that costs just a few dollars. I bought several modules for around \$3 each. So it is quite cheap for experiments, and I would not get upset if I burn a few. The only problem is it is just a module, and requires some soldering to make a circuit. But this is not a big deal.
@@ -94,6 +97,7 @@ After some experimenting, and having some progress on the project, I can now def
 **Stage 3** — nice to have stuff
 - Using C++ in the project ([Article](part9_cpp_building_blocks.md))
 - Extendable structure of the project codebase ([Article](part13_project_cpp_structure.md))
+- Understand how device flashing works ([Article](part27_flash_tool.md))
 - Remote flashing of the device mounted on the wall, alternative to OTA update (Code ready, article pending)
 - Build a Dimmable Light via Level Ctrl Server cluster ([Article](part20_dimmable_light.md))
 - Build comprehensive automated test suit ([Article](part21_test_automation.md))
@@ -105,16 +109,13 @@ After some experimenting, and having some progress on the project, I can now def
 - Set up CI
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
-- Reverse engineer the schematics (Done, article pending)
-- Implement joining/leaving the network
-- Port switch function to the device
-- Drive LEDs on the board
-- Drive switch relays
+- Reverse engineer the schematics ([Article](part26_QBKG12LM_support.md))
+- Port maing functionality to the device - joining/leaving the network, switch functions, Drive LEDs and relays, OTA updates ([Article](part26_QBKG12LM_support.md))
 - Handle temperature sensor via Device Temperature Configuration Cluster (Code ready, article pending)
 - Handle current and power sensor
-- Evaluate possibility to switch from stock to the custom firmware via OTA update
 - Test the device in house
 - Share the firmware with Smart Home community for a wider testing
+- Explore possibility to extend the firmware to other devices, such as QBKG03LM/QBKG04LM (similar switches without a neutral line), and zigbee relays.
 
 **Stage 5** — evaluate other MCUs
 - Evaluate NXP JN5189 (ARM based one)
