@@ -25,7 +25,7 @@ jobs:
       - name: Install extra libs
         run: |
           pip3 install xmltodict pycryptodome && \
-          apt install libfl2
+          sudo apt install libfl2
       - name: List directory
         run: ls -Rla ${{github.workspace}}
       - name: Configure CMake
