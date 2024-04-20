@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+
+env:
+  TARGET: HelloZigbee.ota
+  BUILD_DIR: build
+  ARTIFACT_DIR: build/src
+  TOOLCHAIN_DIR: toolchain
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get toolchain
+        run: |
+          mkdir -p ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }} && \
+          wget https://github.com/openlumi/BA2-toolchain/releases/download/20201219/ba-toolchain-20201219.tar.bz2 -O - | tar -jx -C ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}
+      - name: Install xmltodict and pycryptodome
+        run: pip3 install xmltodict pycryptodome
+      - name: List directory
+        run: ls ${{github.workspace}}
+      - name: Configure CMake
+        id: configure
+        run: |
+          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }})
+      - name: Build
+        id: build
+        run: |
+          cmake --build ${{github.workspace}}/build --target ${{ env.TARGET }} -j$(($(nproc)+1))
+          rm ${{github.workspace}}/build/src/*tmp.bin
+          echo "::set-output name=status::success"
+        uses: actions/upload-artifact@v2.2.2
+        if: steps.make.outputs.status == 'success' && !cancelled()
+        with:
+          # Artifact name
+          name: firmwares.zip
+          # A file, directory or wildcard pattern that describes what to upload
+          path: |
+            ${{github.workspace}}/${{ env.ARTIFACT_DIR }}/*.bin
+            ${{github.workspace}}/${{ env.ARTIFACT_DIR }}/*.ota
