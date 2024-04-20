@@ -30,11 +30,8 @@ jobs:
         run: ls -Rla ${{github.workspace}}
       - name: Configure CMake
         id: configure
-        run: >
-          cmake -B ${{github.workspace}}/build \
-          -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) \
-          -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }}) \
-          -DBUILD_NUMBER=${{github.run_number}}
+        run: |
+          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }}) -DBUILD_NUMBER=${{github.run_number}}
       - name: Build
         id: build
         run: |
