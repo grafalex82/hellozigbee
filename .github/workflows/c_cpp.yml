@@ -22,8 +22,10 @@ jobs:
         run: |
           mkdir -p ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }} && \
           wget https://github.com/openlumi/BA2-toolchain/releases/download/20201219/ba-toolchain-20201219.tar.bz2 -O - | tar -jx -C ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}
-      - name: Install xmltodict and pycryptodome
-        run: pip3 install xmltodict pycryptodome
+      - name: Install extra libs
+        run: !
+          pip3 install xmltodict pycryptodome && \
+          apt install libfl2
       - name: List directory
         run: ls -Rla ${{github.workspace}}
       - name: Configure CMake
