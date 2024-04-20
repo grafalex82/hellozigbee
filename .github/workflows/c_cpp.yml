@@ -8,6 +8,7 @@ env:
   BUILD_DIR: build
   ARTIFACT_DIR: build/src
   TOOLCHAIN_DIR: toolchain
+  SDK_DIR: sdk
 
 jobs:
   build:
@@ -21,11 +22,11 @@ jobs:
       - name: Install xmltodict and pycryptodome
         run: pip3 install xmltodict pycryptodome
       - name: List directory
-        run: ls ${{github.workspace}}
+        run: ls -Rla ${{github.workspace}}
       - name: Configure CMake
         id: configure
         run: |
-          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }})
+          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }})
       - name: Build
         id: build
         run: |
