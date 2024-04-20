@@ -65,7 +65,7 @@ protected:
     tsCLD_OOSC sOnOffConfigServerCluster;
     tsCLD_OnOffCustomDataStructure sOnOffServerCustomDataStructure;
     tsCLD_MultistateInputBasic sMultistateInputServerCluster;
-    tsCLD_LevelControl sLevelControlClientCluster;
+    tsCLD_LevelControlClient sLevelControlClientCluster;
     tsCLD_LevelControlCustomDataStructure sLevelControlClientCustomDataStructure;
     tsCLD_Identify sIdentifyServerCluster;
     tsCLD_IdentifyCustomDataStructure sIdentifyClusterData;
