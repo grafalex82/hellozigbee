@@ -164,6 +164,7 @@ function(add_hex_bin_targets TARGET)
         DEPENDS ${TARGET}
         COMMAND ${CMAKE_OBJCOPY} -j .version -j .bir -j .flashheader -j .vsr_table -j .vsr_handlers -j .rodata -j .text -j .data -j .bss -j .heap -j .stack -j .ro_mac_address -j .ro_ota_header -j .ro_se_lnkKey -j .pad -S -O binary ${FILENAME} ${FILENAME}.tmp.bin
         COMMAND ${JET} -m otamerge --embed_hdr -c ${FILENAME}.tmp.bin -v JN516x -n ${BUILD_NUMBER} -t ${FIRMWARE_FILE_TYPE} -u ${MANUFACTURER_ID} -j ${FIRMWARE_STRING} -o ${FILENAME}.bin
+        COMMAND ${CMAKE_COMMAND} -E remove -f ${FILENAME}.tmp.bin
     )
 endfunction()
 
