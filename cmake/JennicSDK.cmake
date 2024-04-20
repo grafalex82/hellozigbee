@@ -11,6 +11,13 @@ if(NOT JENNIC_CHIP)
     message(FATAL_ERROR "No JENNIC_CHIP specified (it must reflect target chip name)")
 endif()
 
+# Correct SDK prefix so that it is absolute path
+if(NOT IS_ABSOLUTE ${SDK_PREFIX})
+    set(SDK_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/${SDK_PREFIX}")
+endif()
+get_filename_component(SDK_PREFIX ${SDK_PREFIX} ABSOLUTE)
+message(STATUS "Using SDK path: ${SDK_PREFIX}")
+
 # Load the toolchain file for a selected chip
 get_filename_component(JENNIC_CMAKE_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
 set(CMAKE_MODULE_PATH ${JENNIC_CMAKE_DIR} ${CMAKE_MODULE_PATH})
