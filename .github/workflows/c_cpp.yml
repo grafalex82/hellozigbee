@@ -36,11 +36,8 @@ jobs:
         id: build
         run: |
           cmake --build ${{github.workspace}}/build --target ${{ env.TARGET }} -j$(($(nproc)+1))
-          rm ${{github.workspace}}/build/src/*tmp.bin
-          echo "::set-output name=status::success"
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.2
-        if: steps.make.outputs.status == 'success' && !cancelled()
         with:
           # Artifact name
           name: firmwares.zip
