@@ -104,6 +104,7 @@ set(ZIGBEE_SRC
         pdum_gen.h
 )
 add_library(ZigBee STATIC ${ZIGBEE_SRC})
+set_source_files_properties(${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA.c PROPERTIES COMPILE_FLAGS -Wno-unused-variable)
 target_include_directories(ZigBee PRIVATE
         ${SDK_PREFIX}/Components/BDB/Include
         ${SDK_PREFIX}/Components/BDB/Source/Common
