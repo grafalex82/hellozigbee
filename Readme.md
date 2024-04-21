@@ -91,9 +91,10 @@ Prerequisites (Windows Only):
 
 Build instructions:
 - Clone the repo
+  - Download submodules
 - make a `build` directory
 - `cd build`
-- `cmake -G "MinGW Makefiles" -DTOOLCHAIN_PREFIX=C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379 -DSDK_PREFIX=C:/NXP/bstudio_nxp/sdk/JN-SW-4170 ..`
+- `cmake -G "MinGW Makefiles" -DTOOLCHAIN_PREFIX=C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379 ..`
 (Correct paths to the toolchain and sdk if needed)
   - If your tools are installed at default locations, you can also use Cmake presets: `cmake -G "MinGW Makefiles" --preset=default ..`
 - Useful targets:

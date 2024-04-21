@@ -8,7 +8,6 @@ env:
   BUILD_DIR: build
   ARTIFACT_DIR: build/src
   TOOLCHAIN_DIR: toolchain
-  SDK_DIR: sdk
 
 jobs:
   firmware:
@@ -34,7 +33,7 @@ jobs:
       - name: Configure CMake
         id: configure
         run: |
-          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }}) -DBUILD_NUMBER=${{github.run_number}} -DBOARD=${{matrix.board}}
+          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) -DBUILD_NUMBER=${{github.run_number}} -DBOARD=${{matrix.board}}
       - name: Build
         id: build
         run: |

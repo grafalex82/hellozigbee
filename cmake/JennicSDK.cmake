@@ -1,6 +1,6 @@
 # Check mandatory parameters
 if(NOT SDK_PREFIX)
-    message(FATAL_ERROR "No SDK_PREFIX specified (it must point to the root of JN-SW-4170 SDK)")
+    set(SDK_PREFIX "${CMAKE_SOURCE_DIR}/sdk" CACHE PATH "Path to the root of JN-SW-4170 SDK")
 endif()
 
 if(NOT TOOLCHAIN_PREFIX)
