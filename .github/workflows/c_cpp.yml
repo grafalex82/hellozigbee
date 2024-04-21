@@ -11,7 +11,7 @@ env:
   SDK_DIR: sdk
 
 jobs:
-  boards_matrix:
+  firmware:
     strategy:
       matrix:
         board: ["EBYTE_E75", "QBKG11LM", "QBKG12LM"]
@@ -43,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # Artifact name
-          name: hello_zigbee_$${{matrix.board}}_${{github.run_number}}.zip
+          name: hello_zigbee_${{matrix.board}}_${{github.run_number}}
           # A file, directory or wildcard pattern that describes what to upload
           path: |
             ${{github.workspace}}/${{ env.ARTIFACT_DIR }}/*.bin
