@@ -82,21 +82,23 @@ This board features several LEDs and buttons, and supports programming and debug
 
 # How to build
 
-Prerequisites (Windows Only):
-- Beyond Studio IDE (comes with a JN5169 compiler)
-- ZigBee SDK (JN-SW-4170 Zigbee 3.0 v1840.zip)
+Prerequisites:
+- Compiler for BA2 architecture
+  - Windows: Beyond Studio IDE (comes with a JN5169 compiler)
+  - Linux: https://github.com/openlumi/BA2-toolchain/releases/download/20201219/ba-toolchain-20201219.tar.bz2 and libfl2 library
 - CMake (any recent one)
-- MinGW (or other source where you can get `make`)
-- Python
+- make (or MinGW on Windows)
+- Python 3.x with `xmltodict` and `pycryptodome` libraries installed
 
 Build instructions:
-- Clone the repo
-  - Download submodules
+- Clone the repo (`git clone git@github.com:grafalex82/hellozigbee.git`)
+  - Download submodules (`git submodule update --init`)
 - make a `build` directory
 - `cd build`
-- `cmake -G "MinGW Makefiles" -DTOOLCHAIN_PREFIX=C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379 ..`
-(Correct paths to the toolchain and sdk if needed)
-  - If your tools are installed at default locations, you can also use Cmake presets: `cmake -G "MinGW Makefiles" --preset=default ..`
+- `cmake -DTOOLCHAIN_PREFIX=<path to toolchain> ..`
+  - [Windows] toolchain is typically located at C:/NXP/bstudio_nxp/sdk/Tools/ba-elf-ba2-r36379
+  - [Windows] If your tools are installed at default locations, you can also use Cmake presets: `cmake --preset=default ..`
+  - [Windows] If using MinGW as a make , add `-G "MinGW Makefiles"` to generate proper type of makefiles
 - Useful targets:
   - `mingw32-make HelloZigbee.bin` to build a binary that can be flashed to the device
   - `mingw32-make HelloZigbee.flash` to build and immediately flash the binary
@@ -105,19 +107,25 @@ Build instructions:
   - `-DBOARD=QBKG12LM` to select target device (by default EBYTE E75-2G4M10S is selected)
   - `-DBUILD_NUMBER=123` to set the build number (build number uploaded via OTA must be higher than the current firmware build number)
 
-Note: the instructions above are for Windows only. However, a few user reported they were able to run the build process on Linux and Mac platforms. Feel free to contribute.
+Note: the instructions above are for Windows and Linux. Mac support is pending. Feel free to contribute.
 
-Flash instructions:
+Flash instructions (Windows):
 - Open Beyond Studio
 - Put the device in the programming mode (drive SPI_MISO low while reset or power up)
 - Go to Device->Program Device
 - Select the built HelloWorld.bin file
 - Click `Program` button
 
-or
+or (also Windows)
 
 - Put the device in the programming mode (drive SPI_MISO low while reset or power up)
 - `mingw32-make HelloZigbee.flash`
+
+or (any platform)
+
+- Fetch https://github.com/grafalex82/jn51xx_flasher
+- `jn51xx_flasher.py -p <PORT> write <firmware.bin>`
+
 
 # Zigbee2mqtt integration
 
