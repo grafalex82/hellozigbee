@@ -11,7 +11,10 @@ env:
   SDK_DIR: sdk
 
 jobs:
-  build:
+  boards_matrix:
+    strategy:
+      matrix:
+        board: ["EBYTE_E75", "QBKG11LM", "QBKG12LM"]
     runs-on: ubuntu-latest
     steps:
       - name: Git checkout
@@ -31,7 +34,7 @@ jobs:
       - name: Configure CMake
         id: configure
         run: |
-          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }}) -DBUILD_NUMBER=${{github.run_number}}
+          cmake -B ${{github.workspace}}/build -DTOOLCHAIN_PREFIX=$(realpath ${{github.workspace}}/${{ env.TOOLCHAIN_DIR }}/ba-toolchain) -DSDK_PREFIX=$(realpath ${{github.workspace}}/${{ env.SDK_DIR }}) -DBUILD_NUMBER=${{github.run_number}} -DBOARD=${{matrix.board}}
       - name: Build
         id: build
         run: |
@@ -40,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # Artifact name
-          name: firmwares.zip
+          name: hello_zigbee_$${{matrix.board}}_${{github.run_number}}.zip
           # A file, directory or wildcard pattern that describes what to upload
           path: |
             ${{github.workspace}}/${{ env.ARTIFACT_DIR }}/*.bin
