@@ -106,14 +106,14 @@ After some experimenting, and having some progress on the project, I can now def
 - Explore Groups ([Article](part23_groups.md))
 - Explore Scenes cluster
 - Explore Touchlink, Install Codes, Find-And-Bind, and ZLL Commisioning
-- Set up CI
+- Set up CI (Done)
 
 **Stage 4** — porting to the real Xiaomi QBKG12LM hardware
 - Reverse engineer the schematics ([Article](part26_QBKG12LM_support.md))
 - Port maing functionality to the device - joining/leaving the network, switch functions, Drive LEDs and relays, OTA updates ([Article](part26_QBKG12LM_support.md))
 - Handle temperature sensor via Device Temperature Configuration Cluster (Code ready, article pending)
 - Handle current and power sensor
-- Test the device in house
+- Test the device in house ([Article](part28_remote_logger.md))
 - Share the firmware with Smart Home community for a wider testing
 - Explore possibility to extend the firmware to other devices, such as QBKG03LM/QBKG04LM (similar switches without a neutral line), and zigbee relays.
 
