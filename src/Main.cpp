@@ -22,6 +22,7 @@ extern "C"
 #include "LEDTask.h"
 #include "BlinkTask.h"
 #include "RelayTask.h"
+#include "PowerMeter.h"
 #include "DumpFunctions.h"
 #include "DebugInput.h"
 
@@ -42,6 +43,7 @@ extern "C"
 // - 1 in Heartbeat BlinkTask
 // - 1 in PollTask
 // - 1 is ZCL timer
+// - 1 is PowerMeter
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
 ZTIMER_tsTimer timers[7 + BDB_ZTIMER_STORAGE];
 
@@ -141,6 +143,7 @@ extern "C" PUBLIC void vAppMain(void)
     ButtonsTask::getInstance()->start();
     LEDTask::getInstance();
     RelayTask::getInstance();
+    PowerMeter::getInstance()->start();
 
     // Initialize the heartbeat LED (if there is one)
 #ifdef HEARTBEAT_LED_MASK

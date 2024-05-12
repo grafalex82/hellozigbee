@@ -148,6 +148,10 @@
     #define RELAY1_OFF_PIN              (12)
     #define RELAY1_OFF_MASK             (1UL << RELAY1_OFF_PIN)
 
+    #define SUPPORTS_HLW8012
+    #define HLW8012_SEL_PIN             (9)
+    #define HLW8012_SEL_MASK            (1UL << HLW8012_SEL_PIN)
+
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
     #define ZCL_NUMBER_OF_ENDPOINTS     (2)
@@ -182,6 +186,10 @@
     #define RELAY2_ON_MASK              (1UL << RELAY2_ON_PIN)
     #define RELAY2_OFF_PIN              (12)
     #define RELAY2_OFF_MASK             (1UL << RELAY2_OFF_PIN)
+
+    #define SUPPORTS_HLW8012
+    #define HLW8012_SEL_PIN             (9)
+    #define HLW8012_SEL_MASK            (1UL << HLW8012_SEL_PIN)
 
     #define BASIC_ENDPOINT              (QBKG12LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG12LM_SWITCH1_ENDPOINT)
