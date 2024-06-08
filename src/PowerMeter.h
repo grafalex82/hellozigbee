@@ -7,6 +7,7 @@
 class PowerMeter: public PeriodicTask
 {
     GPIOOutput selPin;
+    bool measureCurrent;
     PowerMeter();
 
 public:
