@@ -88,6 +88,8 @@ set(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Scenes.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/ScenesCommandHandler.c
 
+        ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Source/ElectricalMeasurement.c
+
         ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_client.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Source/OTA_ClientUpgradeManager.c
@@ -125,41 +127,41 @@ target_include_directories(ZigBee PRIVATE
 # Hello Zigbee
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}
 
-    ${SDK_PREFIX}/Components/Aes/Include
-    ${SDK_PREFIX}/Components/AES_SW/Include
-    ${SDK_PREFIX}/Components/AppApi/Include
+        ${SDK_PREFIX}/Components/Aes/Include
+        ${SDK_PREFIX}/Components/AES_SW/Include
+        ${SDK_PREFIX}/Components/AppApi/Include
 
-    ${SDK_PREFIX}/Components/BDB/Include
+        ${SDK_PREFIX}/Components/BDB/Include
 
-    ${SDK_PREFIX}/Components/Common/Include
-    ${SDK_PREFIX}/Components/DBG/Include
-    ${SDK_PREFIX}/Components/HardwareAPI/Include
-    ${SDK_PREFIX}/Components/MAC/Include
-    ${SDK_PREFIX}/Components/MicroSpecific/Include
-    ${SDK_PREFIX}/Components/MiniMAC/Include
-    ${SDK_PREFIX}/Components/MMAC/Include
-    ${SDK_PREFIX}/Components/PDM/Include
-    ${SDK_PREFIX}/Components/PDUM/Include
-    ${SDK_PREFIX}/Components/PWRM/Include
-    ${SDK_PREFIX}/Components/Random/Include
+        ${SDK_PREFIX}/Components/Common/Include
+        ${SDK_PREFIX}/Components/DBG/Include
+        ${SDK_PREFIX}/Components/HardwareAPI/Include
+        ${SDK_PREFIX}/Components/MAC/Include
+        ${SDK_PREFIX}/Components/MicroSpecific/Include
+        ${SDK_PREFIX}/Components/MiniMAC/Include
+        ${SDK_PREFIX}/Components/MMAC/Include
+        ${SDK_PREFIX}/Components/PDM/Include
+        ${SDK_PREFIX}/Components/PDUM/Include
+        ${SDK_PREFIX}/Components/PWRM/Include
+        ${SDK_PREFIX}/Components/Random/Include
 
-    ${SDK_PREFIX}/Components/TimerServer/Include
+        ${SDK_PREFIX}/Components/TimerServer/Include
 
-    ${SDK_PREFIX}/Components/ZCIF/Include
-    ${SDK_PREFIX}/Components/ZCL/Clusters/General/Include
-    ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Include
-    ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Include
-    ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Include
-    ${SDK_PREFIX}/Components/ZigbeeCommon/Include
-    ${SDK_PREFIX}/Components/ZPSAPL/Include
-    ${SDK_PREFIX}/Components/ZPSMAC/Include
-    ${SDK_PREFIX}/Components/ZPSNWK/Include
-    ${SDK_PREFIX}/Components/ZPSTSV/Include
+        ${SDK_PREFIX}/Components/ZCIF/Include
+        ${SDK_PREFIX}/Components/ZCL/Clusters/General/Include
+        ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Include
+        ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Include
+        ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Include
+        ${SDK_PREFIX}/Components/ZigbeeCommon/Include
+        ${SDK_PREFIX}/Components/ZPSAPL/Include
+        ${SDK_PREFIX}/Components/ZPSMAC/Include
+        ${SDK_PREFIX}/Components/ZPSNWK/Include
+        ${SDK_PREFIX}/Components/ZPSTSV/Include
 
-    # Zigbee sources reference zcl_options.h
-    ${PROJECT_SOURCE_DIR}/src
+        # Zigbee sources reference zcl_options.h
+        ${PROJECT_SOURCE_DIR}/src
 )
 
 link_directories(

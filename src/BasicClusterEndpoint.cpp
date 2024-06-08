@@ -71,6 +71,20 @@ void BasicClusterEndpoint::registerDeviceTemperatureCluster()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerDeviceTemperatureCluster(): Failed to create Device Temperature Configuration Cluster instance. Status=%d\n", status);
 }
 
+void BasicClusterEndpoint::registerElectricalMeasurementCluster()
+{
+    // Create an instance of a device temperature configuration cluster as a server
+    teZCL_Status status = eCLD_ElectricalMeasurementCreateElectricalMeasurement(
+        &clusterInstances.sElectricalMeasurementServer,
+        TRUE,
+        &sCLD_ElectricalMeasurement,
+        &sElectricalMeasurementServerCluster,
+        &au8ElectricalMeasurementAttributeControlBits[0]);
+
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerElectricalMeasurementCluster(): Failed to create Electrical Measurements Cluster instance. Status=%d\n", status);
+}
+
 void BasicClusterEndpoint::registerEndpoint()
 {
     // Fill in end point details
@@ -94,6 +108,9 @@ void BasicClusterEndpoint::init()
     registerIdentifyCluster();
     registerOtaCluster();
     registerDeviceTemperatureCluster();
+#ifdef SUPPORTS_HLW8012    
+    registerElectricalMeasurementCluster();
+#endif // SUPPORTS_HLW8012
     registerEndpoint();
 
     // Fill Basic cluster attributes
