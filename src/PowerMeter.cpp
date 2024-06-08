@@ -56,8 +56,8 @@ void PowerMeter::timerCallback()
     DBG_vPrintf(TRUE, "Counter0: %d, Counter1: %d\n", pulseCounter0, pulseCounter1);
 
     // Common constants
-    float magicCoef = 1.085;
-    float voltageRatio = 1881.;
+    // float magicCoef = 1.085;
+    // float voltageRatio = 1881.;
 
     if(measureCurrent)
     {
@@ -75,10 +75,6 @@ void PowerMeter::timerCallback()
         float voltage = voltageFreq * 0.3547;
         DBG_vPrintf(TRUE, "VoltageFreq: %d, Voltage: %d V\n", (uint32_t)(voltageFreq*1000), (uint32_t)voltage);
     }
-
-    // Use next cycle for measurement of the other value, current or voltage
-    //measureCurrent = !measureCurrent;
-    selPin.setState(measureCurrent);
 
     // Calculate power
     float powerFreq = (float)pulseCounter1 / MEASUREMENT_PERIOD * 1000;
