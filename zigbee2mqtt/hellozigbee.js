@@ -5,10 +5,6 @@ const reporting = require('zigbee-herdsman-converters/lib/reporting');
 const utils = require('zigbee-herdsman-converters/lib/utils');
 
 const ota = require('zigbee-herdsman-converters/lib/ota')
-const assert = require('assert');
-const fs = require('fs');
-const crypto = require('crypto');
-const path = require('path');
 
 const e = exposes.presets;
 const ea = exposes.access;
@@ -197,12 +193,12 @@ const toZigbee_OnOffSwitchCfg = {
                 break;
     
             default:
-                meta.logger.debug(`convertSet(): Unrecognized key=${key} (value=${value})`);
+                // meta.logger.debug(`convertSet(): Unrecognized key=${key} (value=${value})`);
                 break;
         }
 
-        result = {state: {[key]: value}}
-        meta.logger.debug(`result = [${JSON.stringify(result)}]`);
+        let result = {state: {[key]: value}}
+        // meta.logger.debug(`result = [${JSON.stringify(result)}]`);
         return result;
     },
 }
@@ -240,34 +236,33 @@ function addSwitchSettings(sw) {
     return sw;
 }
 
-function genSwitchEndpoint(epName, enableInterlock) {
-    // Create composite section for switch settings
-    let sw = e.composite(epName + " Button", epName, ea.ALL);
-    sw.withDescription('Settings for the ' + epName + ' button');
+function genSwitchEndpoints(epName, enableInterlock) {
+    let sw = e.switch().withEndpoint(epName);
 
-    // The switch toggle
-    sw.withFeature(e.binary('On/Off state', ea.ALL, 'ON', 'OFF').withValueToggle('TOGGLE').withProperty('state'));
+    // Create composite section for switch settings
+    let swSettings = e.composite(epName + " Button Settings", epName, ea.ALL);
+    swSettings.withDescription('Settings for the ' + epName + ' button');
 
     // Add the operation mode selector (applicable only for switch endpoints that allow server mode)
     // const operation_mode_description = `Server - the endpoint maintains internal state, generate reports on its change.
     // Client - the endpoint generates On/Off/Toggle commands to bound devices`;
-    sw.withFeature(e.enum('operation_mode', ea.ALL, operationModeValues));
+    swSettings.withFeature(e.enum('operation_mode', ea.ALL, operationModeValues));
 
     // Add other switch settings
-    addSwitchSettings(sw);
+    addSwitchSettings(swSettings);
 
     if(enableInterlock) {
         // Add the interlock mode selector (applicable only for double-gang switch endpoints)
         // const interlock_mode_description = `None - Switch endpoints work independently.
         // Mutual Exclusion - two endpoints cannot be ON at the same time,
         // Opposite - two endpoints always have state opposite to each other.`;
-        sw.withFeature(e.enum('interlock_mode', ea.ALL, interlockModeValues));
+        swSettings.withFeature(e.enum('interlock_mode', ea.ALL, interlockModeValues));
     }
 
     // Make sure whole created block acts as a group of parameters, rather than a single composite object
-    sw.withProperty('').withEndpoint(epName);
+    swSettings.withProperty('').withEndpoint(epName);
 
-    return sw;
+    return [sw, swSettings];
 }
 
 function genBothButtonsEndpoint(epName) {
@@ -314,7 +309,7 @@ const fromZigbee_OnOff = {
     type: ['commandOn', 'commandOff', 'commandToggle'],
 
     convert: (model, msg, publish, options, meta) => {
-        meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
+        // meta.logger.debug(`+_+_+_ LevelCtrl::fromZigbee() result=[${JSON.stringify(msg)}]`);
         const cmd = msg['type'];
         const payload = msg['data'];
         const srcEp = msg['endpoint']['ID']
@@ -367,8 +362,8 @@ const definitions = [
         description: 'Hello Zigbee Switch based on E75-2G4M10S module',
         exposes: [
             e.action(genSwitchActions(["left", "right", "both"])),
-            genSwitchEndpoint("left", true),
-            genSwitchEndpoint("right", true),
+            ...genSwitchEndpoints("left", true),
+            ...genSwitchEndpoints("right", true),
             genBothButtonsEndpoint("both"),
             ...getGenericSettings()
         ],
@@ -388,7 +383,7 @@ const definitions = [
         description: 'Hello Zigbee Switch firmware for Aqara QBKG11LM',
         exposes: [
             e.action(genSwitchActions(["button"])),
-            genSwitchEndpoint("button", false),
+            ...genSwitchEndpoints("button", false),
             ...getGenericSettings()
         ],
         endpoint: (device) => {
@@ -405,8 +400,8 @@ const definitions = [
         description: 'Hello Zigbee Switch firmware for Aqara QBKG12LM',
         exposes: [
             e.action(genSwitchActions(["left", "right", "both"])),
-            genSwitchEndpoint("left", true),
-            genSwitchEndpoint("right", true),
+            ...genSwitchEndpoints("left", true),
+            ...genSwitchEndpoints("right", true),
             genBothButtonsEndpoint("both"),
             ...getGenericSettings()
         ],
