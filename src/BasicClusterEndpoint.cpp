@@ -10,6 +10,7 @@ extern "C"
 #include "EndpointManager.h"
 #include "LEDTask.h"
 #include "DumpFunctions.h"
+#include "ZigbeeDevice.h"
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {
@@ -122,6 +123,32 @@ void BasicClusterEndpoint::init()
 
     // Initialize OTA
     otaHandlers.initOTA(getEndpointId());
+
+    // Enable reporting temperature
+    enableAttributeReporting(GENERAL_CLUSTER_ID_DEVICE_TEMPERATURE_CONFIGURATION, E_CLD_DEVTEMPCFG_ATTR_ID_CURRENT_TEMPERATURE);
+
+    // The cluster instance will be reporting voltage and power, including applied multiplier/divisor
+    enableAttributeReporting(MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, E_CLD_ELECTMEAS_ATTR_ID_RMS_VOLATGE);
+    enableAttributeReporting(MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, E_CLD_ELECTMEAS_ATTR_ID_AC_VOLTAGE_MULTIPLIER);
+    enableAttributeReporting(MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, E_CLD_ELECTMEAS_ATTR_ID_AC_VOLTAGE_DIVISOR);
+    enableAttributeReporting(MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, E_CLD_ELECTMEAS_ATTR_ID_ACTIVE_POWER);
+    enableAttributeReporting(MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, E_CLD_ELECTMEAS_ATTR_ID_AC_POWER_MULTIPLIER);
+    enableAttributeReporting(MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, E_CLD_ELECTMEAS_ATTR_ID_AC_POWER_DIVISOR);
+
+    // Applying a 100 multiplicator for voltage. Thus 220V becomes 22000, which perfectly fits 16 bit
+    sElectricalMeasurementServerCluster.u16ACVoltageMultiplier = 1;
+    sElectricalMeasurementServerCluster.u16ACVoltageDivisor = 100;
+
+    // Applying a 10 multiplicator for power. Thus maximum power 5000W become 50000, which still fits 16 bit integer
+    sElectricalMeasurementServerCluster.u16ACPowerMultiplier = 1;
+    sElectricalMeasurementServerCluster.u16ACPowerDivisor = 10;
+}
+
+void BasicClusterEndpoint::enableAttributeReporting(uint16 clusterID, uint16 attributeId)
+{
+    teZCL_Status status = eZCL_SetReportableFlag(getEndpointId(), clusterID, TRUE, FALSE, attributeId);
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "Failed to enable reporting for cluster=%04x attribute=%04x, status: %02x\n", clusterID, attributeId, status);
 }
 
 void BasicClusterEndpoint::handleClusterUpdate(tsZCL_CallBackEvent *psEvent)
@@ -247,4 +274,44 @@ void BasicClusterEndpoint::readDeviceTemperature()
 
     // Disable the ADC
     vAHI_AdcDisable();
+}
+
+void BasicClusterEndpoint::updatePowerMeasurements(float voltage, float power)
+{
+    // Save voltage value, applying a 100 multiplicator (so that 220V becomes 22000, which perfectly fits 16 bit)
+    sElectricalMeasurementServerCluster.u16RMSVoltage = (uint16)(voltage * 100);
+    sElectricalMeasurementServerCluster.u16ACVoltageMultiplier = 1;
+    sElectricalMeasurementServerCluster.u16ACVoltageDivisor = 100;
+
+    // Save power value, applying a 10 multiplicator (so that maximum power 5000W become 50000, which still fits 16 bit integer)
+    sElectricalMeasurementServerCluster.i16ActivePower = (uint16)(power * 10);
+    sElectricalMeasurementServerCluster.u16ACPowerMultiplier = 1;
+    sElectricalMeasurementServerCluster.u16ACPowerDivisor = 10;
+
+    // Prevent bothering Zigbee API if not connected
+    if(!ZigbeeDevice::getInstance()->isJoined())
+    {
+        DBG_vPrintf(TRUE, "Device has not yet joined the network. Ignore power consumption reporting\n");
+        return;
+    }
+
+    // Destination address - 0x0000 (coordinator)
+    tsZCL_Address addr;
+    addr.uAddress.u16DestinationAddress = 0x0000;
+    addr.eAddressMode = E_ZCL_AM_SHORT;
+
+    // Send the report
+    DBG_vPrintf(TRUE, "Reporting electrical measurements Voltage=%d Power=%d... ", 
+        sElectricalMeasurementServerCluster.u16RMSVoltage, 
+        sElectricalMeasurementServerCluster.i16ActivePower);
+    PDUM_thAPduInstance myPDUM_thAPduInstance = hZCL_AllocateAPduInstance();
+    teZCL_Status status = eZCL_ReportAttribute(&addr,
+                                               MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+                                               E_CLD_ELECTMEAS_ATTR_ID_RMS_VOLATGE,
+                                               getEndpointId(),
+                                               1,
+                                               myPDUM_thAPduInstance);
+    PDUM_eAPduFreeAPduInstance(myPDUM_thAPduInstance);
+    DBG_vPrintf(TRUE, "status: %02x\n", status);
+
 }

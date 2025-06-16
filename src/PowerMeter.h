@@ -4,14 +4,18 @@
 #include "GPIOPin.h"
 #include "PeriodicTask.h"
 
+class IPowerMeasurementsConsumer;
+
 class PowerMeter: public PeriodicTask
 {
     GPIOOutput selPin;
     bool measureCurrent;
+    IPowerMeasurementsConsumer * consumer;
     PowerMeter();
 
 public:
     static PowerMeter * getInstance();
+    void setConsumer(IPowerMeasurementsConsumer * cons);
     void start();
 
 protected:

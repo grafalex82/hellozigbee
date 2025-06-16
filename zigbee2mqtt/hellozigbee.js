@@ -342,7 +342,7 @@ const fromZigbee_LevelCtrl = {
 
 const common_definition = {
     vendor: 'DIY',
-    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl, fz.device_temperature],
+    fromZigbee: [fz.on_off, fromZigbee_OnOffSwitchCfg, fromZigbee_MultistateInput, fromZigbee_OnOff, fromZigbee_LevelCtrl, fz.device_temperature, fz.electrical_measurement],
     toZigbee: [tz.on_off, toZigbee_OnOffSwitchCfg],
     configure: async (device, coordinatorEndpoint, logger) => {
         for (const ep of device.endpoints) {

@@ -3,6 +3,7 @@
 
 #include "Endpoint.h"
 #include "OTAHandlers.h"
+#include "IPowerMeasurements.h"
 
 extern "C"
 {
@@ -34,7 +35,9 @@ struct BasicClusterInstances
 #endif //SUPPORTS_HLW8012
 } __attribute__ ((aligned(4)));
 
-class BasicClusterEndpoint : public Endpoint
+class BasicClusterEndpoint 
+    : public Endpoint
+    , public IPowerMeasurementsConsumer
 {
     tsZCL_EndPointDefinition endPoint;
 
@@ -69,12 +72,16 @@ protected:
     virtual void handleCustomClusterEvent(tsZCL_CallBackEvent *psEvent);
     virtual teZCL_CommandStatus handleReadAttribute(tsZCL_CallBackEvent *psEvent);
 
+    void enableAttributeReporting(uint16 clusterID, uint16 attributeId);
+
     void handleIdentifyClusterEvent(tsZCL_CallBackEvent *psEvent);
     void handleOTAClusterEvent(tsZCL_CallBackEvent *psEvent);
     void handleIdentifyClusterUpdate(tsZCL_CallBackEvent *psEvent);
     void handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent);
 
     void readDeviceTemperature();
+
+    virtual void updatePowerMeasurements(float voltage, float power);
 };
 
 #endif // BASICCLUSTERENDPOINT_H

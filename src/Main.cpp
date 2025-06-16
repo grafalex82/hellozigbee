@@ -159,6 +159,7 @@ extern "C" PUBLIC void vAppMain(void)
     DBG_vPrintf(TRUE, "vAppMain(): Registering endpoint objects\n");
     BasicClusterEndpoint basicEndpoint;
     EndpointManager::getInstance()->registerEndpoint(BASIC_ENDPOINT, &basicEndpoint);
+    PowerMeter::getInstance()->setConsumer(&basicEndpoint);
 
     SwitchEndpoint switch1;
     switch1.setConfiguration(SWITCH1_BTN_MASK);
