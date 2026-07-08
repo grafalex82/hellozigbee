@@ -101,18 +101,32 @@ void ButtonsTask::timerCallback()
         longPressCounter = 0;
     }
 
-    // Process a very long press of all buttons to join/leave the network
-    // TODO: Perhaps just a long press is not a good key combination for join/rejoin. For example buttons may be accidentally
-    // pressed by to a heavy object. It may be reasonable to introduce some patter, e.g. press both button 2 times, and then hold.
-    if(longPressCounter > 5000/ButtonPollCycle && allButtonsPressed)
+    // Process a very long press of all buttons to join/leave the network.
+    // Join and leave use asymmetric thresholds so that an everyday long press (e.g. a
+    // hold-to-dim gesture routed through the button) can never accidentally leave the network:
+    //   - JOIN : all buttons held ~5s while NOT on a network (a fresh device is not running
+    //            any hold gesture, so a short threshold is safe and convenient).
+    //   - LEAVE: all buttons held ~30s while joined - deliberately long. Prefer removing the
+    //            device from the coordinator (e.g. Zigbee2MQTT "Remove device") over this
+    //            local escape hatch, which mainly exists for an orphaned device.
+    if(allButtonsPressed)
     {
-        for(uint8 h = 0; h < numHandlers; h++)
-            handlers[h].handler->resetButtonStateMachine();
+        ZigbeeDevice * zigbeeDevice = ZigbeeDevice::getInstance();
+        bool doJoin  = !zigbeeDevice->isJoined() && longPressCounter > 5000/ButtonPollCycle;
+        bool doLeave =  zigbeeDevice->isJoined() && longPressCounter > 30000/ButtonPollCycle;
 
-        longPressCounter = 0;
+        if(doJoin || doLeave)
+        {
+            for(uint8 h = 0; h < numHandlers; h++)
+                handlers[h].handler->resetButtonStateMachine();
 
-        // Perform the join/leave
-        ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
+            longPressCounter = 0;
+
+            if(doJoin)
+                zigbeeDevice->joinNetwork();
+            else
+                zigbeeDevice->leaveNetwork();
+        }
     }
 }
 
