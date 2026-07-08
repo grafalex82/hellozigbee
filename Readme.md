@@ -206,7 +206,7 @@ The device implements a common type of home automation devices. On the first sta
 
 Once the device joined the network, zigbee2mqtt will start intervieweing the device, which will take up to 15 seconds. If the zigbee2mqtt external converter is installed, the z2m system will provide full access to the device features.
 
-Device automatically tries to rejoin the network if network conditions change (e.g. parent/neighbour router no longer responds). Device joining and rejoining, as well as failure recovery is implemented using BDB component (a part of Zigbee SDK). The device performs several rejoin attempts before giving up. Pressing both device buttons for 5 seconds will force device to leave the network.
+Device automatically tries to rejoin the network if network conditions change (e.g. parent/neighbour router no longer responds). Device joining and rejoining, as well as failure recovery is implemented using BDB component (a part of Zigbee SDK). The device performs several rejoin attempts before giving up. Pressing and holding both device buttons for 30 seconds will force the device to leave the network (a deliberately longer hold than the 5 seconds used for joining, so that a normal long press - e.g. hold-to-dim - cannot accidentally trigger a leave). The device can also be removed from the coordinator side (e.g. via the Zigbee2MQTT "Remove device" function).
 
 ## Main functionality
 
