@@ -94,7 +94,12 @@
 #define CLD_BAS_MANUF_NAME_SIZE                             3
 #define CLD_BAS_DATE_STR                                    BUILD_DATE
 #define CLD_BAS_DATE_SIZE                                   BUILD_DATE_LEN
-#define CLD_BAS_POWER_SOURCE                                E_CLD_BAS_PS_BATTERY
+// All current target boards (E75, QBKG11LM, QBKG12LM) are mains-powered Zigbee routers
+// (LogicalType="ZR", RxOnWhenIdle="true" in HelloZigbee.zpscfg). Report mains here so the Basic
+// cluster power-source attribute matches the node descriptor; otherwise coordinators (e.g. z2m)
+// treat the device as a sleepy battery node and defer OTA/availability handling. A future
+// battery/end-device board should override this in its own TARGET_BOARD_* section below.
+#define CLD_BAS_POWER_SOURCE                                E_CLD_BAS_PS_SINGLE_PHASE_MAINS
 #define CLD_BAS_SW_BUILD_STR                                VERSION_STR
 #define CLD_BAS_SW_BUILD_SIZE                               VERSION_STR_LEN
 #define CLD_BAS_DEVICE_CLASS                                (0)
