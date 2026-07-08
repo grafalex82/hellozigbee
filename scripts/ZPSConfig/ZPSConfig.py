@@ -154,7 +154,7 @@ def calculate_channel_mask(channel_mask):
     if 'true' == channel_mask['@Channel17'].lower():
         channel_mask_value |= 0x20000
     if 'true' == channel_mask['@Channel18'].lower():
-        channel_mask_value |= 0x20000
+        channel_mask_value |= 0x40000
     if 'true' == channel_mask['@Channel19'].lower():
         channel_mask_value |= 0x80000
     if 'true' == channel_mask['@Channel20'].lower():
