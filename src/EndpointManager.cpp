@@ -101,5 +101,5 @@ void EndpointManager::handleDeviceJoin()
 void EndpointManager::handleDeviceLeave()
 {
     for(uint8 ep = 1; ep <= ZCL_NUMBER_OF_ENDPOINTS; ep++)
-        registry[ep]->handleDeviceJoin();
+        registry[ep]->handleDeviceLeave();
 }
