@@ -189,17 +189,20 @@ void SwitchEndpoint::saveButtonsConfiguration()
 void SwitchEndpoint::applyButtonsConfiguration()
 {
     // While the device is off the network it cannot be controlled over Zigbee, so a decoupled
-    // (RELAY_MODE_UNLINKED) configuration would leave the relay stuck and uncontrollable. In that
-    // case fall back to a coupled RELAY_MODE_FRONT so the physical button keeps working like a
-    // plain switch. The persisted configuration in PDM (and the in-memory attribute values) are
-    // left untouched, so the original (e.g. decoupled) behaviour is restored automatically once
-    // the device rejoins. The matching server-mode fallback lives in runsInServerMode().
+    // (RELAY_MODE_UNLINKED) or non-toggle configuration would leave the relay hard to use. In that
+    // case fall back to the fresh-device dumb-switch behaviour: SWITCH_MODE_TOGGLE + RELAY_MODE_FRONT
+    // (a button click flips the relay). The persisted configuration in PDM (and the in-memory
+    // attribute values) are left untouched, so the original (e.g. decoupled/momentary) behaviour is
+    // restored automatically once the device rejoins. The server-mode fallback lives in runsInServerMode().
     bool offlineDumbSwitch = !clientOnly && !ZigbeeDevice::getInstance()->isJoined();
+    SwitchMode switchMode = offlineDumbSwitch
+                            ? SWITCH_MODE_TOGGLE
+                            : (SwitchMode)sOnOffConfigServerCluster.eSwitchMode;
     RelayMode relayMode = offlineDumbSwitch
                             ? RELAY_MODE_FRONT
                             : (RelayMode)sOnOffConfigServerCluster.eRelayMode;
 
-    buttonHandler.setConfiguration((SwitchMode)sOnOffConfigServerCluster.eSwitchMode,
+    buttonHandler.setConfiguration(switchMode,
                                    relayMode,
                                    sOnOffConfigServerCluster.iMaxPause,
                                    sOnOffConfigServerCluster.iMinLongPress);
