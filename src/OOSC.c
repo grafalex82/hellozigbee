@@ -76,7 +76,7 @@ PUBLIC  teZCL_Status eCLD_OOSCCreateOnOffSwitchConfig(
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->iMinLongPress = 1000;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eLongPressMode = E_CLD_OOSC_LONG_PRESS_MODE_NONE;
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eOperationMode = E_CLD_OOSC_OPERATION_MODE_SERVER;
-            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eOperationMode = E_CLD_OOSC_INTERLOCK_MODE_NONE;
+            ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->eInterlockMode = E_CLD_OOSC_INTERLOCK_MODE_NONE;
 #endif
             ((tsCLD_OOSC*)psClusterInstance->pvEndPointSharedStructPtr)->u16ClusterRevision = CLD_OOSC_CLUSTER_REVISION;
         }
