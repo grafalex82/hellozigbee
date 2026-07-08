@@ -115,6 +115,7 @@ protected:
 
     virtual void restoreButtonsConfiguration();
     virtual void saveButtonsConfiguration();
+    virtual void applyButtonsConfiguration();
 
     virtual void initReportingConfigurations();
     virtual void saveReportingConfigurations();

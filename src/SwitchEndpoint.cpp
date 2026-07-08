@@ -162,15 +162,12 @@ void SwitchEndpoint::restoreButtonsConfiguration()
                             sizeof(sOnOffConfigServerCluster),
                             &readBytes);
 
-    // Configure buttons state machine with read values
-    buttonHandler.setConfiguration((SwitchMode)sOnOffConfigServerCluster.eSwitchMode, 
-                                   (RelayMode)sOnOffConfigServerCluster.eRelayMode,
-                                   sOnOffConfigServerCluster.iMaxPause,
-                                   sOnOffConfigServerCluster.iMinLongPress);
-
     // Make sure that client only endpoints have client mode set
     if(clientOnly)
         sOnOffConfigServerCluster.eOperationMode = E_CLD_OOSC_OPERATION_MODE_CLIENT;
+
+    // Configure the buttons state machine, applying the off-network coupling fallback if needed
+    applyButtonsConfiguration();
 
     // Dump the restored configuration
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: Restored buttons configuration:\n", getEndpointId());
@@ -187,6 +184,25 @@ void SwitchEndpoint::saveButtonsConfiguration()
     PDM_eSaveRecordData(getPdmIdForEndpoint(getEndpointId(), PARAM_ID_BUTTON_CONFIG),
                         &sOnOffConfigServerCluster,
                         sizeof(sOnOffConfigServerCluster));
+}
+
+void SwitchEndpoint::applyButtonsConfiguration()
+{
+    // While the device is off the network it cannot be controlled over Zigbee, so a decoupled
+    // (RELAY_MODE_UNLINKED) configuration would leave the relay stuck and uncontrollable. In that
+    // case fall back to a coupled RELAY_MODE_FRONT so the physical button keeps working like a
+    // plain switch. The persisted configuration in PDM (and the in-memory attribute values) are
+    // left untouched, so the original (e.g. decoupled) behaviour is restored automatically once
+    // the device rejoins. The matching server-mode fallback lives in runsInServerMode().
+    bool offlineDumbSwitch = !clientOnly && !ZigbeeDevice::getInstance()->isJoined();
+    RelayMode relayMode = offlineDumbSwitch
+                            ? RELAY_MODE_FRONT
+                            : (RelayMode)sOnOffConfigServerCluster.eRelayMode;
+
+    buttonHandler.setConfiguration((SwitchMode)sOnOffConfigServerCluster.eSwitchMode,
+                                   relayMode,
+                                   sOnOffConfigServerCluster.iMaxPause,
+                                   sOnOffConfigServerCluster.iMinLongPress);
 }
 
 void SwitchEndpoint::init()
@@ -664,6 +680,12 @@ bool SwitchEndpoint::runsInServerMode() const
     if(clientOnly)
         return false;
 
+    // Off the network the endpoint always acts as a local server, so the relay stays controllable
+    // by the physical button (paired with the coupling fallback in applyButtonsConfiguration()).
+    // The persisted operation mode is honoured again once the device is back on the network.
+    if(!ZigbeeDevice::getInstance()->isJoined())
+        return true;
+
     bool serverMode = (sOnOffConfigServerCluster.eOperationMode == E_CLD_OOSC_OPERATION_MODE_SERVER);
     DBG_vPrintf(TRUE, "SwitchEndpoint EP=%d: ServerMode=%d (mode=%d)\n", getEndpointId(), serverMode, sOnOffConfigServerCluster.eOperationMode);
     return serverMode;
@@ -671,12 +693,18 @@ bool SwitchEndpoint::runsInServerMode() const
 
 void SwitchEndpoint::handleDeviceJoin()
 {
+    // Back on the network: restore the configured (possibly decoupled) button behaviour
+    applyButtonsConfiguration();
+
     // Force resetting the LED
     doStateChange(getState());
 }
 
 void SwitchEndpoint::handleDeviceLeave()
 {
+    // Off the network: fall back to a coupled local switch so the relay stays usable
+    applyButtonsConfiguration();
+
     // Force resetting the LED
     doStateChange(getState());
 }
