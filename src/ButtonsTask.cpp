@@ -10,6 +10,7 @@ ButtonsTask::ButtonsTask()
 {
     idleCounter = 0;
     longPressCounter = 0;
+    gestureFired = false;
 
     buttonsMask = 0;
     buttonsOverride = 0;
@@ -91,14 +92,19 @@ void ButtonsTask::timerCallback()
 
     // Reset the idle counter when user interacts with a button
     if(someButtonPressed)
-    {
         idleCounter = 0;
+    else
+        idleCounter++;
+
+    // Count how long ALL buttons are held together (the join/leave gesture). Counting any-button
+    // presses instead would let a long single-button hold (e.g. hold-to-dim on a 2-gang device)
+    // pre-charge the counter, so that merely touching the second button would fire the gesture.
+    if(allButtonsPressed)
         longPressCounter++;
-    }
     else
     {
-        idleCounter++;
         longPressCounter = 0;
+        gestureFired = false;   // Buttons released - re-arm the gesture
     }
 
     // Process a very long press of all buttons to join/leave the network.
@@ -109,7 +115,10 @@ void ButtonsTask::timerCallback()
     //   - LEAVE: all buttons held ~30s while joined - deliberately long. Prefer removing the
     //            device from the coordinator (e.g. Zigbee2MQTT "Remove device") over this
     //            local escape hatch, which mainly exists for an orphaned device.
-    if(allButtonsPressed)
+    // At most one gesture fires per continuous press (gestureFired latch): without it a stuck
+    // button would leave at 30s, rejoin 5s later, leave again, and so on - endlessly flapping
+    // on the network and wearing PDM flash with connectionState writes on every transition.
+    if(allButtonsPressed && !gestureFired)
     {
         ZigbeeDevice * zigbeeDevice = ZigbeeDevice::getInstance();
         bool doJoin  = !zigbeeDevice->isJoined() && longPressCounter > 5000/ButtonPollCycle;
@@ -120,7 +129,7 @@ void ButtonsTask::timerCallback()
             for(uint8 h = 0; h < numHandlers; h++)
                 handlers[h].handler->resetButtonStateMachine();
 
-            longPressCounter = 0;
+            gestureFired = true;
 
             if(doJoin)
                 zigbeeDevice->joinNetwork();

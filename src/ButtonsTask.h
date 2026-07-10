@@ -22,6 +22,7 @@ class ButtonsTask : public PeriodicTask
 {
     uint32 idleCounter;
     uint32 longPressCounter;
+    bool gestureFired;
 
     HandlerRecord handlers[ZCL_NUMBER_OF_ENDPOINTS+1];
     uint8 numHandlers;
