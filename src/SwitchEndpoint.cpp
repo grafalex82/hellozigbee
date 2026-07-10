@@ -623,15 +623,55 @@ teZCL_CommandStatus SwitchEndpoint::handleCheckAttributeRange(tsZCL_CallBackEven
     uint16 attribute = psEvent->uMessage.sIndividualAttributeResponse.u16AttributeEnum;
     uint16 cluster = psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum;
 
-    // Prevent switching client only endpoint to a server mode
-    if(cluster == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION && attribute == E_CLD_OOSC_ATTR_ID_SWITCH_OPERATION_MODE)
+    // Validate values written to the OOSC enum attributes. The ZCL layer only checks the type
+    // width (enum8), not the value, and an out-of-range value would be persisted in PDM (thus
+    // surviving reboots) while the button handlers treat unknown values as a no-op - i.e. a
+    // single bad write could disable the physical button until a valid value is rewritten.
+    if(cluster == GENERAL_CLUSTER_ID_ONOFF_SWITCH_CONFIGURATION)
     {
         uint8 value = *(uint8*)psEvent->uMessage.sIndividualAttributeResponse.pvAttributeData;
-        if(clientOnly && value != E_CLD_OOSC_OPERATION_MODE_CLIENT)
-            return E_ZCL_CMDS_INVALID_VALUE;
+
+        switch(attribute)
+        {
+            case E_CLD_OOSC_ATTR_ID_SWITCH_OPERATION_MODE:
+                // Also prevent switching client only endpoint to a server mode
+                if(clientOnly && value != E_CLD_OOSC_OPERATION_MODE_CLIENT)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                if(value > E_CLD_OOSC_OPERATION_MODE_CLIENT)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                break;
+
+            case E_CLD_OOSC_ATTR_ID_SWITCH_MODE:
+                if(value > SWITCH_MODE_MULTIFUNCTION)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                break;
+
+            case E_CLD_OOSC_ATTR_ID_SWITCH_ACTIONS:
+                if(value > E_CLD_OOSC_ACTION_TOGGLE)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                break;
+
+            case E_CLD_OOSC_ATTR_ID_SWITCH_RELAY_MODE:
+                if(value > RELAY_MODE_LONG)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                break;
+
+            case E_CLD_OOSC_ATTR_ID_SWITCH_LONG_PRESS_MODE:
+                if(value > E_CLD_OOSC_LONG_PRESS_MODE_LEVEL_CTRL_DOWN)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                break;
+
+            case E_CLD_OOSC_ATTR_ID_SWITCH_INTERLOCK_MODE:
+                if(value > E_CLD_OOSC_INTERLOCK_MODE_OPPOSITE)
+                    return E_ZCL_CMDS_INVALID_VALUE;
+                break;
+
+            default:
+                break;
+        }
     }
 
-    // By default we do not perform attribute value validation
+    // Other attributes are not range-validated
     return E_ZCL_CMDS_SUCCESS;
 }
 
