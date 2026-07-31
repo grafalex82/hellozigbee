@@ -96,15 +96,16 @@ These are the two board constants that set the pulse‑frequency → physical‑
 
 ### Voltage divider (V2P, pin 4 = **TP16**)
 ```
-N ──[ 4 × 470 kΩ (4703) = 1.88 MΩ ]── V2P / TP16 (pin 4) ──[ 1 kΩ (018) ]── L (=GND)
-         Rup (high side)                                      Rdown (low side)
+N ──[ 22 Ω fusible ]──┬──[ 4 × 470 kΩ (4703) = 1.88 MΩ ]── V2P / TP16 (pin 4) ──[ 1 kΩ (018) ]── L (=GND)
+                      └──► SMPS input / rest of circuit
+        Rup (high side)                                       Rdown (low side)
 ```
-- **Rup = 4 × 470 kΩ = 1.88 MΩ** — SMD `4703` (1%, 4‑digit code `470×10³`), a series string near the mains input.
+- **Rup = 4 × 470 kΩ = 1.88 MΩ** in series with a **22 Ω fusible** on the N side → **Rup_total ≈ 1,880,022 Ω** — SMD `4703` (1%, 4‑digit code `470×10³`).
 - **Rdown = 1 kΩ** — marked `018`, measured 1.00 kΩ (ohm mode, 2 kΩ range).
-- **Divider ratio = (Rup + Rdown)/Rdown = 1881.**
-- V2P at 230 V ≈ 230 × 1000/1,881,000 ≈ **122 mV RMS** — within the HLW8012 V2 range.
+- **Divider ratio = (Rup_total + Rdown)/Rdown ≈ 1881** (the 22 Ω is 0.001 % of Rup — negligible).
+- V2P at 230 V ≈ 230 × 1000/1,881,022 ≈ **122 mV RMS** — within the HLW8012 V2 range.
 
-> The nearby **~22 Ω through‑hole flameproof resistor** (bands red‑red‑black‑gold, measured 21.2 Ω) is the **SMPS mains inrush / fusible safety resistor** in the supply input — **not** part of the metering divider. Ignore it for calibration (22 Ω vs 1.88 MΩ is negligible even if in series).
+> The **~22 Ω through‑hole flameproof resistor** (bands red‑red‑black‑gold, measured 21.2 Ω) is a **shared mains inrush / fusible safety resistor**: it sits between the true **N terminal** and the board's internal post‑fuse node, from which **both the SMPS input and this voltage divider** are fed. So it **is** in series in the divider's return to N — but at 22 Ω vs 1.88 MΩ it does not affect calibration.
 
 ### Initial multipliers (xoseperez/hlw8012 formula — V_REF = 2.43, F_OSC = 3.579 MHz)
 Driver setup equivalent: `setResistors(current = 0.002, v_upstream = 1.88e6, v_downstream = 1000)`.
