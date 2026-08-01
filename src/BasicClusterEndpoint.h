@@ -10,6 +10,9 @@ extern "C"
     #include "Basic.h"
     #include "Identify.h"
     #include "DeviceTemperatureConfiguration.h"
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    #include "ElectricalMeasurement.h"
+#endif
 }
 
 // List of cluster instances (descriptor objects) that are included into an Endpoint
@@ -26,6 +29,11 @@ struct BasicClusterInstances
 
     // The device will report its temperature over the Device Temperature Configuration cluster
     tsZCL_ClusterInstance sDeviceTemperatureServer;
+
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    // Boards with a metering IC report power/voltage/current over the Electrical Measurement cluster
+    tsZCL_ClusterInstance sElectricalMeasurementServer;
+#endif
 } __attribute__ ((aligned(4)));
 
 class BasicClusterEndpoint : public Endpoint
@@ -40,6 +48,9 @@ class BasicClusterEndpoint : public Endpoint
     tsCLD_Identify sIdentifyServerCluster;
     tsCLD_IdentifyCustomDataStructure sIdentifyClusterData;
     tsCLD_DeviceTemperatureConfiguration sDeviceTemperatureServerCluster;
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    tsCLD_ElectricalMeasurement sElectricalMeasurementServerCluster;
+#endif
     tsCLD_AS_Ota sOTAClientCluster;
     tsOTA_Common sOTACustomDataStruct;
 
@@ -55,6 +66,9 @@ protected:
     virtual void registerIdentifyCluster();
     virtual void registerOtaCluster();
     virtual void registerDeviceTemperatureCluster();
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    virtual void registerElectricalMeasurementCluster();
+#endif
     virtual void registerEndpoint();
 
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
@@ -67,6 +81,9 @@ protected:
     void handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent);
 
     void readDeviceTemperature();
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    void readElectricalMeasurement();
+#endif
 };
 
 #endif // BASICCLUSTERENDPOINT_H

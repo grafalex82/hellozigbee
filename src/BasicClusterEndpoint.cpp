@@ -10,6 +10,9 @@ extern "C"
 #include "EndpointManager.h"
 #include "LEDTask.h"
 #include "DumpFunctions.h"
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+#include "EnergyMeterTask.h"
+#endif
 
 BasicClusterEndpoint::BasicClusterEndpoint()
 {
@@ -71,6 +74,22 @@ void BasicClusterEndpoint::registerDeviceTemperatureCluster()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerDeviceTemperatureCluster(): Failed to create Device Temperature Configuration Cluster instance. Status=%d\n", status);
 }
 
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+void BasicClusterEndpoint::registerElectricalMeasurementCluster()
+{
+    // Create an instance of an electrical measurement cluster as a server
+    teZCL_Status status = eCLD_ElectricalMeasurementCreateElectricalMeasurement(
+        &clusterInstances.sElectricalMeasurementServer,
+        TRUE,
+        &sCLD_ElectricalMeasurement,
+        &sElectricalMeasurementServerCluster,
+        &au8ElectricalMeasurementAttributeControlBits[0]);
+
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerElectricalMeasurementCluster(): Failed to create Electrical Measurement Cluster instance. Status=%d\n", status);
+}
+#endif
+
 void BasicClusterEndpoint::registerEndpoint()
 {
     // Fill in end point details
@@ -94,6 +113,9 @@ void BasicClusterEndpoint::init()
     registerIdentifyCluster();
     registerOtaCluster();
     registerDeviceTemperatureCluster();
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    registerElectricalMeasurementCluster();
+#endif
     registerEndpoint();
 
     // Fill Basic cluster attributes
@@ -102,6 +124,11 @@ void BasicClusterEndpoint::init()
     memcpy(sBasicServerCluster.au8DateCode, CLD_BAS_DATE_STR, CLD_BAS_DATE_SIZE);
     memcpy(sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
+
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    // Bit 0 = active measurement (AC)
+    sElectricalMeasurementServerCluster.u32MeasurementType = 1;
+#endif
 
     // Initialize OTA
     otaHandlers.initOTA(getEndpointId());
@@ -205,6 +232,12 @@ teZCL_CommandStatus BasicClusterEndpoint::handleReadAttribute(tsZCL_CallBackEven
         case GENERAL_CLUSTER_ID_DEVICE_TEMPERATURE_CONFIGURATION:
             readDeviceTemperature();
             break;
+
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+        case MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT:
+            readElectricalMeasurement();
+            break;
+#endif
     }
 
     return E_ZCL_CMDS_SUCCESS;
@@ -231,3 +264,22 @@ void BasicClusterEndpoint::readDeviceTemperature()
     // Disable the ADC
     vAHI_AdcDisable();
 }
+
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+void BasicClusterEndpoint::readElectricalMeasurement()
+{
+    // Phase 1 (pulse plumbing): the attributes carry RAW HLW8012 pulse
+    // frequencies in 0.1 Hz units, not electrical units yet.
+    // ActivePower <- CF frequency, RMSVoltage <- CF1 frequency.
+    // Calibrated conversion comes in the next phase.
+    uint16 cfFreqDHz = EnergyMeterTask::getInstance()->getCfFreqDHz();
+    uint16 cf1FreqDHz = EnergyMeterTask::getInstance()->getCf1FreqDHz();
+
+    sElectricalMeasurementServerCluster.i16ActivePower = (cfFreqDHz > 32767) ? 32767 : cfFreqDHz;
+    sElectricalMeasurementServerCluster.u16RMSVoltage = cf1FreqDHz;
+    sElectricalMeasurementServerCluster.u16RMSCurrent = 0;
+
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint: Electrical measurement raw read: CF=%d dHz, CF1=%d dHz\n",
+                cfFreqDHz, cf1FreqDHz);
+}
+#endif

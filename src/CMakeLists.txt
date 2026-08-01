@@ -69,6 +69,7 @@ set(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/BasicClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/BasicCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/DeviceTemperatureConfiguration.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Source/ElectricalMeasurement.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Groups.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsCommandHandler.c
@@ -188,6 +189,7 @@ set(SOURCES
         LEDPair.cpp
         RelayHandler.cpp
         RelayTask.cpp
+        EnergyMeterTask.cpp
         ButtonHandler.cpp
         PollTask.cpp
         DumpFunctions.cpp

@@ -153,6 +153,16 @@
     #define RELAY1_OFF_PIN              (12)
     #define RELAY1_OFF_MASK             (1UL << RELAY1_OFF_PIN)
 
+    // On-board HLW8012 energy metering IC (CF/CF1 are the pulse counters'
+    // default input pins; SEL is inverted by a 2N7002 on its way to the chip)
+    #define SUPPORTS_POWER_METERING
+    #define METERING_CF_PIN             (8)
+    #define METERING_CF_MASK            (1UL << METERING_CF_PIN)
+    #define METERING_CF1_PIN            (1)
+    #define METERING_CF1_MASK           (1UL << METERING_CF1_PIN)
+    #define METERING_SEL_PIN            (9)
+    #define METERING_SEL_MASK           (1UL << METERING_SEL_PIN)
+
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
     #define ZCL_NUMBER_OF_ENDPOINTS     (2)
@@ -196,5 +206,14 @@
 
 #endif // TARGET_BOARD
 
+
+// Electrical Measurement cluster is registered only on boards with a metering IC
+#ifdef SUPPORTS_POWER_METERING
+#define CLD_ELECTRICAL_MEASUREMENT
+#define ELECTRICAL_MEASUREMENT_SERVER
+#define CLD_ELECTMEAS_ATTR_ACTIVE_POWER
+#define CLD_ELECTMEAS_ATTR_RMS_VOLTAGE
+#define CLD_ELECTMEAS_ATTR_RMS_CURRENT
+#endif
 
 #endif /* ZCL_OPTIONS_H */

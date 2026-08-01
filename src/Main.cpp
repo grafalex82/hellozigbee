@@ -22,6 +22,9 @@ extern "C"
 #include "LEDTask.h"
 #include "BlinkTask.h"
 #include "RelayTask.h"
+#ifdef SUPPORTS_POWER_METERING
+#include "EnergyMeterTask.h"
+#endif
 #include "DumpFunctions.h"
 #include "DebugInput.h"
 
@@ -35,15 +38,16 @@ extern "C"
 }
 
 
-// 7 timers are:
+// 8 timers are:
 // - 1 in ButtonTask
 // - 1 in LEDTask
 // - 1 in RelayTask
 // - 1 in Heartbeat BlinkTask
 // - 1 in PollTask
+// - 1 in EnergyMeterTask
 // - 1 is ZCL timer
 // Note: if not enough space in this timers array, some of the functions (e.g. network joining) may not work properly
-ZTIMER_tsTimer timers[7 + BDB_ZTIMER_STORAGE];
+ZTIMER_tsTimer timers[8 + BDB_ZTIMER_STORAGE];
 
 extern "C" void __cxa_pure_virtual(void) __attribute__((__noreturn__));
 extern "C" void __cxa_deleted_virtual(void) __attribute__((__noreturn__));
@@ -141,6 +145,9 @@ extern "C" PUBLIC void vAppMain(void)
     ButtonsTask::getInstance()->start();
     LEDTask::getInstance();
     RelayTask::getInstance();
+#ifdef SUPPORTS_POWER_METERING
+    EnergyMeterTask::getInstance();
+#endif
 
     // Initialize the heartbeat LED (if there is one)
 #ifdef HEARTBEAT_LED_MASK
