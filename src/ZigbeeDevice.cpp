@@ -12,6 +12,9 @@ extern "C"
     #include "bdb_api.h"
     #include "dbg.h"
     #include "OnOff.h"
+
+    // Application API - for the radio compliance-limit call (vAppApiSetComplianceLimits)
+    #include "AppApi.h"
 }
 
 #include "ZigbeeDevice.h"
@@ -41,6 +44,14 @@ ZigbeeDevice::ZigbeeDevice()
 
     // Restore network connection state
     connectionState.init(NOT_JOINED, "connectionState");
+
+    // Standard JN5169 ETSI-region compliance ceiling (+8 dBm on all channels,
+    // CCA threshold 48), applied before the stack brings up the MAC/PHY. This
+    // does NOT by itself change the link budget - it only caps the core radio,
+    // which already sits below the cap, so on its own it had no measurable LQI
+    // effect. It is kept as an explicit legal ceiling for the amplified output
+    // once the external PA (below) is enabled.
+    vAppApiSetComplianceLimits(8, 8, 48);
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "ZigbeeDevice(): init Application Framework (AF)... ");
