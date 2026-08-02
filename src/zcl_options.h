@@ -170,6 +170,10 @@
     // Voltage: datasheet-nominal (no reference instrument available yet):
     // 0.32694 V/Hz from Vref 2.43 V, Fosc 3.579 MHz, divider ratio 1881.
     #define METERING_DV_PER_DHZ_E5      (32694)
+    // Current: datasheet-nominal, 7.2423 mA/Hz from Vref and the 2 mOhm shunt.
+    // The power calibration suggests the real shunt is ~9 % low, so expect
+    // this channel to read correspondingly high until calibrated (Phase 3).
+    #define METERING_MA_PER_DHZ_E5      (72423)
 
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
@@ -232,6 +236,8 @@
 #define CLD_ELECTMEAS_ATTR_AC_POWER_DIVISOR
 #define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_MULTIPLIER
 #define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_DIVISOR
+#define CLD_ELECTMEAS_ATTR_AC_CURRENT_MULTIPLIER
+#define CLD_ELECTMEAS_ATTR_AC_CURRENT_DIVISOR
 #endif
 
 #endif /* ZCL_OPTIONS_H */

@@ -22,6 +22,11 @@ static const uint8 TIMEBASE_PRESCALE = 14;
 static const uint32 TIMEBASE_DHZ_MUL = 78125;
 static const uint32 TIMEBASE_DHZ_DIV = 8;
 
+// SEL alternates CF1 between voltage and current mode every N sampling
+// windows; the window straddling the toggle is discarded (mode change +
+// HLW8012 settle), leaving N-1 valid windows per dwell
+static const uint8 SEL_DWELL_TICKS = 5;
+
 EnergyMeterTask::EnergyMeterTask()
 {
     // Drive SEL low for a deterministic CF1 mode. The signal reaches the
@@ -52,9 +57,13 @@ EnergyMeterTask::EnergyMeterTask()
     bAHI_Read16BitCounter(E_AHI_PC_0, &prevCf1Count);
     prevTimebaseTicks = u16AHI_TimerReadCount(E_AHI_TIMER_0);
     cfFreqDHz = 0;
-    cf1FreqDHz = 0;
+    voltageFreqDHz = 0;
+    currentFreqDHz = 0;
     cfTotal = 0;
     cf1Total = 0;
+    selCurrentMode = 0;         // constructor drove SEL low = voltage mode
+    modeTicks = 0;
+    transitionWindow = false;
 
     PeriodicTask::init(SAMPLE_PERIOD_MS);
     startTimer(SAMPLE_PERIOD_MS);
@@ -93,10 +102,32 @@ void EnergyMeterTask::timerCallback()
     cf1Total += cf1Delta;
 
     cfFreqDHz = freqDHz(cfDelta, tickDelta);
-    cf1FreqDHz = freqDHz(cf1Delta, tickDelta);
 
-    DBG_vPrintf(TRUE, "EnergyMeterTask: CF=%d.%d Hz, CF1=%d.%d Hz (window %d ticks)\n",
-                cfFreqDHz / 10, cfFreqDHz % 10, cf1FreqDHz / 10, cf1FreqDHz % 10, tickDelta);
+    // Attribute the CF1 window to the mode that was active throughout it
+    uint16 cf1FreqDHz = freqDHz(cf1Delta, tickDelta);
+    if(transitionWindow)
+        transitionWindow = false;
+    else if(selCurrentMode)
+        currentFreqDHz = cf1FreqDHz;
+    else
+        voltageFreqDHz = cf1FreqDHz;
+
+    // Alternate SEL between voltage and current measurement
+    if(++modeTicks >= SEL_DWELL_TICKS)
+    {
+        selCurrentMode ^= 1;
+        // DIO9 low = voltage mode, high = current mode (2N7002 inverts on its way to SEL)
+        if(selCurrentMode)
+            vAHI_DioSetOutput(METERING_SEL_MASK, 0);
+        else
+            vAHI_DioSetOutput(0, METERING_SEL_MASK);
+        modeTicks = 0;
+        transitionWindow = true;
+    }
+
+    DBG_vPrintf(TRUE, "EnergyMeterTask: CF=%d.%d Hz, CF1=%d.%d Hz mode=%c (window %d ticks)\n",
+                cfFreqDHz / 10, cfFreqDHz % 10, cf1FreqDHz / 10, cf1FreqDHz % 10,
+                selCurrentMode ? 'I' : 'V', tickDelta);
 }
 
 #endif // SUPPORTS_POWER_METERING
