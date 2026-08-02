@@ -128,6 +128,11 @@ void BasicClusterEndpoint::init()
 #ifdef CLD_ELECTRICAL_MEASUREMENT
     // Bit 0 = active measurement (AC)
     sElectricalMeasurementServerCluster.u32MeasurementType = 1;
+    // ActivePower is in W, RMSVoltage in 0.1 V
+    sElectricalMeasurementServerCluster.u16ACPowerMultiplier = 1;
+    sElectricalMeasurementServerCluster.u16ACPowerDivisor = 1;
+    sElectricalMeasurementServerCluster.u16ACVoltageMultiplier = 1;
+    sElectricalMeasurementServerCluster.u16ACVoltageDivisor = 10;
 #endif
 
     // Initialize OTA
@@ -268,22 +273,22 @@ void BasicClusterEndpoint::readDeviceTemperature()
 #ifdef CLD_ELECTRICAL_MEASUREMENT
 void BasicClusterEndpoint::readElectricalMeasurement()
 {
-    // Phase 1 (pulse plumbing): the attributes carry RAW HLW8012 pulse
-    // frequencies in 0.1 Hz units, not electrical units yet.
-    // ActivePower <- CF frequency, RMSVoltage <- CF1 frequency.
-    // Calibrated conversion comes in the next phase.
     uint16 cfFreqDHz = EnergyMeterTask::getInstance()->getCfFreqDHz();
     uint16 cf1FreqDHz = EnergyMeterTask::getInstance()->getCf1FreqDHz();
 
-    sElectricalMeasurementServerCluster.i16ActivePower = (cfFreqDHz > 32767) ? 32767 : cfFreqDHz;
-    sElectricalMeasurementServerCluster.u16RMSVoltage = cf1FreqDHz;
+    // CF frequency -> active power (W); CF1 in voltage mode (SEL low) -> RMS voltage (0.1 V)
+    uint32 watts = (uint32)cfFreqDHz * METERING_W_PER_DHZ_E5 / 100000;
+    sElectricalMeasurementServerCluster.i16ActivePower = (watts > 32767) ? 32767 : watts;
+    sElectricalMeasurementServerCluster.u16RMSVoltage = (uint32)cf1FreqDHz * METERING_DV_PER_DHZ_E5 / 100000;
     sElectricalMeasurementServerCluster.u16RMSCurrent = 0;
 
     // Cumulative pulse counts for integrative calibration (0xFF00/0xFF01)
     sElectricalMeasurementServerCluster.u32ManSpecificApparentPower = EnergyMeterTask::getInstance()->getCfTotal();
     sElectricalMeasurementServerCluster.u32NonActivePower = EnergyMeterTask::getInstance()->getCf1Total();
 
-    DBG_vPrintf(TRUE, "BasicClusterEndpoint: Electrical measurement raw read: CF=%d dHz, CF1=%d dHz\n",
+    DBG_vPrintf(TRUE, "BasicClusterEndpoint: Electrical measurement read: %d W, %d dV (CF=%d dHz, CF1=%d dHz)\n",
+                sElectricalMeasurementServerCluster.i16ActivePower,
+                sElectricalMeasurementServerCluster.u16RMSVoltage,
                 cfFreqDHz, cf1FreqDHz);
 }
 #endif

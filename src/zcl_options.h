@@ -162,6 +162,14 @@
     #define METERING_CF1_MASK           (1UL << METERING_CF1_PIN)
     #define METERING_SEL_PIN            (9)
     #define METERING_SEL_MASK           (1UL << METERING_SEL_PIN)
+    // Conversion constants, scaled by 1e5: value = freq_dHz * K / 100000.
+    // Power: calibrated 2026-08-02 against an inline power meter (1910 W at
+    // 424.41 Hz CF over a 3 min pulse-count integration) -> 4.5004 W/Hz,
+    // +8.8 % over the datasheet-nominal 4.138 (shunt below its marked 2 mOhm).
+    #define METERING_W_PER_DHZ_E5       (45004)
+    // Voltage: datasheet-nominal (no reference instrument available yet):
+    // 0.32694 V/Hz from Vref 2.43 V, Fosc 3.579 MHz, divider ratio 1881.
+    #define METERING_DV_PER_DHZ_E5      (32694)
 
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
@@ -219,6 +227,11 @@
 // integrate over minutes instead of trusting one 1 s window
 #define CLD_ELECTMEAS_ATTR_MAN_SPEC_APPARENT_POWER
 #define CLD_ELECTMEAS_ATTR_MAN_SPEC_NON_ACTIVE_POWER
+// Scaling attributes so coordinators can render real units
+#define CLD_ELECTMEAS_ATTR_AC_POWER_MULTIPLIER
+#define CLD_ELECTMEAS_ATTR_AC_POWER_DIVISOR
+#define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_MULTIPLIER
+#define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_DIVISOR
 #endif
 
 #endif /* ZCL_OPTIONS_H */
