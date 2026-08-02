@@ -13,6 +13,9 @@ extern "C"
 #ifdef CLD_ELECTRICAL_MEASUREMENT
     #include "ElectricalMeasurement.h"
 #endif
+#ifdef CLD_SM
+    #include "SimpleMetering.h"
+#endif
 }
 
 // List of cluster instances (descriptor objects) that are included into an Endpoint
@@ -34,6 +37,11 @@ struct BasicClusterInstances
     // Boards with a metering IC report power/voltage/current over the Electrical Measurement cluster
     tsZCL_ClusterInstance sElectricalMeasurementServer;
 #endif
+
+#ifdef CLD_SM
+    // ... and cumulative energy over the Simple Metering cluster
+    tsZCL_ClusterInstance sSimpleMeteringServer;
+#endif
 } __attribute__ ((aligned(4)));
 
 class BasicClusterEndpoint : public Endpoint
@@ -50,6 +58,10 @@ class BasicClusterEndpoint : public Endpoint
     tsCLD_DeviceTemperatureConfiguration sDeviceTemperatureServerCluster;
 #ifdef CLD_ELECTRICAL_MEASUREMENT
     tsCLD_ElectricalMeasurement sElectricalMeasurementServerCluster;
+#endif
+#ifdef CLD_SM
+    tsCLD_SimpleMetering sSimpleMeteringServerCluster;
+    tsSM_CustomStruct sSimpleMeteringCustomDataStruct;
 #endif
     tsCLD_AS_Ota sOTAClientCluster;
     tsOTA_Common sOTACustomDataStruct;
@@ -69,6 +81,9 @@ protected:
 #ifdef CLD_ELECTRICAL_MEASUREMENT
     virtual void registerElectricalMeasurementCluster();
 #endif
+#ifdef CLD_SM
+    virtual void registerSimpleMeteringCluster();
+#endif
     virtual void registerEndpoint();
 
     virtual void handleClusterUpdate(tsZCL_CallBackEvent *psEvent);
@@ -81,8 +96,12 @@ protected:
     void handleOTAClusterUpdate(tsZCL_CallBackEvent *psEvent);
 
     void readDeviceTemperature();
+
+public:
 #ifdef CLD_ELECTRICAL_MEASUREMENT
-    void readElectricalMeasurement();
+    // Called by EnergyMeterTask every sampling window - keeps the cluster
+    // structs fresh for both explicit reads and the attribute reporting engine
+    void updateMeteringAttributes();
 #endif
 };
 

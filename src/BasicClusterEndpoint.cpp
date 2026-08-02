@@ -74,6 +74,23 @@ void BasicClusterEndpoint::registerDeviceTemperatureCluster()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerDeviceTemperatureCluster(): Failed to create Device Temperature Configuration Cluster instance. Status=%d\n", status);
 }
 
+#ifdef CLD_SM
+void BasicClusterEndpoint::registerSimpleMeteringCluster()
+{
+    // Create an instance of a simple metering cluster as a server
+    teZCL_Status status = eSE_SMCreate(getEndpointId(),
+                                       TRUE,
+                                       &au8SimpleMeteringServerAttributeControlBits[0],
+                                       &clusterInstances.sSimpleMeteringServer,
+                                       &sCLD_SimpleMetering,
+                                       &sSimpleMeteringCustomDataStruct,
+                                       &sSimpleMeteringServerCluster);
+
+    if(status != E_ZCL_SUCCESS)
+        DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerSimpleMeteringCluster(): Failed to create Simple Metering Cluster instance. Status=%d\n", status);
+}
+#endif
+
 #ifdef CLD_ELECTRICAL_MEASUREMENT
 void BasicClusterEndpoint::registerElectricalMeasurementCluster()
 {
@@ -116,6 +133,9 @@ void BasicClusterEndpoint::init()
 #ifdef CLD_ELECTRICAL_MEASUREMENT
     registerElectricalMeasurementCluster();
 #endif
+#ifdef CLD_SM
+    registerSimpleMeteringCluster();
+#endif
     registerEndpoint();
 
     // Fill Basic cluster attributes
@@ -135,6 +155,21 @@ void BasicClusterEndpoint::init()
     sElectricalMeasurementServerCluster.u16ACVoltageDivisor = 10;
     sElectricalMeasurementServerCluster.u16ACCurrentMultiplier = 1;
     sElectricalMeasurementServerCluster.u16ACCurentDivisor = 1000;  // (sic - SDK field name typo)
+#endif
+
+#ifdef CLD_SM
+    // CurrentSummationDelivered is in Wh: kWh = value * multiplier / divisor
+    sSimpleMeteringServerCluster.eUnitOfMeasure = 0;                // kWh
+    sSimpleMeteringServerCluster.u24Multiplier = 1;
+    sSimpleMeteringServerCluster.u24Divisor = 1000;
+    sSimpleMeteringServerCluster.u8SummationFormatting = 0xBB;      // suppress zeros, 7 int + 3 frac digits
+    sSimpleMeteringServerCluster.u8MeterStatus = 0;
+    sSimpleMeteringServerCluster.eMeteringDeviceType = 0;           // electric metering
+#endif
+
+#ifdef SUPPORTS_POWER_METERING
+    // From now on the meter task pushes fresh values into the cluster structs
+    EnergyMeterTask::getInstance()->setMeteringEndpoint(this);
 #endif
 
     // Initialize OTA
@@ -242,7 +277,12 @@ teZCL_CommandStatus BasicClusterEndpoint::handleReadAttribute(tsZCL_CallBackEven
 
 #ifdef CLD_ELECTRICAL_MEASUREMENT
         case MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT:
-            readElectricalMeasurement();
+#ifdef CLD_SM
+        case SE_CLUSTER_ID_SIMPLE_METERING:
+#endif
+            // Values are pushed every sampling window; refresh once more so a
+            // read straddling the window boundary gets the newest data
+            updateMeteringAttributes();
             break;
 #endif
     }
@@ -273,7 +313,7 @@ void BasicClusterEndpoint::readDeviceTemperature()
 }
 
 #ifdef CLD_ELECTRICAL_MEASUREMENT
-void BasicClusterEndpoint::readElectricalMeasurement()
+void BasicClusterEndpoint::updateMeteringAttributes()
 {
     uint16 cfFreqDHz = EnergyMeterTask::getInstance()->getCfFreqDHz();
     uint16 voltageFreqDHz = EnergyMeterTask::getInstance()->getVoltageFreqDHz();
@@ -287,13 +327,13 @@ void BasicClusterEndpoint::readElectricalMeasurement()
     sElectricalMeasurementServerCluster.u16RMSCurrent = (mA > 65535) ? 65535 : mA;
 
     // Cumulative pulse counts for integrative calibration (0xFF00/0xFF01)
-    sElectricalMeasurementServerCluster.u32ManSpecificApparentPower = EnergyMeterTask::getInstance()->getCfTotal();
+    sElectricalMeasurementServerCluster.u32ManSpecificApparentPower = (uint32)EnergyMeterTask::getInstance()->getCfTotal();
     sElectricalMeasurementServerCluster.u32NonActivePower = EnergyMeterTask::getInstance()->getCf1Total();
 
-    DBG_vPrintf(TRUE, "BasicClusterEndpoint: Electrical measurement read: %d W, %d dV, %d mA (CF=%d dHz)\n",
-                sElectricalMeasurementServerCluster.i16ActivePower,
-                sElectricalMeasurementServerCluster.u16RMSVoltage,
-                sElectricalMeasurementServerCluster.u16RMSCurrent,
-                cfFreqDHz);
+#ifdef CLD_SM
+    // Lifetime energy in Wh: pulses * (W-per-dHz / 1e5) J/pulse * 10 / 3600
+    sSimpleMeteringServerCluster.u48CurrentSummationDelivered =
+        EnergyMeterTask::getInstance()->getCfTotal() * METERING_W_PER_DHZ_E5 / 36000000;
+#endif
 }
 #endif

@@ -2,6 +2,10 @@
 #define ENERGY_METER_TASK_H
 
 #include "PeriodicTask.h"
+#include "PersistedValue.h"
+#include "PdmIds.h"
+
+class BasicClusterEndpoint;
 
 // Acquires pulse frequencies from the on-board HLW8012 energy metering IC
 // using the JN516x hardware pulse counters (no remapping needed):
@@ -17,11 +21,17 @@ class EnergyMeterTask : public PeriodicTask
     uint16 cfFreqDHz;       // last CF frequency in 0.1 Hz units (active power)
     uint16 voltageFreqDHz;  // last CF1 frequency measured in voltage mode
     uint16 currentFreqDHz;  // last CF1 frequency measured in current mode
-    uint32 cfTotal;         // cumulative CF pulses since boot (energy register)
+    uint64 cfTotal;         // lifetime CF pulses (energy register, PDM-backed)
     uint32 cf1Total;        // cumulative CF1 pulses since boot (mode-mixed, diagnostic)
     uint8 selCurrentMode;   // SEL state: 0 = voltage, 1 = current
     uint8 modeTicks;        // sampling windows spent in the present mode
     bool transitionWindow;  // window straddling a SEL toggle - not attributable
+
+    PersistedValue<uint64, PDM_ID_ENERGY> persistedEnergyPulses;
+    uint64 lastSavedPulses;
+    uint32 ticksSinceSave;
+
+    BasicClusterEndpoint * meteringEndpoint;
 
 private:
     EnergyMeterTask();
@@ -29,10 +39,12 @@ private:
 public:
     static EnergyMeterTask * getInstance();
 
+    void setMeteringEndpoint(BasicClusterEndpoint * ep) { meteringEndpoint = ep; }
+
     uint16 getCfFreqDHz() const { return cfFreqDHz; }
     uint16 getVoltageFreqDHz() const { return voltageFreqDHz; }
     uint16 getCurrentFreqDHz() const { return currentFreqDHz; }
-    uint32 getCfTotal() const { return cfTotal; }
+    uint64 getCfTotal() const { return cfTotal; }
     uint32 getCf1Total() const { return cf1Total; }
 
 protected:

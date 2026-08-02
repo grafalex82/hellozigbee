@@ -69,8 +69,10 @@ set(ZIGBEE_SRC
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/BasicClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/BasicCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/DeviceTemperatureConfiguration.c
-        # Patched copy (reportable-attribute flags) - see the header of the file
+        # Patched copies (reportable-attribute flags) - see the headers of the files
         ${CMAKE_CURRENT_SOURCE_DIR}/ElectricalMeasurement.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/SimpleMetering.c
+        ${SDK_PREFIX}/Components/ZCL/Clusters/SmartEnergy/Source/SimpleMeteringCommandHandler.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/Groups.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsClientCommands.c
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source/GroupsCommandHandler.c
@@ -115,6 +117,7 @@ target_include_directories(ZigBee PRIVATE
 	${SDK_PREFIX}/Components/MicroSpecific/Include
         ${SDK_PREFIX}/Components/ZCL/Clusters/General/Source
         ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Include
+        ${SDK_PREFIX}/Components/ZCL/Clusters/SmartEnergy/Source
 
         ${SDK_PREFIX}/Components/ZCIF/Source
 
@@ -153,6 +156,7 @@ include_directories(
     ${SDK_PREFIX}/Components/ZCL/Clusters/General/Include
     ${SDK_PREFIX}/Components/ZCL/Clusters/OTA/Include
     ${SDK_PREFIX}/Components/ZCL/Clusters/MeasurementAndSensing/Include
+    ${SDK_PREFIX}/Components/ZCL/Clusters/SmartEnergy/Include
     ${SDK_PREFIX}/Components/ZCL/Devices/ZLO/Include
     ${SDK_PREFIX}/Components/ZigbeeCommon/Include
     ${SDK_PREFIX}/Components/ZPSAPL/Include

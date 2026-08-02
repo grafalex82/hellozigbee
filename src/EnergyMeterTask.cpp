@@ -3,6 +3,7 @@
 #ifdef SUPPORTS_POWER_METERING
 
 #include "EnergyMeterTask.h"
+#include "BasicClusterEndpoint.h"
 
 extern "C"
 {
@@ -26,6 +27,13 @@ static const uint32 TIMEBASE_DHZ_DIV = 8;
 // windows; the window straddling the toggle is discarded (mode change +
 // HLW8012 settle), leaving N-1 valid windows per dwell
 static const uint8 SEL_DWELL_TICKS = 5;
+
+// Energy register persistence: save when this many pulses accumulated since
+// the last save (~0.1 kWh at the calibrated 4.5 J/pulse), or daily if any
+// unsaved energy exists. Keeps EEPROM wear negligible (>=5 years even at a
+// continuous 5 kWh/day) while bounding the power-cut loss to ~0.1 kWh.
+static const uint32 ENERGY_SAVE_PULSE_DELTA = 80000;
+static const uint32 ENERGY_SAVE_MAX_TICKS = 86400;
 
 EnergyMeterTask::EnergyMeterTask()
 {
@@ -59,11 +67,17 @@ EnergyMeterTask::EnergyMeterTask()
     cfFreqDHz = 0;
     voltageFreqDHz = 0;
     currentFreqDHz = 0;
-    cfTotal = 0;
     cf1Total = 0;
     selCurrentMode = 0;         // constructor drove SEL low = voltage mode
     modeTicks = 0;
     transitionWindow = false;
+
+    // Restore the lifetime energy register
+    persistedEnergyPulses.init((uint64)0, "Energy");
+    cfTotal = persistedEnergyPulses.getValue();
+    lastSavedPulses = cfTotal;
+    ticksSinceSave = 0;
+    meteringEndpoint = NULL;
 
     PeriodicTask::init(SAMPLE_PERIOD_MS);
     startTimer(SAMPLE_PERIOD_MS);
@@ -124,6 +138,22 @@ void EnergyMeterTask::timerCallback()
         modeTicks = 0;
         transitionWindow = true;
     }
+
+    // Wear-aware persistence of the energy register
+    ticksSinceSave++;
+    if((cfTotal - lastSavedPulses >= ENERGY_SAVE_PULSE_DELTA) ||
+       (cfTotal != lastSavedPulses && ticksSinceSave >= ENERGY_SAVE_MAX_TICKS))
+    {
+        persistedEnergyPulses.setValue(cfTotal);
+        lastSavedPulses = cfTotal;
+        ticksSinceSave = 0;
+    }
+
+    // Push fresh values into the ZCL cluster structs so both reads and the
+    // attribute reporting engine (which samples the structs directly) see
+    // current data
+    if(meteringEndpoint)
+        meteringEndpoint->updateMeteringAttributes();
 
     DBG_vPrintf(TRUE, "EnergyMeterTask: CF=%d.%d Hz, CF1=%d.%d Hz mode=%c (window %d ticks)\n",
                 cfFreqDHz / 10, cfFreqDHz % 10, cf1FreqDHz / 10, cf1FreqDHz % 10,

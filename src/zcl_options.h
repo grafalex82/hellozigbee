@@ -240,6 +240,11 @@
 #define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_DIVISOR
 #define CLD_ELECTMEAS_ATTR_AC_CURRENT_MULTIPLIER
 #define CLD_ELECTMEAS_ATTR_AC_CURRENT_DIVISOR
+// Cumulative energy over the Simple Metering cluster
+#define CLD_SM
+#define SM_SERVER
+#define CLD_SM_ATTR_MULTIPLIER
+#define CLD_SM_ATTR_DIVISOR
 #endif
 
 #endif /* ZCL_OPTIONS_H */
