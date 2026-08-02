@@ -167,6 +167,18 @@ void BasicClusterEndpoint::init()
     sSimpleMeteringServerCluster.eMeteringDeviceType = 0;           // electric metering
 #endif
 
+#ifdef CLD_ELECTRICAL_MEASUREMENT
+    // The RP flag in the attribute definition table (vendored cluster files) makes the
+    // reporting engine include these attributes; the per-instance control bits below are
+    // what the configure-reporting command handler checks (E_ZCL_ACF_RP) - both are needed
+    eZCL_SetReportableFlag(getEndpointId(), MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, TRUE, FALSE, E_CLD_ELECTMEAS_ATTR_ID_ACTIVE_POWER);
+    eZCL_SetReportableFlag(getEndpointId(), MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, TRUE, FALSE, E_CLD_ELECTMEAS_ATTR_ID_RMS_VOLATGE);  // (sic - SDK enum typo)
+    eZCL_SetReportableFlag(getEndpointId(), MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, TRUE, FALSE, E_CLD_ELECTMEAS_ATTR_ID_RMS_CURRENT);
+#endif
+#ifdef CLD_SM
+    eZCL_SetReportableFlag(getEndpointId(), SE_CLUSTER_ID_SIMPLE_METERING, TRUE, FALSE, E_CLD_SM_ATTR_ID_CURRENT_SUMMATION_DELIVERED);
+#endif
+
 #ifdef SUPPORTS_POWER_METERING
     // From now on the meter task pushes fresh values into the cluster structs
     EnergyMeterTask::getInstance()->setMeteringEndpoint(this);
