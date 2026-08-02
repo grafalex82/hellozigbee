@@ -240,7 +240,10 @@
 #define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_DIVISOR
 #define CLD_ELECTMEAS_ATTR_AC_CURRENT_MULTIPLIER
 #define CLD_ELECTMEAS_ATTR_AC_CURRENT_DIVISOR
-// Cumulative energy over the Simple Metering cluster
+// Cumulative energy over the Simple Metering cluster (the SDK inconsistently
+// gates on both names: the cluster source uses CLD_SIMPLE_METERING, the
+// header structs use CLD_SM/SM_SERVER)
+#define CLD_SIMPLE_METERING
 #define CLD_SM
 #define SM_SERVER
 #define CLD_SM_ATTR_MULTIPLIER
