@@ -279,6 +279,10 @@ void BasicClusterEndpoint::readElectricalMeasurement()
     sElectricalMeasurementServerCluster.u16RMSVoltage = cf1FreqDHz;
     sElectricalMeasurementServerCluster.u16RMSCurrent = 0;
 
+    // Cumulative pulse counts for integrative calibration (0xFF00/0xFF01)
+    sElectricalMeasurementServerCluster.u32ManSpecificApparentPower = EnergyMeterTask::getInstance()->getCfTotal();
+    sElectricalMeasurementServerCluster.u32NonActivePower = EnergyMeterTask::getInstance()->getCf1Total();
+
     DBG_vPrintf(TRUE, "BasicClusterEndpoint: Electrical measurement raw read: CF=%d dHz, CF1=%d dHz\n",
                 cfFreqDHz, cf1FreqDHz);
 }

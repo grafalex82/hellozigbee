@@ -214,6 +214,11 @@
 #define CLD_ELECTMEAS_ATTR_ACTIVE_POWER
 #define CLD_ELECTMEAS_ATTR_RMS_VOLTAGE
 #define CLD_ELECTMEAS_ATTR_RMS_CURRENT
+// Cumulative CF/CF1 pulse counts ride in two manufacturer-specific uint32
+// attributes (0xFF00/0xFF01, manufacturer code 0x1037) so calibration can
+// integrate over minutes instead of trusting one 1 s window
+#define CLD_ELECTMEAS_ATTR_MAN_SPEC_APPARENT_POWER
+#define CLD_ELECTMEAS_ATTR_MAN_SPEC_NON_ACTIVE_POWER
 #endif
 
 #endif /* ZCL_OPTIONS_H */

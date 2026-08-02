@@ -14,6 +14,14 @@ extern "C"
 // maximum expected pulse frequency (~2.2 kHz on CF1 at 16 A)
 static const uint32 SAMPLE_PERIOD_MS = 1000;
 
+// Timer 0 free-runs as the sampling timebase: 16 MHz / 2^14 = 976.5625 Hz.
+// The ZTIMER 1 s callback jitters when the main loop is busy (radio storms),
+// so the window length is measured, never assumed. 16-bit wrap = 67 s.
+static const uint8 TIMEBASE_PRESCALE = 14;
+// freq[dHz] = pulses * 976.5625 * 10 / ticks = pulses * 78125 / (ticks * 8)
+static const uint32 TIMEBASE_DHZ_MUL = 78125;
+static const uint32 TIMEBASE_DHZ_DIV = 8;
+
 EnergyMeterTask::EnergyMeterTask()
 {
     // Drive SEL low for a deterministic CF1 mode. The signal reaches the
@@ -32,12 +40,21 @@ EnergyMeterTask::EnergyMeterTask()
     bAHI_StartPulseCounter(E_AHI_PC_1);
     bAHI_StartPulseCounter(E_AHI_PC_0);
 
+    // Timebase timer: no interrupts, no output - and no DIO takeover, its
+    // pins overlap CF (DIO8), SEL (DIO9) and the button (DIO10)
+    vAHI_TimerDIOControl(E_AHI_TIMER_0, FALSE);
+    vAHI_TimerEnable(E_AHI_TIMER_0, TIMEBASE_PRESCALE, FALSE, FALSE, FALSE);
+    vAHI_TimerStartRepeat(E_AHI_TIMER_0, 0x0000, 0xFFFF);
+
     // Baseline the counts after start: bAHI_StartPulseCounter() may bump the
     // count by one even without a pulse
     bAHI_Read16BitCounter(E_AHI_PC_1, &prevCfCount);
     bAHI_Read16BitCounter(E_AHI_PC_0, &prevCf1Count);
+    prevTimebaseTicks = u16AHI_TimerReadCount(E_AHI_TIMER_0);
     cfFreqDHz = 0;
     cf1FreqDHz = 0;
+    cfTotal = 0;
+    cf1Total = 0;
 
     PeriodicTask::init(SAMPLE_PERIOD_MS);
     startTimer(SAMPLE_PERIOD_MS);
@@ -49,23 +66,37 @@ EnergyMeterTask * EnergyMeterTask::getInstance()
     return &instance;
 }
 
+static uint16 freqDHz(uint16 pulses, uint16 ticks)
+{
+    if(ticks == 0)
+        return 0;
+
+    uint64 f = (uint64)pulses * TIMEBASE_DHZ_MUL / ((uint32)ticks * TIMEBASE_DHZ_DIV);
+    return (f > 65535) ? 65535 : (uint16)f;
+}
+
 void EnergyMeterTask::timerCallback()
 {
     uint16 cfCount, cf1Count;
     bAHI_Read16BitCounter(E_AHI_PC_1, &cfCount);
     bAHI_Read16BitCounter(E_AHI_PC_0, &cf1Count);
+    uint16 nowTicks = u16AHI_TimerReadCount(E_AHI_TIMER_0);
 
     uint16 cfDelta = (uint16)(cfCount - prevCfCount);
     uint16 cf1Delta = (uint16)(cf1Count - prevCf1Count);
+    uint16 tickDelta = (uint16)(nowTicks - prevTimebaseTicks);
     prevCfCount = cfCount;
     prevCf1Count = cf1Count;
+    prevTimebaseTicks = nowTicks;
 
-    // pulses over a 1 s window -> 0.1 Hz units, clamped against uint16 overflow
-    cfFreqDHz = (cfDelta > 6553) ? 65535 : cfDelta * 10;
-    cf1FreqDHz = (cf1Delta > 6553) ? 65535 : cf1Delta * 10;
+    cfTotal += cfDelta;
+    cf1Total += cf1Delta;
 
-    DBG_vPrintf(TRUE, "EnergyMeterTask: CF=%d.%d Hz, CF1=%d.%d Hz\n",
-                cfFreqDHz / 10, cfFreqDHz % 10, cf1FreqDHz / 10, cf1FreqDHz % 10);
+    cfFreqDHz = freqDHz(cfDelta, tickDelta);
+    cf1FreqDHz = freqDHz(cf1Delta, tickDelta);
+
+    DBG_vPrintf(TRUE, "EnergyMeterTask: CF=%d.%d Hz, CF1=%d.%d Hz (window %d ticks)\n",
+                cfFreqDHz / 10, cfFreqDHz % 10, cf1FreqDHz / 10, cf1FreqDHz % 10, tickDelta);
 }
 
 #endif // SUPPORTS_POWER_METERING

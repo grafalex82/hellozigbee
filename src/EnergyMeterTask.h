@@ -13,8 +13,11 @@ class EnergyMeterTask : public PeriodicTask
 {
     uint16 prevCfCount;
     uint16 prevCf1Count;
+    uint16 prevTimebaseTicks;
     uint16 cfFreqDHz;   // last CF frequency in 0.1 Hz units
     uint16 cf1FreqDHz;  // last CF1 frequency in 0.1 Hz units
+    uint32 cfTotal;     // cumulative CF pulses since boot (energy register)
+    uint32 cf1Total;    // cumulative CF1 pulses since boot
 
 private:
     EnergyMeterTask();
@@ -24,6 +27,8 @@ public:
 
     uint16 getCfFreqDHz() const { return cfFreqDHz; }
     uint16 getCf1FreqDHz() const { return cf1FreqDHz; }
+    uint32 getCfTotal() const { return cfTotal; }
+    uint32 getCf1Total() const { return cf1Total; }
 
 protected:
     virtual void timerCallback();
