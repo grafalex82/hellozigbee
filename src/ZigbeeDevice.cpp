@@ -12,6 +12,12 @@ extern "C"
     #include "bdb_api.h"
     #include "dbg.h"
     #include "OnOff.h"
+
+    // Application API - for the radio compliance-limit call (vAppApiSetComplianceLimits)
+    #include "AppApi.h"
+
+    // Hardware API - for enabling the external RF front-end (vAHI_HighPowerModuleEnable)
+    #include "AppHardwareApi.h"
 }
 
 #include "ZigbeeDevice.h"
@@ -41,6 +47,25 @@ ZigbeeDevice::ZigbeeDevice()
 
     // Restore network connection state
     connectionState.init(NOT_JOINED, "connectionState");
+
+    // Standard JN5169 ETSI-region compliance ceiling (+8 dBm on all channels,
+    // CCA threshold 48), applied before the stack brings up the MAC/PHY. This
+    // does NOT by itself change the link budget - it only caps the core radio,
+    // which already sits below the cap, so on its own it had no measurable LQI
+    // effect. It is kept as an explicit legal ceiling for the amplified output
+    // once the external PA (below) is enabled.
+    vAppApiSetComplianceLimits(8, 8, 48);
+
+    // Enable the on-board AT2401C RF front-end module (PA + LNA + T/R switch).
+    // Its TXEN/RXEN control pins are wired (each via a 1k series resistor) to the
+    // JN5169 radio-control outputs RFTX (DIO3, pin 19) and RFRX (DIO2, pin 18);
+    // this call makes the radio auto-drive those lines so the PA engages on
+    // transmit and the LNA on receive. Without it the FEM stays in shutdown and
+    // the device transmits on the bare radio (~0 dBm) - the root cause of the
+    // weak uplink on stock hellozigbee. See doc/AT2401C_rf_frontend_RE.md.
+    // NB: on channel 26 use vAppApiSetHighPowerMode() instead (tighter ch26
+    // emission limits); this call is fine on channels 11-25.
+    vAHI_HighPowerModuleEnable(TRUE, TRUE);
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "ZigbeeDevice(): init Application Framework (AF)... ");
