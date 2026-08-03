@@ -10,6 +10,7 @@ ButtonsTask::ButtonsTask()
 {
     idleCounter = 0;
     longPressCounter = 0;
+    gestureFired = false;
 
     buttonsMask = 0;
     buttonsOverride = 0;
@@ -91,28 +92,50 @@ void ButtonsTask::timerCallback()
 
     // Reset the idle counter when user interacts with a button
     if(someButtonPressed)
-    {
         idleCounter = 0;
+    else
+        idleCounter++;
+
+    // Count how long ALL buttons are held together (the join/leave gesture). Counting any-button
+    // presses instead would let a long single-button hold (e.g. hold-to-dim on a 2-gang device)
+    // pre-charge the counter, so that merely touching the second button would fire the gesture.
+    if(allButtonsPressed)
         longPressCounter++;
-    }
     else
     {
-        idleCounter++;
         longPressCounter = 0;
+        gestureFired = false;   // Buttons released - re-arm the gesture
     }
 
-    // Process a very long press of all buttons to join/leave the network
-    // TODO: Perhaps just a long press is not a good key combination for join/rejoin. For example buttons may be accidentally
-    // pressed by to a heavy object. It may be reasonable to introduce some patter, e.g. press both button 2 times, and then hold.
-    if(longPressCounter > 5000/ButtonPollCycle && allButtonsPressed)
+    // Process a very long press of all buttons to join/leave the network.
+    // Join and leave use asymmetric thresholds so that an everyday long press (e.g. a
+    // hold-to-dim gesture routed through the button) can never accidentally leave the network:
+    //   - JOIN : all buttons held ~5s while NOT on a network (a fresh device is not running
+    //            any hold gesture, so a short threshold is safe and convenient).
+    //   - LEAVE: all buttons held ~30s while joined - deliberately long. Prefer removing the
+    //            device from the coordinator (e.g. Zigbee2MQTT "Remove device") over this
+    //            local escape hatch, which mainly exists for an orphaned device.
+    // At most one gesture fires per continuous press (gestureFired latch): without it a stuck
+    // button would leave at 30s, rejoin 5s later, leave again, and so on - endlessly flapping
+    // on the network and wearing PDM flash with connectionState writes on every transition.
+    if(allButtonsPressed && !gestureFired)
     {
-        for(uint8 h = 0; h < numHandlers; h++)
-            handlers[h].handler->resetButtonStateMachine();
+        ZigbeeDevice * zigbeeDevice = ZigbeeDevice::getInstance();
+        bool doJoin  = !zigbeeDevice->isJoined() && longPressCounter > 5000/ButtonPollCycle;
+        bool doLeave =  zigbeeDevice->isJoined() && longPressCounter > 30000/ButtonPollCycle;
 
-        longPressCounter = 0;
+        if(doJoin || doLeave)
+        {
+            for(uint8 h = 0; h < numHandlers; h++)
+                handlers[h].handler->resetButtonStateMachine();
 
-        // Perform the join/leave
-        ZigbeeDevice::getInstance()->joinOrLeaveNetwork();
+            gestureFired = true;
+
+            if(doJoin)
+                zigbeeDevice->joinNetwork();
+            else
+                zigbeeDevice->leaveNetwork();
+        }
     }
 }
 
