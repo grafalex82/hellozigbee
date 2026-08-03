@@ -134,11 +134,12 @@ void ZigbeeDevice::leaveNetwork()
     if (ZPS_E_SUCCESS !=  ZPS_eAplZdoLeaveNetwork(0, FALSE, FALSE))
     {
         // Leave failed, probably lost parent, so just reset everything
+        // (this also notifies the endpoints via EndpointManager::handleDeviceLeave())
         DBG_vPrintf(TRUE, "== Failed to properly leave the network. Force leaving the network\n");
         handleLeaveNetwork();
     }
-
-    EndpointManager::getInstance()->handleDeviceLeave();
+    else
+        EndpointManager::getInstance()->handleDeviceLeave();
 }
 
 void ZigbeeDevice::joinOrLeaveNetwork()

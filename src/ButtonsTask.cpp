@@ -48,7 +48,7 @@ bool ButtonsTask::handleDioInterrupt(uint32 dioStatus)
 
 bool ButtonsTask::canSleep() const
 {
-    return idleCounter > 5000 / ButtonPollCycle; // 500 cycles * 10 ms = 5 sec
+    return idleCounter > 5000 / ButtonPollCycle; // 250 cycles * 20 ms = 5 sec
 }
 
 void ButtonsTask::registerHandler(uint32 pinMask, IButtonHandler * handler)
