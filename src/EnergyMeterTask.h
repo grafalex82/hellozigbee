@@ -41,11 +41,16 @@ public:
 
     void setMeteringEndpoint(BasicClusterEndpoint * ep) { meteringEndpoint = ep; }
 
+    // Raw acquisition values (calibration/diagnostic attributes)
     uint16 getCfFreqDHz() const { return cfFreqDHz; }
-    uint16 getVoltageFreqDHz() const { return voltageFreqDHz; }
-    uint16 getCurrentFreqDHz() const { return currentFreqDHz; }
     uint64 getCfTotal() const { return cfTotal; }
     uint32 getCf1Total() const { return cf1Total; }
+
+    // Calibrated electrical values (conversion constants live in the task)
+    uint16 getActivePowerW() const;
+    uint16 getVoltageDV() const;
+    uint16 getCurrentMA() const;
+    uint64 getEnergyWh() const;
 
 protected:
     virtual void timerCallback();

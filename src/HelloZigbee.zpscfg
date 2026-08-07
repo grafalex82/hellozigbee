@@ -938,6 +938,8 @@
       <InputClusters Cluster="Default" RxAPDU="QBKG12LM->apduZCL" Discoverable="false"/>
       <InputClusters Cluster="Identify" RxAPDU="QBKG12LM->apduZCL" Discoverable="true"/>
       <InputClusters Cluster="DeviceTemperature" RxAPDU="QBKG12LM->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="ElectricalMeasurement" RxAPDU="QBKG12LM->apduZCL" Discoverable="true"/>
+      <InputClusters Cluster="SimpleMetering" RxAPDU="QBKG12LM->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="Basic" TxAPDUs="QBKG12LM->apduZCL" Discoverable="true"/>
       <OutputClusters Cluster="OTA" TxAPDUs="QBKG12LM->apduZCL" Discoverable="true"/>
     </Endpoints>

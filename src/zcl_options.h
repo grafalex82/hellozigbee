@@ -153,29 +153,13 @@
     #define RELAY1_OFF_PIN              (12)
     #define RELAY1_OFF_MASK             (1UL << RELAY1_OFF_PIN)
 
-    // On-board HLW8012 energy metering IC (CF/CF1 are the pulse counters'
-    // default input pins; SEL is inverted by a 2N7002 on its way to the chip)
+    // On-board HLW8012 energy metering IC. CF (power) -> DIO8/PC1 and CF1
+    // (voltage/current, SEL-muxed) -> DIO1/PC0 are the pulse counters' fixed
+    // default inputs and need no pin configuration; SEL is inverted by a
+    // 2N7002 on its way to the chip.
     #define SUPPORTS_POWER_METERING
-    #define METERING_CF_PIN             (8)
-    #define METERING_CF_MASK            (1UL << METERING_CF_PIN)
-    #define METERING_CF1_PIN            (1)
-    #define METERING_CF1_MASK           (1UL << METERING_CF1_PIN)
     #define METERING_SEL_PIN            (9)
     #define METERING_SEL_MASK           (1UL << METERING_SEL_PIN)
-    // Conversion constants, scaled by 1e5: value = freq_dHz * K / 100000.
-    // Power: calibrated 2026-08-02 against an inline power meter (1910 W at
-    // 424.41 Hz CF over a 3 min pulse-count integration) -> 4.5004 W/Hz,
-    // +8.8 % over the datasheet-nominal 4.138 (shunt below its marked 2 mOhm).
-    #define METERING_W_PER_DHZ_E5       (45004)
-    // Voltage: calibrated 2026-08-02 against a UNI-T UT33D at the load
-    // terminals under load (235.5 V read vs 225.3 V displayed -> +4.53 % over
-    // the datasheet-nominal 0.32694 V/Hz).
-    #define METERING_DV_PER_DHZ_E5      (34176)
-    // Current: derived, not directly measured - all HLW8012 channels share
-    // Vref and the shunt, so Kc = Kp/Kv: 1.0876 / 1.0453 = 1.0405 over the
-    // datasheet-nominal 7.2423 mA/Hz. Cross-check: 8.40 A at 1910 W / 235.5 V
-    // -> PF 0.966, plausible for heater + universal motor.
-    #define METERING_MA_PER_DHZ_E5      (75357)
 
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
@@ -212,6 +196,14 @@
     #define RELAY2_OFF_PIN              (12)
     #define RELAY2_OFF_MASK             (1UL << RELAY2_OFF_PIN)
 
+    // On-board HLW8012 energy metering IC. CF (power) -> DIO8/PC1 and CF1
+    // (voltage/current, SEL-muxed) -> DIO1/PC0 are the pulse counters' fixed
+    // default inputs and need no pin configuration; SEL is inverted by a
+    // 2N7002 on its way to the chip.
+    #define SUPPORTS_POWER_METERING
+    #define METERING_SEL_PIN            (9)
+    #define METERING_SEL_MASK           (1UL << METERING_SEL_PIN)
+
     #define BASIC_ENDPOINT              (QBKG12LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG12LM_SWITCH1_ENDPOINT)
     #define SWITCH2_ENDPOINT            (QBKG12LM_SWITCH2_ENDPOINT)
@@ -240,11 +232,9 @@
 #define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_DIVISOR
 #define CLD_ELECTMEAS_ATTR_AC_CURRENT_MULTIPLIER
 #define CLD_ELECTMEAS_ATTR_AC_CURRENT_DIVISOR
-// Cumulative energy over the Simple Metering cluster (the SDK inconsistently
-// gates on both names: the cluster source uses CLD_SIMPLE_METERING, the
-// header structs use CLD_SM/SM_SERVER)
+// Cumulative energy over the Simple Metering cluster (the SDK gates the
+// cluster source on CLD_SIMPLE_METERING and the header structs on SM_SERVER)
 #define CLD_SIMPLE_METERING
-#define CLD_SM
 #define SM_SERVER
 #define CLD_SM_ATTR_MULTIPLIER
 #define CLD_SM_ATTR_DIVISOR

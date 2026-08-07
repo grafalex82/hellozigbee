@@ -10,7 +10,7 @@ extern "C"
 #include "EndpointManager.h"
 #include "LEDTask.h"
 #include "DumpFunctions.h"
-#ifdef CLD_ELECTRICAL_MEASUREMENT
+#ifdef SUPPORTS_POWER_METERING
 #include "EnergyMeterTask.h"
 #endif
 
@@ -74,7 +74,7 @@ void BasicClusterEndpoint::registerDeviceTemperatureCluster()
         DBG_vPrintf(TRUE, "BasicClusterEndpoint::registerDeviceTemperatureCluster(): Failed to create Device Temperature Configuration Cluster instance. Status=%d\n", status);
 }
 
-#ifdef CLD_SM
+#ifdef SUPPORTS_POWER_METERING
 void BasicClusterEndpoint::registerSimpleMeteringCluster()
 {
     // Create an instance of a simple metering cluster as a server
@@ -91,7 +91,7 @@ void BasicClusterEndpoint::registerSimpleMeteringCluster()
 }
 #endif
 
-#ifdef CLD_ELECTRICAL_MEASUREMENT
+#ifdef SUPPORTS_POWER_METERING
 void BasicClusterEndpoint::registerElectricalMeasurementCluster()
 {
     // Create an instance of an electrical measurement cluster as a server
@@ -130,10 +130,8 @@ void BasicClusterEndpoint::init()
     registerIdentifyCluster();
     registerOtaCluster();
     registerDeviceTemperatureCluster();
-#ifdef CLD_ELECTRICAL_MEASUREMENT
+#ifdef SUPPORTS_POWER_METERING
     registerElectricalMeasurementCluster();
-#endif
-#ifdef CLD_SM
     registerSimpleMeteringCluster();
 #endif
     registerEndpoint();
@@ -145,7 +143,7 @@ void BasicClusterEndpoint::init()
     memcpy(sBasicServerCluster.au8SWBuildID, CLD_BAS_SW_BUILD_STR, CLD_BAS_SW_BUILD_SIZE);
     sBasicServerCluster.eGenericDeviceType = E_CLD_BAS_GENERIC_DEVICE_TYPE_WALL_SWITCH;
 
-#ifdef CLD_ELECTRICAL_MEASUREMENT
+#ifdef SUPPORTS_POWER_METERING
     // Bit 0 = active measurement (AC)
     sElectricalMeasurementServerCluster.u32MeasurementType = 1;
     // ActivePower is in W, RMSVoltage in 0.1 V, RMSCurrent in mA
@@ -155,9 +153,7 @@ void BasicClusterEndpoint::init()
     sElectricalMeasurementServerCluster.u16ACVoltageDivisor = 10;
     sElectricalMeasurementServerCluster.u16ACCurrentMultiplier = 1;
     sElectricalMeasurementServerCluster.u16ACCurentDivisor = 1000;  // (sic - SDK field name typo)
-#endif
 
-#ifdef CLD_SM
     // CurrentSummationDelivered is in Wh: kWh = value * multiplier / divisor
     sSimpleMeteringServerCluster.eUnitOfMeasure = 0;                // kWh
     sSimpleMeteringServerCluster.u24Multiplier = 1;
@@ -165,21 +161,15 @@ void BasicClusterEndpoint::init()
     sSimpleMeteringServerCluster.u8SummationFormatting = 0xBB;      // suppress zeros, 7 int + 3 frac digits
     sSimpleMeteringServerCluster.u8MeterStatus = 0;
     sSimpleMeteringServerCluster.eMeteringDeviceType = 0;           // electric metering
-#endif
 
-#ifdef CLD_ELECTRICAL_MEASUREMENT
     // The RP flag in the attribute definition table (vendored cluster files) makes the
     // reporting engine include these attributes; the per-instance control bits below are
     // what the configure-reporting command handler checks (E_ZCL_ACF_RP) - both are needed
     eZCL_SetReportableFlag(getEndpointId(), MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, TRUE, FALSE, E_CLD_ELECTMEAS_ATTR_ID_ACTIVE_POWER);
     eZCL_SetReportableFlag(getEndpointId(), MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, TRUE, FALSE, E_CLD_ELECTMEAS_ATTR_ID_RMS_VOLATGE);  // (sic - SDK enum typo)
     eZCL_SetReportableFlag(getEndpointId(), MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT, TRUE, FALSE, E_CLD_ELECTMEAS_ATTR_ID_RMS_CURRENT);
-#endif
-#ifdef CLD_SM
     eZCL_SetReportableFlag(getEndpointId(), SE_CLUSTER_ID_SIMPLE_METERING, TRUE, FALSE, E_CLD_SM_ATTR_ID_CURRENT_SUMMATION_DELIVERED);
-#endif
 
-#ifdef SUPPORTS_POWER_METERING
     // From now on the meter task pushes fresh values into the cluster structs
     EnergyMeterTask::getInstance()->setMeteringEndpoint(this);
 #endif
@@ -287,11 +277,9 @@ teZCL_CommandStatus BasicClusterEndpoint::handleReadAttribute(tsZCL_CallBackEven
             readDeviceTemperature();
             break;
 
-#ifdef CLD_ELECTRICAL_MEASUREMENT
+#ifdef SUPPORTS_POWER_METERING
         case MEASUREMENT_AND_SENSING_CLUSTER_ID_ELECTRICAL_MEASUREMENT:
-#ifdef CLD_SM
         case SE_CLUSTER_ID_SIMPLE_METERING:
-#endif
             // Values are pushed every sampling window; refresh once more so a
             // read straddling the window boundary gets the newest data
             updateMeteringAttributes();
@@ -324,28 +312,20 @@ void BasicClusterEndpoint::readDeviceTemperature()
     vAHI_AdcDisable();
 }
 
-#ifdef CLD_ELECTRICAL_MEASUREMENT
+#ifdef SUPPORTS_POWER_METERING
 void BasicClusterEndpoint::updateMeteringAttributes()
 {
-    uint16 cfFreqDHz = EnergyMeterTask::getInstance()->getCfFreqDHz();
-    uint16 voltageFreqDHz = EnergyMeterTask::getInstance()->getVoltageFreqDHz();
-    uint16 currentFreqDHz = EnergyMeterTask::getInstance()->getCurrentFreqDHz();
+    EnergyMeterTask * meter = EnergyMeterTask::getInstance();
 
     // CF -> active power (W); CF1 -> RMS voltage (0.1 V) / RMS current (mA) per SEL mode
-    uint32 watts = (uint32)cfFreqDHz * METERING_W_PER_DHZ_E5 / 100000;
-    uint32 mA = (uint32)currentFreqDHz * METERING_MA_PER_DHZ_E5 / 100000;
-    sElectricalMeasurementServerCluster.i16ActivePower = (watts > 32767) ? 32767 : watts;
-    sElectricalMeasurementServerCluster.u16RMSVoltage = (uint32)voltageFreqDHz * METERING_DV_PER_DHZ_E5 / 100000;
-    sElectricalMeasurementServerCluster.u16RMSCurrent = (mA > 65535) ? 65535 : mA;
+    sElectricalMeasurementServerCluster.i16ActivePower = meter->getActivePowerW();
+    sElectricalMeasurementServerCluster.u16RMSVoltage = meter->getVoltageDV();
+    sElectricalMeasurementServerCluster.u16RMSCurrent = meter->getCurrentMA();
 
     // Cumulative pulse counts for integrative calibration (0xFF00/0xFF01)
-    sElectricalMeasurementServerCluster.u32ManSpecificApparentPower = (uint32)EnergyMeterTask::getInstance()->getCfTotal();
-    sElectricalMeasurementServerCluster.u32NonActivePower = EnergyMeterTask::getInstance()->getCf1Total();
+    sElectricalMeasurementServerCluster.u32ManSpecificApparentPower = (uint32)meter->getCfTotal();
+    sElectricalMeasurementServerCluster.u32NonActivePower = meter->getCf1Total();
 
-#ifdef CLD_SM
-    // Lifetime energy in Wh: pulses * (W-per-dHz / 1e5) J/pulse * 10 / 3600
-    sSimpleMeteringServerCluster.u48CurrentSummationDelivered =
-        EnergyMeterTask::getInstance()->getCfTotal() * METERING_W_PER_DHZ_E5 / 36000000;
-#endif
+    sSimpleMeteringServerCluster.u48CurrentSummationDelivered = meter->getEnergyWh();
 }
 #endif

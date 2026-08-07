@@ -110,22 +110,6 @@ The external converter adds `m.electricityMeter()` to the QBKG11LM definition �
 voltage, current and energy render as native entities and reporting is configured by the
 standard z2m configure flow.
 
-### zigbee-herdsman pitfall — OTA never applies with an unsynced clock
-
-zigbee-herdsman (z2m ≥ 2.x) sends the OTA `upgradeEndResponse` with
-`currentTime = <real ZCL-UTC>` and `upgradeTime = currentTime + 1`. The NXP OTA client
-only schedules *relative* to receipt when `currentTime == 0`; otherwise it arms an
-absolute compare against its **own UTC clock**, which on a device with no Time cluster
-counts from 0 at boot — the upgrade gets scheduled ~26 years out and the device never
-reboots (transfer and CRC succeed; the client then sits in COUNT_DOWN state ignoring all
-further OTA frames). The code even carries a TODO suspecting this
-(`controller/model/device.js`, "could this tiny offset be a problem for some stacks?").
-
-Workarounds until fixed upstream: patch `device.js` to send `currentTime: 0,
-upgradeTime: 1`, or simply **power-cycle the stuck device** — this firmware's
-`restoreOTAAttributes()` clamps any pending OTA schedule to "retry in 10 s" on boot,
-which applies the already-downloaded image.
-
 ## Known limitations
 
 - The current channel is derived (see calibration) and carries a ~30 mA noise floor at

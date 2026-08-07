@@ -23,6 +23,20 @@ static const uint8 TIMEBASE_PRESCALE = 14;
 static const uint32 TIMEBASE_DHZ_MUL = 78125;
 static const uint32 TIMEBASE_DHZ_DIV = 8;
 
+// Conversion constants, scaled by 1e5: value = freq_dHz * K / 100000.
+// Power: calibrated 2026-08-02 against an inline power meter (1910 W at
+// 424.41 Hz CF over a 3 min pulse-count integration) -> 4.5004 W/Hz,
+// +8.8 % over the datasheet-nominal 4.138 (shunt below its marked 2 mOhm).
+// Voltage: calibrated against a multimeter at the load terminals under load
+// (235.5 V read vs 225.3 V displayed -> +4.53 % over datasheet-nominal).
+// Current: derived, not directly measured - all HLW8012 channels share Vref
+// and the shunt, so Kc = Kp/Kv (+4.05 % over nominal; PF cross-check 0.966).
+// Constants are specimen-calibrated on a QBKG11LM; QBKG11LM and QBKG12LM
+// share the same board, so they serve as defaults for both.
+static const uint32 METERING_W_PER_DHZ_E5 = 45004;
+static const uint32 METERING_DV_PER_DHZ_E5 = 34176;
+static const uint32 METERING_MA_PER_DHZ_E5 = 75357;
+
 // SEL alternates CF1 between voltage and current mode every N sampling
 // windows; the window straddling the toggle is discarded (mode change +
 // HLW8012 settle), leaving N-1 valid windows per dwell
@@ -41,10 +55,6 @@ EnergyMeterTask::EnergyMeterTask()
     // HLW8012 inverted through a 2N7002; actual polarity is resolved later
     vAHI_DioSetDirection(0, METERING_SEL_MASK);
     vAHI_DioSetOutput(0, METERING_SEL_MASK);
-
-    // CF/CF1 pins are the pulse counters' default inputs already, just make
-    // sure they are inputs
-    vAHI_DioSetDirection(METERING_CF_MASK | METERING_CF1_MASK, 0);
 
     // Rising edge, debounce off (debounce would cap counting at 1.2-3.7 kHz),
     // counters kept separate (both channels needed), no interrupts
@@ -96,6 +106,30 @@ static uint16 freqDHz(uint16 pulses, uint16 ticks)
 
     uint64 f = (uint64)pulses * TIMEBASE_DHZ_MUL / ((uint32)ticks * TIMEBASE_DHZ_DIV);
     return (f > 65535) ? 65535 : (uint16)f;
+}
+
+
+uint16 EnergyMeterTask::getActivePowerW() const
+{
+    uint32 watts = (uint32)cfFreqDHz * METERING_W_PER_DHZ_E5 / 100000;
+    return (watts > 32767) ? 32767 : watts;    // ZCL ActivePower is int16
+}
+
+uint16 EnergyMeterTask::getVoltageDV() const
+{
+    return (uint32)voltageFreqDHz * METERING_DV_PER_DHZ_E5 / 100000;
+}
+
+uint16 EnergyMeterTask::getCurrentMA() const
+{
+    uint32 mA = (uint32)currentFreqDHz * METERING_MA_PER_DHZ_E5 / 100000;
+    return (mA > 65535) ? 65535 : mA;
+}
+
+uint64 EnergyMeterTask::getEnergyWh() const
+{
+    // Each CF pulse is a fixed energy quantum: Wh = pulses * (W/Hz) / 3600
+    return cfTotal * METERING_W_PER_DHZ_E5 / 36000000;
 }
 
 void EnergyMeterTask::timerCallback()
