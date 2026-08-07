@@ -56,16 +56,20 @@ ZigbeeDevice::ZigbeeDevice()
     // once the external PA (below) is enabled.
     vAppApiSetComplianceLimits(8, 8, 48);
 
-    // Enable the on-board AT2401C RF front-end module (PA + LNA + T/R switch).
-    // Its TXEN/RXEN control pins are wired (each via a 1k series resistor) to the
-    // JN5169 radio-control outputs RFTX (DIO3, pin 19) and RFRX (DIO2, pin 18);
-    // this call makes the radio auto-drive those lines so the PA engages on
-    // transmit and the LNA on receive. Without it the FEM stays in shutdown and
-    // the device transmits on the bare radio (~0 dBm) - the root cause of the
-    // weak uplink on stock hellozigbee. See doc/AT2401C_rf_frontend_RE.md.
+#ifdef SUPPORTS_RF_FRONTEND
+    // Enable the on-board RF front-end module (PA + LNA + T/R switch, e.g. the
+    // AT2401C on the QBKG boards). Its TXEN/RXEN control pins are wired (each via
+    // a 1k series resistor) to the JN5169 radio-control outputs RFTX (DIO3, pin 19)
+    // and RFRX (DIO2, pin 18); this call makes the radio auto-drive those lines so
+    // the PA engages on transmit and the LNA on receive. Without it the FEM stays
+    // in shutdown and the device transmits on the bare radio (~0 dBm) - the root
+    // cause of the weak uplink on stock hellozigbee. See doc/AT2401C_rf_frontend_RE.md.
     // NB: on channel 26 use vAppApiSetHighPowerMode() instead (tighter ch26
     // emission limits); this call is fine on channels 11-25.
+    // Gated per board: the call surrenders DIO2/DIO3 to the radio, so on boards
+    // without a FEM it must stay off (on EBYTE_E75 DIO2 is the second button).
     vAHI_HighPowerModuleEnable(TRUE, TRUE);
+#endif
 
     // Initialise Application Framework stack
     DBG_vPrintf(TRUE, "ZigbeeDevice(): init Application Framework (AF)... ");

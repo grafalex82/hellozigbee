@@ -148,6 +148,10 @@
     #define LED1_BLUE_PIN_2             (4)
     #define LED1_BLUE_MASK_OR_TIMER     (1UL << LED1_BLUE_PIN_1) | (1UL << LED1_BLUE_PIN_2)
 
+    // On-board RF front-end module (PA/LNA, AT2401C or pin-compatible): the radio
+    // drives its TXEN/RXEN via RFTX/RFRX (DIO3/DIO2) when enabled at init
+    #define SUPPORTS_RF_FRONTEND
+
     #define RELAY1_ON_PIN               (13)
     #define RELAY1_ON_MASK              (1UL << RELAY1_ON_PIN)
     #define RELAY1_OFF_PIN              (12)
@@ -195,6 +199,10 @@
     #define RELAY2_ON_MASK              (1UL << RELAY2_ON_PIN)
     #define RELAY2_OFF_PIN              (12)
     #define RELAY2_OFF_MASK             (1UL << RELAY2_OFF_PIN)
+
+    // On-board RF front-end module (PA/LNA, AT2401C or pin-compatible): the radio
+    // drives its TXEN/RXEN via RFTX/RFRX (DIO3/DIO2) when enabled at init
+    #define SUPPORTS_RF_FRONTEND
 
     // On-board HLW8012 energy metering IC. CF (power) -> DIO8/PC1 and CF1
     // (voltage/current, SEL-muxed) -> DIO1/PC0 are the pulse counters' fixed
