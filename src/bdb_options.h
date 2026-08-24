@@ -50,12 +50,12 @@ extern "C" {
 
 /* Channel Definitions */
 #if (SINGLE_CHANNEL < 11 || SINGLE_CHANNEL > 26)
-#define BDB_PRIMARY_CHANNEL_SET                 (0x07fff800)                               /* bdbPrimaryChannelSet */
-#define BDBC_TL_SECONDARY_CHANNEL_SET           (0x07fff800 ^ BDBC_TL_PRIMARY_CHANNEL_SET) /* bdbcTLSecondaryChannelSet */
+#define BDB_PRIMARY_CHANNEL_SET                 (0x02108800)                                /* bdbPrimaryChannelSet */
+#define BDB_SECONDARY_CHANNEL_SET               (0x07FFF800 ^ BDB_PRIMARY_CHANNEL_SET)      /* bdbSecondaryChannelSet */
 #else
 #warning Single channel only!
 #define BDB_PRIMARY_CHANNEL_SET                 (1<<SINGLE_CHANNEL)                        /* bdbPrimaryChannelSet */
-#define BDBC_TL_SECONDARY_CHANNEL_SET           (0)                                        /* bdbcTLSecondaryChannelSet */
+#define BDB_SECONDARY_CHANNEL_SET               (0)                                        /* bdbSecondaryChannelSet */
 #endif
 
 /* BDB Constants used by all nodes
