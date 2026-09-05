@@ -157,6 +157,14 @@
     #define RELAY1_OFF_PIN              (12)
     #define RELAY1_OFF_MASK             (1UL << RELAY1_OFF_PIN)
 
+    // On-board HLW8012 energy metering IC. CF (power) -> DIO8/PC1 and CF1
+    // (voltage/current, SEL-muxed) -> DIO1/PC0 are the pulse counters' fixed
+    // default inputs and need no pin configuration; SEL is inverted by a
+    // 2N7002 on its way to the chip.
+    #define SUPPORTS_POWER_METERING
+    #define METERING_SEL_PIN            (9)
+    #define METERING_SEL_MASK           (1UL << METERING_SEL_PIN)
+
     #define BASIC_ENDPOINT              (QBKG11LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG11LM_SWITCH1_ENDPOINT)
     #define ZCL_NUMBER_OF_ENDPOINTS     (2)
@@ -196,6 +204,14 @@
     // drives its TXEN/RXEN via RFTX/RFRX (DIO3/DIO2) when enabled at init
     #define SUPPORTS_RF_FRONTEND
 
+    // On-board HLW8012 energy metering IC. CF (power) -> DIO8/PC1 and CF1
+    // (voltage/current, SEL-muxed) -> DIO1/PC0 are the pulse counters' fixed
+    // default inputs and need no pin configuration; SEL is inverted by a
+    // 2N7002 on its way to the chip.
+    #define SUPPORTS_POWER_METERING
+    #define METERING_SEL_PIN            (9)
+    #define METERING_SEL_MASK           (1UL << METERING_SEL_PIN)
+
     #define BASIC_ENDPOINT              (QBKG12LM_BASIC_ENDPOINT)
     #define SWITCH1_ENDPOINT            (QBKG12LM_SWITCH1_ENDPOINT)
     #define SWITCH2_ENDPOINT            (QBKG12LM_SWITCH2_ENDPOINT)
@@ -204,5 +220,32 @@
 
 #endif // TARGET_BOARD
 
+
+// Electrical Measurement cluster is registered only on boards with a metering IC
+#ifdef SUPPORTS_POWER_METERING
+#define CLD_ELECTRICAL_MEASUREMENT
+#define ELECTRICAL_MEASUREMENT_SERVER
+#define CLD_ELECTMEAS_ATTR_ACTIVE_POWER
+#define CLD_ELECTMEAS_ATTR_RMS_VOLTAGE
+#define CLD_ELECTMEAS_ATTR_RMS_CURRENT
+// Cumulative CF/CF1 pulse counts ride in two manufacturer-specific uint32
+// attributes (0xFF00/0xFF01, manufacturer code 0x1037) so calibration can
+// integrate over minutes instead of trusting one 1 s window
+#define CLD_ELECTMEAS_ATTR_MAN_SPEC_APPARENT_POWER
+#define CLD_ELECTMEAS_ATTR_MAN_SPEC_NON_ACTIVE_POWER
+// Scaling attributes so coordinators can render real units
+#define CLD_ELECTMEAS_ATTR_AC_POWER_MULTIPLIER
+#define CLD_ELECTMEAS_ATTR_AC_POWER_DIVISOR
+#define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_MULTIPLIER
+#define CLD_ELECTMEAS_ATTR_AC_VOLTAGE_DIVISOR
+#define CLD_ELECTMEAS_ATTR_AC_CURRENT_MULTIPLIER
+#define CLD_ELECTMEAS_ATTR_AC_CURRENT_DIVISOR
+// Cumulative energy over the Simple Metering cluster (the SDK gates the
+// cluster source on CLD_SIMPLE_METERING and the header structs on SM_SERVER)
+#define CLD_SIMPLE_METERING
+#define SM_SERVER
+#define CLD_SM_ATTR_MULTIPLIER
+#define CLD_SM_ATTR_DIVISOR
+#endif
 
 #endif /* ZCL_OPTIONS_H */
